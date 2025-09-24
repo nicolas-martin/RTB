@@ -12,17 +12,20 @@ import {
 
 import Header from './components/Header';
 import PlayingCard from './components/PlayingCard';
-import { useGame } from './contexts/GameContext';
+import { useWeb3GameLogic } from './hooks/useWeb3GameLogic';
 import { useOrientation } from './hooks/useOrientation';
+import { MetaMaskProvider, useMetaMask } from './src/contexts/MetaMaskContext';
 import RulesModal from './components/RulesModal';
 
-const App: React.FC = () => {
+const GameContent: React.FC = () => {
 	const _orientation = useOrientation();
+	const { account, balance, isConnected, connectWallet, disconnectWallet } =
+		useMetaMask();
 	const {
 		cards,
 		loading,
 		error,
-		drawCards,
+		startGame,
 		flipCard,
 		showRules,
 		hideRules,
@@ -37,324 +40,386 @@ const App: React.FC = () => {
 		gameWon,
 		gameLost,
 		hasGameStarted,
-	} = useGame();
+		currentPayout,
+		cashOut,
+		isCashingOut,
+		isPlayingRound,
+		gameId,
+	} = useWeb3GameLogic();
+
 	const windowWidth = Dimensions.get('window').width;
 	const currentSelection = useMemo(
 		() =>
 			activeCardIndex < selections.length ? selections[activeCardIndex] : null,
 		[activeCardIndex, selections]
 	);
-	const betEditable = !hasGameStarted && !loading;
+	const betEditable = !hasGameStarted && !loading && isConnected;
 
-	useEffect(() => {
-		drawCards();
-	}, [drawCards]);
+	const getStatusMessage = () => {
+		if (!isConnected) {
+			return 'Connect wallet to play';
+		}
+		if (gameWon) {
+			return `🎉 You won! Payout: ${currentPayout} XPL`;
+		}
+		if (gameLost) {
+			return '💔 You lost! Better luck next time';
+		}
+		if (isRoundComplete) {
+			return 'Round complete!';
+		}
+		if (hasGameStarted) {
+			return `Current payout: ${currentPayout} XPL`;
+		}
+		return 'Ready to play';
+	};
 
 	return (
-		<>
-			<StatusBar barStyle="dark-content" />
-			<View style={styles.container}>
-				<Header />
-				<View style={styles.stageContainer}>
-					{isRoundComplete ? (
-						<Text style={styles.stageCompleteText}>
-							All cards revealed! Draw a new set to keep playing.
-						</Text>
-					) : currentStage ? (
-						<>
-							<Text style={styles.stageTitle}>{currentStage.title}</Text>
-							<Text style={styles.stageDescription}>
-								{currentStage.description}
-							</Text>
-							<View style={styles.optionRow}>
-								{currentStage.options.map((option) => {
-									const isSelected = currentSelection === option.value;
-									return (
-										<Pressable
-											key={option.value}
-											style={({ pressed }) => [
-												styles.optionButton,
-												isSelected && styles.optionButtonSelected,
-												pressed && styles.optionButtonPressed,
-											]}
-											onPress={() => makeSelection(option.value)}
-											accessibilityRole="button"
-											accessibilityState={{ selected: isSelected }}
-										>
-											<Text
-												style={[
-													styles.optionButtonText,
-													isSelected && styles.optionButtonTextSelected,
-												]}
-											>
-												{option.label}
-											</Text>
-										</Pressable>
-									);
-								})}
-							</View>
-							<Text style={styles.stageHint}>
-								Select an option, then flip the next card to see if you were
-								right.
-							</Text>
-						</>
-					) : null}
-					<View style={styles.betContainer}>
-						<Text style={styles.betLabel}>Bet amount</Text>
-						<TextInput
-							style={[styles.betInput, !betEditable && styles.betInputDisabled]}
-							value={betValue}
-							onChangeText={setBetValue}
-							keyboardType="numeric"
-							placeholder="Enter your bet"
-							placeholderTextColor="rgba(255, 255, 255, 0.5)"
-							autoCorrect={false}
-							autoCapitalize="none"
-							editable={betEditable}
-							selectTextOnFocus={betEditable}
-						/>
-					</View>
+		<View style={styles.container}>
+			<StatusBar backgroundColor="#1a1a2e" barStyle="light-content" />
 
-					{gameWon && (
-						<View style={[styles.statusBadge, styles.statusBadgeSuccess]}>
-							<Text style={styles.statusText}>
-								Perfect round! You rode the bus.
-							</Text>
-						</View>
-					)}
-					{!gameWon && gameLost && (
-						<View style={[styles.statusBadge, styles.statusBadgeDanger]}>
-							<Text style={styles.statusText}>
-								Missed a guess — grab a drink and try again.
-							</Text>
-						</View>
-					)}
-				</View>
-
-				<View style={styles.buttons}>
-					<Pressable
-						onPress={drawCards}
-						disabled={loading}
-						style={({ pressed }) => [
-							styles.button,
-							styles.drawCardsButton,
-							loading && styles.buttonDisabled,
-							pressed && !loading && styles.buttonPressed,
-						]}
-					>
-						<Text style={styles.buttonText}>
-							{loading ? 'Loading...' : 'Draw Cards'}
-						</Text>
+			{/* MetaMask Connection Status */}
+			<View style={styles.walletContainer}>
+				{!isConnected ? (
+					<Pressable style={styles.connectButton} onPress={connectWallet}>
+						<Text style={styles.connectButtonText}>Connect MetaMask</Text>
 					</Pressable>
-					<Pressable
-						onPress={showRules}
-						style={({ pressed }) => [
-							styles.button,
-							styles.rulesButton,
-							pressed && styles.buttonPressed,
-						]}
-					>
-						<Text style={styles.buttonText}>Rules</Text>
-					</Pressable>
-				</View>
-
-				{error && (
-					<View style={styles.errorContainer}>
-						<Text style={styles.errorText}>{error}</Text>
+				) : (
+					<View style={styles.walletInfo}>
+						<Text style={styles.walletAddress}>
+							{account?.slice(0, 6)}...{account?.slice(-4)}
+						</Text>
+						<Text style={styles.walletBalance}>{balance} XPL</Text>
+						<Pressable
+							style={styles.disconnectButton}
+							onPress={disconnectWallet}
+						>
+							<Text style={styles.disconnectButtonText}>Disconnect</Text>
+						</Pressable>
 					</View>
 				)}
+			</View>
 
-				<View style={styles.cards}>
-					{loading && cards.every((c) => !c.card) ? (
-						<ActivityIndicator size="large" color="#5cb85c" />
-					) : (
-						cards.map((card, index) => {
-							const selectionForCard =
-								index < selections.length ? selections[index] : null;
-							const isActive = index === activeCardIndex;
-							const canFlip =
-								isActive &&
-								!card.isFlipped &&
-								Boolean(selectionForCard) &&
-								!loading;
-							return (
-								<PlayingCard
-									key={`card-${index}`}
-									cardState={card}
-									onCardPressed={() => flipCard(index)}
-									width={windowWidth / 5}
-									disabled={!canFlip}
-								/>
-							);
-						})
+			<Header />
+
+			{/* Bet Input */}
+			<View style={styles.betContainer}>
+				<Text style={styles.betLabel}>Bet Amount (XPL):</Text>
+				<TextInput
+					style={[styles.betInput, !betEditable && styles.betInputDisabled]}
+					value={betValue}
+					onChangeText={setBetValue}
+					placeholder="0.1"
+					placeholderTextColor="#999"
+					keyboardType="decimal-pad"
+					editable={betEditable}
+				/>
+			</View>
+
+			{/* Game Status */}
+			<View style={styles.statusContainer}>
+				<Text style={styles.statusText}>{getStatusMessage()}</Text>
+				{error && <Text style={styles.errorText}>{error}</Text>}
+			</View>
+
+			{/* Cards Container */}
+			<View style={styles.cardsWrapper}>
+				<View style={[styles.cardsContainer, { width: windowWidth }]}>
+					{loading && (
+						<View style={styles.loadingContainer}>
+							<ActivityIndicator size="large" color="#ffffff" />
+							<Text style={styles.loadingText}>
+								{gameId ? 'Playing round...' : 'Starting game...'}
+							</Text>
+						</View>
+					)}
+					{!loading && cards.length > 0 && (
+						<View style={styles.cardsRow}>
+							{cards.map((card, index) => (
+								<View key={index} style={styles.cardWrapper}>
+									<PlayingCard
+										cardState={card}
+										onCardPressed={() => flipCard(index)}
+										width={80}
+										disabled={index !== activeCardIndex || isPlayingRound}
+									/>
+								</View>
+							))}
+						</View>
 					)}
 				</View>
 			</View>
+
+			{/* Stage Selection */}
+			{currentStage && !isRoundComplete && isConnected && (
+				<View style={styles.stageContainer}>
+					<Text style={styles.stageTitle}>{currentStage.title}</Text>
+					<View style={styles.optionsContainer}>
+						{currentStage.options.map((option) => (
+							<Pressable
+								key={option.value}
+								style={[
+									styles.optionButton,
+									currentSelection === option.value &&
+										styles.optionButtonActive,
+								]}
+								onPress={() => makeSelection(option.value)}
+								disabled={isPlayingRound}
+							>
+								<Text
+									style={[
+										styles.optionText,
+										currentSelection === option.value &&
+											styles.optionTextActive,
+									]}
+								>
+									{option.label}
+								</Text>
+							</Pressable>
+						))}
+					</View>
+				</View>
+			)}
+
+			{/* Game Actions */}
+			<View style={styles.gameActions}>
+				{!hasGameStarted && isConnected && (
+					<Pressable
+						style={[styles.actionButton, styles.startButton]}
+						onPress={startGame}
+						disabled={loading || !betValue}
+					>
+						<Text style={styles.actionButtonText}>Start Game</Text>
+					</Pressable>
+				)}
+
+				{gameWon && (
+					<Pressable
+						style={[styles.actionButton, styles.cashOutButton]}
+						onPress={cashOut}
+						disabled={isCashingOut}
+					>
+						<Text style={styles.actionButtonText}>
+							{isCashingOut
+								? 'Cashing out...'
+								: `Cash out ${currentPayout} XPL`}
+						</Text>
+					</Pressable>
+				)}
+
+				{gameLost && (
+					<Pressable
+						style={[styles.actionButton, styles.newGameButton]}
+						onPress={() => window.location.reload()}
+					>
+						<Text style={styles.actionButtonText}>New Game</Text>
+					</Pressable>
+				)}
+
+				<Pressable style={styles.rulesButton} onPress={showRules}>
+					<Text style={styles.rulesButtonText}>Show Rules</Text>
+				</Pressable>
+			</View>
+
 			<RulesModal visible={rulesVisible} onClose={hideRules} />
-		</>
+		</View>
+	);
+};
+
+const AppWeb3: React.FC = () => {
+	return (
+		<MetaMaskProvider>
+			<GameContent />
+		</MetaMaskProvider>
 	);
 };
 
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: '#22303f',
-		paddingBottom: 24,
-	},
-	cards: {
-		flexDirection: 'row',
-		justifyContent: 'center',
+		backgroundColor: '#1a1a2e',
 		alignItems: 'center',
-		paddingVertical: 12,
+		paddingVertical: 20,
 	},
-	buttons: {
-		flexDirection: 'row',
-		width: '100%',
-		justifyContent: 'center',
-		alignItems: 'center',
-		marginTop: 16,
+	walletContainer: {
+		position: 'absolute',
+		top: 10,
+		right: 10,
+		zIndex: 1000,
 	},
-	button: {
+	connectButton: {
+		backgroundColor: '#f39c12',
+		paddingHorizontal: 20,
 		paddingVertical: 10,
-		paddingHorizontal: 18,
-		marginHorizontal: 10,
-		borderRadius: 6,
-		alignItems: 'center',
-		justifyContent: 'center',
+		borderRadius: 5,
 	},
-	drawCardsButton: {
-		backgroundColor: '#5cb85c',
+	connectButtonText: {
+		color: '#fff',
+		fontWeight: 'bold',
 	},
-	rulesButton: {
-		backgroundColor: '#495057',
+	walletInfo: {
+		backgroundColor: '#2c2c54',
+		padding: 10,
+		borderRadius: 5,
+		alignItems: 'flex-end',
 	},
-	buttonPressed: {
-		opacity: 0.85,
+	walletAddress: {
+		color: '#fff',
+		fontSize: 12,
+		marginBottom: 5,
 	},
-	buttonDisabled: {
-		opacity: 0.6,
-	},
-	buttonText: {
-		color: 'white',
-		fontSize: 16,
-		fontWeight: '600',
-	},
-	stageContainer: {
-		paddingHorizontal: 24,
-		paddingBottom: 12,
-	},
-	stageTitle: {
-		color: '#ffffff',
-		fontSize: 20,
-		fontWeight: '700',
-		textAlign: 'center',
-		marginBottom: 6,
-	},
-	stageDescription: {
-		color: 'rgba(255, 255, 255, 0.85)',
-		fontSize: 15,
-		textAlign: 'center',
-		marginBottom: 12,
-	},
-	optionRow: {
-		flexDirection: 'row',
-		flexWrap: 'wrap',
-		justifyContent: 'center',
-		marginHorizontal: -6,
-	},
-	optionButton: {
-		paddingVertical: 8,
-		paddingHorizontal: 16,
-		borderRadius: 999,
-		borderWidth: 1,
-		borderColor: 'rgba(255, 255, 255, 0.3)',
-		backgroundColor: 'rgba(255, 255, 255, 0.08)',
-		marginHorizontal: 6,
-		marginBottom: 8,
-	},
-	optionButtonSelected: {
-		backgroundColor: '#5cb85c',
-		borderColor: '#5cb85c',
-	},
-	optionButtonPressed: {
-		opacity: 0.85,
-	},
-	optionButtonText: {
-		color: 'white',
+	walletBalance: {
+		color: '#f39c12',
 		fontSize: 14,
-		fontWeight: '600',
+		fontWeight: 'bold',
+		marginBottom: 5,
 	},
-	optionButtonTextSelected: {
-		color: '#ffffff',
+	disconnectButton: {
+		backgroundColor: '#e74c3c',
+		paddingHorizontal: 10,
+		paddingVertical: 5,
+		borderRadius: 3,
 	},
-	stageHint: {
-		color: 'rgba(255, 255, 255, 0.7)',
-		fontSize: 13,
-		textAlign: 'center',
-		marginTop: 10,
-	},
-	stageCompleteText: {
-		color: '#ffffff',
-		fontSize: 16,
-		textAlign: 'center',
+	disconnectButtonText: {
+		color: '#fff',
+		fontSize: 12,
 	},
 	betContainer: {
-		marginTop: 20,
-		width: '100%',
+		flexDirection: 'row',
 		alignItems: 'center',
+		marginTop: 20,
+		marginBottom: 10,
 	},
 	betLabel: {
-		color: 'rgba(255, 255, 255, 0.75)',
-		fontSize: 13,
-		marginBottom: 6,
+		color: '#fff',
+		fontSize: 16,
+		marginRight: 10,
 	},
 	betInput: {
-		width: '100%',
-		maxWidth: 220,
-		borderRadius: 8,
-		borderWidth: 1,
-		borderColor: 'rgba(255, 255, 255, 0.3)',
-		paddingVertical: 10,
-		paddingHorizontal: 14,
-		color: '#ffffff',
-		backgroundColor: 'rgba(255, 255, 255, 0.12)',
+		backgroundColor: '#2c2c54',
+		color: '#fff',
+		paddingHorizontal: 15,
+		paddingVertical: 8,
+		borderRadius: 5,
+		minWidth: 100,
+		fontSize: 16,
 	},
 	betInputDisabled: {
 		opacity: 0.5,
 	},
-	statusBadge: {
-		marginTop: 18,
-		alignSelf: 'center',
-		paddingVertical: 10,
-		paddingHorizontal: 18,
-		borderRadius: 999,
-	},
-	statusBadgeSuccess: {
-		backgroundColor: 'rgba(92, 184, 92, 0.2)',
-		borderWidth: 1,
-		borderColor: 'rgba(92, 184, 92, 0.6)',
-	},
-	statusBadgeDanger: {
-		backgroundColor: 'rgba(220, 53, 69, 0.2)',
-		borderWidth: 1,
-		borderColor: 'rgba(220, 53, 69, 0.6)',
+	statusContainer: {
+		marginBottom: 20,
 	},
 	statusText: {
-		color: '#ffffff',
-		fontSize: 14,
-		fontWeight: '600',
+		color: '#fff',
+		fontSize: 16,
 		textAlign: 'center',
-	},
-	errorContainer: {
-		padding: 10,
-		margin: 10,
-		backgroundColor: '#dc3545',
-		borderRadius: 5,
 	},
 	errorText: {
-		color: 'white',
+		color: '#e74c3c',
+		fontSize: 14,
+		marginTop: 5,
 		textAlign: 'center',
+	},
+	cardsWrapper: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	cardsContainer: {
+		height: 200,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	cardsRow: {
+		flexDirection: 'row',
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	cardWrapper: {
+		marginHorizontal: 10,
+	},
+	loadingContainer: {
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	loadingText: {
+		color: '#fff',
+		marginTop: 10,
+	},
+	stageContainer: {
+		marginBottom: 20,
+		alignItems: 'center',
+	},
+	stageTitle: {
+		color: '#fff',
+		fontSize: 18,
+		marginBottom: 15,
+		fontWeight: 'bold',
+	},
+	optionsContainer: {
+		flexDirection: 'row',
+		justifyContent: 'center',
+		gap: 10,
+	},
+	optionButton: {
+		backgroundColor: '#2c2c54',
+		paddingHorizontal: 20,
+		paddingVertical: 10,
+		borderRadius: 5,
+		marginHorizontal: 5,
+		borderWidth: 2,
+		borderColor: 'transparent',
+	},
+	optionButtonActive: {
+		borderColor: '#f39c12',
+		backgroundColor: '#3d3d6b',
+	},
+	optionText: {
+		color: '#fff',
+		fontSize: 14,
+		fontWeight: 'bold',
+	},
+	optionTextActive: {
+		color: '#f39c12',
+	},
+	gameActions: {
+		marginTop: 20,
+		alignItems: 'center',
+	},
+	actionButton: {
+		paddingHorizontal: 30,
+		paddingVertical: 15,
+		borderRadius: 5,
+		marginBottom: 10,
+	},
+	startButton: {
+		backgroundColor: '#27ae60',
+	},
+	cashOutButton: {
+		backgroundColor: '#f39c12',
+	},
+	newGameButton: {
+		backgroundColor: '#3498db',
+	},
+	actionButtonText: {
+		color: '#fff',
+		fontSize: 16,
+		fontWeight: 'bold',
+	},
+	rulesButton: {
+		backgroundColor: '#8e44ad',
+		paddingHorizontal: 20,
+		paddingVertical: 10,
+		borderRadius: 5,
+		marginTop: 10,
+	},
+	rulesButtonText: {
+		color: '#fff',
+		fontSize: 14,
+		fontWeight: 'bold',
 	},
 });
 
-export default App;
+export default AppWeb3;
+

@@ -134,7 +134,7 @@ class ContractService {
 	async getGame(gameId: string): Promise<Game> {
 		if (!this.contract) throw new Error('Wallet not connected');
 
-		const game = await this.contract.methods.games(gameId).call() as any;
+		const game = (await this.contract.methods.games(gameId).call()) as any;
 		return {
 			player: game.player,
 			token: game.token,
@@ -155,13 +155,17 @@ class ContractService {
 
 	async getHouseLiquidity(): Promise<string> {
 		if (!this.contract) throw new Error('Wallet not connected');
-		const liquidity = await this.contract.methods.houseLiquidity().call() as string;
+		const liquidity = (await this.contract.methods
+			.houseLiquidity()
+			.call()) as string;
 		return this.web3.utils.fromWei(liquidity, 'ether');
 	}
 
 	async getMaxPayout(): Promise<string> {
 		if (!this.contract) throw new Error('Wallet not connected');
-		const maxPayout = await this.contract.methods.maxPayout().call() as string;
+		const maxPayout = (await this.contract.methods
+			.maxPayout()
+			.call()) as string;
 		return this.web3.utils.fromWei(maxPayout, 'ether');
 	}
 
