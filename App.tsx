@@ -161,7 +161,7 @@ const GameContent: React.FC = () => {
 								style={[
 									styles.optionButton,
 									currentSelection === option.value &&
-										styles.optionButtonActive,
+									styles.optionButtonActive,
 								]}
 								onPress={() => makeSelection(option.value)}
 								disabled={isPlayingRound}
@@ -170,7 +170,7 @@ const GameContent: React.FC = () => {
 									style={[
 										styles.optionText,
 										currentSelection === option.value &&
-											styles.optionTextActive,
+										styles.optionTextActive,
 									]}
 								>
 									{option.label}
