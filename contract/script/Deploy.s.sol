@@ -8,10 +8,10 @@ contract Deploy is Script {
     function run() external {
         address forwarder = vm.envAddress("FORWARDER");
         address token     = vm.envAddress("TREASURY_TOKEN");
-        address coord     = vm.envAddress("VRF_COORD");
-        bytes32 keyHash   = vm.envBytes32("VRF_KEYHASH");
-        uint256 subId     = vm.envUint("VRF_SUBID");
         uint256 maxPayout = vm.envUint("MAX_PAYOUT");
-        vm.startBroadcast(); new RideTheBus(forwarder, IERC20(token), coord, keyHash, subId, maxPayout); vm.stopBroadcast();
+        vm.startBroadcast();
+        RideTheBus game = new RideTheBus(forwarder, IERC20(token), maxPayout);
+        console.log("RideTheBus deployed at:", address(game));
+        vm.stopBroadcast();
     }
 }

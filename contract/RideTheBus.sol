@@ -8,9 +8,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Context} from "@openzeppelin/contracts/utils/Context.sol";
 import {ERC2771Context} from "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 
-import {VRFCoordinatorV2_5Interface, VRFConsumerBaseV2_5} from "./interfaces/VRFCoordinatorV2_5.sol";
-
-contract RideTheBus is Ownable, ReentrancyGuard, ERC2771Context, VRFConsumerBaseV2_5 {
+contract RideTheBus is Ownable, ReentrancyGuard, ERC2771Context {
     using SafeERC20 for IERC20;
 
     enum RoundType { RedBlack, HigherLower, InsideOutside, Suit }
@@ -34,12 +32,6 @@ contract RideTheBus is Ownable, ReentrancyGuard, ERC2771Context, VRFConsumerBase
     }
 
     IERC20 public immutable treasuryToken;
-    VRFCoordinatorV2_5Interface public immutable COORD;
-
-    bytes32 public keyHash;    // VRF
-    uint256 public subId;      // VRF subscription id
-    uint16  public minConf = 3;
-    uint32  public callbackGasLimit = 600_000;
 
     uint256 public maxPayout;        // cap
     uint256 public houseLiquidity;   // house float
@@ -48,12 +40,9 @@ contract RideTheBus is Ownable, ReentrancyGuard, ERC2771Context, VRFConsumerBase
 
     uint256 private _gameSeq;
     mapping(uint256 => Game) public games;        // gameId->Game
-    mapping(uint256 => uint256) public reqToGame; // requestId->gameId
 
     // Events
     event GameStarted(uint256 indexed gameId, address indexed player, uint256 wager);
-    event SeedRequested(uint256 indexed gameId, uint256 requestId);
-    event SeedFulfilled(uint256 indexed gameId, bytes32 seed);
     event RoundPlayed(uint256 indexed gameId, uint8 roundIndex, uint8 card, bytes extra, bool win, uint256 newPayout);
     event CashedOut(uint256 indexed gameId, address indexed player, uint256 amount);
     event Busted(uint256 indexed gameId);
@@ -63,15 +52,9 @@ contract RideTheBus is Ownable, ReentrancyGuard, ERC2771Context, VRFConsumerBase
     constructor(
         address trustedForwarder,
         IERC20 _treasuryToken,
-        address vrfCoordinator,
-        bytes32 _keyHash,
-        uint256 _subId,
         uint256 _maxPayout
     ) Ownable(msg.sender) ERC2771Context(trustedForwarder) {
         treasuryToken = _treasuryToken;
-        COORD = VRFCoordinatorV2_5Interface(vrfCoordinator);
-        keyHash = _keyHash;
-        subId = _subId;
         maxPayout = _maxPayout;
 
         // Simple 4-round script
@@ -99,9 +82,6 @@ contract RideTheBus is Ownable, ReentrancyGuard, ERC2771Context, VRFConsumerBase
     function withdrawHouse(uint256 amount) external onlyOwner {
 	    require(amount <= houseLiquidity, "insufficient"); houseLiquidity -= amount; treasuryToken.safeTransfer(_msgSender(), amount); emit HouseWithdrawn(amount);
     }    
-    function setVRF(bytes32 _keyHash, uint16 _minConf, uint32 _cbGas) external onlyOwner {
-	    keyHash=_keyHash; minConf=_minConf; callbackGasLimit=_cbGas; 
-    }
     function setRoundConfigs(RoundConfig[] calldata cfgs) external onlyOwner {
 	    delete roundConfigs; for (uint i; i<cfgs.length; i++) roundConfigs.push(cfgs[i]); 
     }
@@ -119,21 +99,13 @@ contract RideTheBus is Ownable, ReentrancyGuard, ERC2771Context, VRFConsumerBase
         gameId = ++_gameSeq;
         Game storage g = games[gameId];
         g.player = _msgSender(); g.token = address(treasuryToken); g.wager = wager; g.currentPayout = wager; g.startedAt = uint64(block.timestamp); g.deadline = actionDeadlineSec;
+
+        // Simple pseudo-random seed using block data (NOT secure for production)
+        g.seed = keccak256(abi.encodePacked(block.timestamp, block.prevrandao, _msgSender(), gameId));
+        g.live = true;
         emit GameStarted(gameId, g.player, wager);
-
-        uint256 reqId = COORD.requestRandomWords(keyHash, subId, minConf, callbackGasLimit, 2);
-        reqToGame[reqId] = gameId; emit SeedRequested(gameId, reqId);
     }
 
-    // VRF callback
-    function rawFulfillRandomWords(uint256 requestId, uint256[] memory randomWords) external override {
-        require(msg.sender == address(COORD), "only vrf");
-        uint256 gameId = reqToGame[requestId];
-        Game storage g = games[gameId];
-        require(g.player != address(0) && !g.live && !g.ended, "bad state");
-        g.seed = keccak256(abi.encodePacked(randomWords[0], randomWords[1], requestId));
-        g.live = true; emit SeedFulfilled(gameId, g.seed);
-    }
 
     // Rounds (called by player OR via ERC-2771 forwarder relayer)
     function playRound(uint256 gameId, bytes calldata choice) external nonReentrant {
