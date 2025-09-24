@@ -7,6 +7,7 @@ import {
 	Dimensions,
 	ActivityIndicator,
 	Pressable,
+	TextInput,
 } from 'react-native';
 
 import Header from './components/Header';
@@ -31,6 +32,8 @@ const App: React.FC = () => {
 		selections,
 		makeSelection,
 		isRoundComplete,
+		betValue,
+		setBetValue,
 	} = useGame();
 	const windowWidth = Dimensions.get('window').width;
 	const currentSelection = useMemo(
@@ -87,10 +90,23 @@ const App: React.FC = () => {
 								})}
 							</View>
 							<Text style={styles.stageHint}>
-								Select an option, then reveal the highlighted card.
+								Select an option, then flip the next card to see if you were right.
 							</Text>
 						</>
 					) : null}
+					<View style={styles.betContainer}>
+						<Text style={styles.betLabel}>Bet amount</Text>
+						<TextInput
+							style={styles.betInput}
+							value={betValue}
+							onChangeText={setBetValue}
+							keyboardType="numeric"
+							placeholder="Enter your bet"
+							placeholderTextColor="rgba(255, 255, 255, 0.5)"
+							autoCorrect={false}
+							autoCapitalize="none"
+						/>
+					</View>
 				</View>
 
 				<View style={styles.buttons}>
@@ -145,7 +161,6 @@ const App: React.FC = () => {
 									cardState={card}
 									onCardPressed={() => flipCard(index)}
 									width={windowWidth / 5}
-									isActive={isActive}
 									disabled={!canFlip}
 								/>
 							);
@@ -260,6 +275,27 @@ const styles = StyleSheet.create({
 		color: '#ffffff',
 		fontSize: 16,
 		textAlign: 'center',
+	},
+	betContainer: {
+		marginTop: 20,
+		width: '100%',
+		alignItems: 'center',
+	},
+	betLabel: {
+		color: 'rgba(255, 255, 255, 0.75)',
+		fontSize: 13,
+		marginBottom: 6,
+	},
+	betInput: {
+		width: '100%',
+		maxWidth: 220,
+		borderRadius: 8,
+		borderWidth: 1,
+		borderColor: 'rgba(255, 255, 255, 0.3)',
+		paddingVertical: 10,
+		paddingHorizontal: 14,
+		color: '#ffffff',
+		backgroundColor: 'rgba(255, 255, 255, 0.12)',
 	},
 	errorContainer: {
 		padding: 10,

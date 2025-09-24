@@ -1,5 +1,13 @@
-import React, { memo } from 'react';
-import { Image, Pressable, StyleSheet, Platform, ViewStyle } from 'react-native';
+import React, { memo, useEffect, useRef } from 'react';
+import {
+	Animated,
+	Image,
+	Platform,
+	Pressable,
+	StyleSheet,
+	View,
+	ViewStyle,
+} from 'react-native';
 import { CardState } from '../types';
 import { config } from '../config';
 
@@ -7,29 +15,65 @@ interface PlayingCardProps {
 	cardState: CardState;
 	onCardPressed: () => void;
 	width: number;
-	isActive: boolean;
 	disabled: boolean;
 }
 
+const shadowStyle: ViewStyle = Platform.select({
+	web: {
+		boxShadow: '0px 12px 24px rgba(0, 0, 0, 0.35)',
+	},
+	default: {
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.25,
+		shadowRadius: 3.84,
+		elevation: 5,
+	},
+}) as ViewStyle;
+
 const PlayingCard: React.FC<PlayingCardProps> = memo(
-	({ cardState, onCardPressed, width, isActive, disabled }) => {
+	({ cardState, onCardPressed, width, disabled }) => {
 		const { isFlipped, image } = cardState;
 		const height = width * config.CARD_ASPECT_RATIO;
 		const marginPadding = width * 0.2;
+		const rotation = useRef(new Animated.Value(isFlipped ? 180 : 0)).current;
 
-		const imageUrl = isFlipped ? image : config.CARD_BACK_URL;
-		const shadowStyle: ViewStyle = Platform.select({
-			web: {
-				boxShadow: '0px 12px 24px rgba(0, 0, 0, 0.35)',
-			},
-			default: {
-				shadowColor: '#000',
-				shadowOffset: { width: 0, height: 2 },
-				shadowOpacity: 0.25,
-				shadowRadius: 3.84,
-				elevation: 5,
-			},
-		}) as ViewStyle;
+		useEffect(() => {
+			if (isFlipped) {
+				Animated.spring(rotation, {
+					toValue: 180,
+					useNativeDriver: true,
+					friction: 8,
+					tension: 12,
+				}).start();
+			} else {
+				rotation.setValue(0);
+			}
+		}, [isFlipped, rotation, image]);
+
+		const frontAnimatedStyle = {
+			transform: [
+				{ perspective: 1000 },
+				{
+					rotateY: rotation.interpolate({
+						inputRange: [0, 180],
+						outputRange: ['180deg', '360deg'],
+					}),
+				},
+			],
+		};
+
+		const backAnimatedStyle = {
+			transform: [
+				{ perspective: 1000 },
+				{
+					rotateY: rotation.interpolate({
+						inputRange: [0, 180],
+						outputRange: ['0deg', '180deg'],
+					}),
+				},
+			],
+		};
 
 		return (
 			<Pressable
@@ -43,31 +87,39 @@ const PlayingCard: React.FC<PlayingCardProps> = memo(
 						height,
 						marginHorizontal: marginPadding / 2,
 					},
-					isActive && styles.active,
-					disabled && styles.disabled,
 					pressed && !disabled && styles.pressed,
 				]}
 				accessibilityRole="button"
 				accessibilityState={{ disabled, selected: isFlipped }}
 			>
-				<Image
-					style={styles.image}
-					source={{ uri: imageUrl }}
-					resizeMode="contain"
-				/>
+				<View style={styles.cardInner}>
+					<Animated.View
+						style={[styles.cardFace, styles.cardFront, frontAnimatedStyle]}
+					>
+						<Image
+							style={styles.cardImage}
+							source={{ uri: image }}
+							resizeMode="contain"
+						/>
+					</Animated.View>
+					<Animated.View
+						style={[styles.cardFace, styles.cardBack, backAnimatedStyle]}
+					>
+						<Image
+							style={styles.cardImage}
+							source={{ uri: config.CARD_BACK_URL }}
+							resizeMode="contain"
+						/>
+					</Animated.View>
+				</View>
 			</Pressable>
 		);
 	},
-	(prevProps, nextProps) => {
-		// Custom comparison for memo optimization
-		return (
-			prevProps.cardState.isFlipped === nextProps.cardState.isFlipped &&
-			prevProps.cardState.image === nextProps.cardState.image &&
-			prevProps.width === nextProps.width &&
-			prevProps.isActive === nextProps.isActive &&
-			prevProps.disabled === nextProps.disabled
-		);
-	}
+	(prevProps, nextProps) =>
+		prevProps.cardState.isFlipped === nextProps.cardState.isFlipped &&
+		prevProps.cardState.image === nextProps.cardState.image &&
+		prevProps.width === nextProps.width &&
+		prevProps.disabled === nextProps.disabled
 );
 
 PlayingCard.displayName = 'PlayingCard';
@@ -78,18 +130,27 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		borderRadius: 12,
 		backgroundColor: '#ffffff',
+		overflow: 'hidden',
 	},
-	image: {
+	cardInner: {
+		width: '100%',
+		height: '100%',
+		position: 'relative',
+	},
+	cardFace: {
+		position: 'absolute',
+		top: 0,
+		left: 0,
+		width: '100%',
+		height: '100%',
+		backfaceVisibility: 'hidden',
+	},
+	cardFront: {},
+	cardBack: {},
+	cardImage: {
 		width: '100%',
 		height: '100%',
 		borderRadius: 12,
-	},
-	active: {
-		borderWidth: 3,
-		borderColor: '#5cb85c',
-	},
-	disabled: {
-		opacity: 0.7,
 	},
 	pressed: {
 		transform: [{ scale: 0.98 }],

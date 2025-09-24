@@ -48,4 +48,6 @@ export interface GameContextType {
 	selections: PlayerSelection[];
 	makeSelection: (value: string) => void;
 	isRoundComplete: boolean;
+	betValue: string;
+	setBetValue: (value: string) => void;
 }

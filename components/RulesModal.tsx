@@ -26,13 +26,13 @@ const RULE_SECTIONS = [
 		body: 'Guess whether the next card will be red or black.',
 	},
 	{
-		title: 'Round 2 – Higher, lower, or same?',
-		body: 'Predict if the second card will be higher, lower, or exactly the same as the first card.',
+		title: 'Round 2 – Higher or lower?',
+		body: 'Predict if the second card will be higher or lower than the first card.',
 	},
 	{
-		title: 'Round 3 – Inside, outside, or same?',
+		title: 'Round 3 – Inside or outside?',
 		body:
-			'Choose whether the third card will land inside or outside the values of the first two cards, or match one of them exactly.',
+			'Choose whether the third card will land inside or outside the values of the first two cards.',
 	},
 	{
 		title: 'Round 4 – Pick the suit',

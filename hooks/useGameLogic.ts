@@ -15,24 +15,22 @@ const STAGES: StageConfig[] = [
 	},
 	{
 		id: 'number',
-		title: 'Round 2 – Higher, lower, or same?',
+		title: 'Round 2 – Higher or lower?',
 		description:
-			'Decide if the next card will be higher, lower, or exactly the same as the previous card.',
+			'Decide if the next card will be higher or lower than the previous card.',
 		options: [
 			{ value: 'higher', label: 'Higher' },
 			{ value: 'lower', label: 'Lower' },
-			{ value: 'same-number', label: 'Same' },
 		],
 	},
 	{
 		id: 'range',
-		title: 'Round 3 – Inside, outside, or same?',
+		title: 'Round 3 – Inside or outside?',
 		description:
-			'Will the next card land inside, outside, or match the range of the first two cards?',
+			'Will the next card land inside or outside the range set by the first two cards?',
 		options: [
 			{ value: 'inside', label: 'Inside' },
 			{ value: 'outside', label: 'Outside' },
-			{ value: 'same-range', label: 'Same' },
 		],
 	},
 	{
@@ -65,6 +63,7 @@ export const useGameLogic = () => {
 		new Array(STAGES.length).fill(null)
 	);
 	const [rulesVisible, setRulesVisible] = useState(false);
+	const [betValue, setBetValue] = useState('');
 
 	const drawCards = useCallback(async () => {
 		setLoading(true);
@@ -73,6 +72,7 @@ export const useGameLogic = () => {
 		setSelections(new Array(STAGES.length).fill(null));
 		setRulesVisible(false);
 		setCards(createInitialCards());
+		setBetValue('');
 
 		try {
 			const newCards = await api.drawCards(config.CARDS_PER_HAND);
@@ -148,6 +148,13 @@ export const useGameLogic = () => {
 		setRulesVisible(false);
 	}, []);
 
+	const updateBetValue = useCallback((value: string) => {
+		const sanitized = value.replace(/[^0-9.]/g, '');
+		const [whole, ...fractions] = sanitized.split('.');
+		const normalized = fractions.length > 0 ? `${whole}.${fractions.join('')}` : whole;
+		setBetValue(normalized);
+	}, []);
+
 	const currentStage = useMemo(() => {
 		return activeCardIndex < STAGES.length ? STAGES[activeCardIndex] : null;
 	}, [activeCardIndex]);
@@ -172,5 +179,7 @@ export const useGameLogic = () => {
 		selections,
 		makeSelection,
 		isRoundComplete,
+		betValue,
+		setBetValue: updateBetValue,
 	};
 };
