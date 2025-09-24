@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
 	StyleSheet,
 	View,
@@ -10,14 +10,15 @@ import {
 	TextInput,
 } from 'react-native';
 
+import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
 import PlayingCard from './components/PlayingCard';
+import RulesModal from './components/RulesModal';
 import { useWeb3GameLogic } from './hooks/useWeb3GameLogic';
 import { useOrientation } from './hooks/useOrientation';
 import { MetaMaskProvider, useMetaMask } from './src/contexts/MetaMaskContext';
-import RulesModal from './components/RulesModal';
 
-const GameContent: React.FC = () => {
+const AppContent: React.FC = () => {
 	const _orientation = useOrientation();
 	const { account, balance, isConnected, connectWallet, disconnectWallet } =
 		useMetaMask();
@@ -226,14 +227,6 @@ const GameContent: React.FC = () => {
 	);
 };
 
-const AppWeb3: React.FC = () => {
-	return (
-		<MetaMaskProvider>
-			<GameContent />
-		</MetaMaskProvider>
-	);
-};
-
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
@@ -421,5 +414,14 @@ const styles = StyleSheet.create({
 	},
 });
 
-export default AppWeb3;
+const App: React.FC = () => {
+	return (
+		<ErrorBoundary>
+			<MetaMaskProvider>
+				<AppContent />
+			</MetaMaskProvider>
+		</ErrorBoundary>
+	);
+};
 
+export default App;

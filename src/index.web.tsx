@@ -1,9 +1,10 @@
 import { AppRegistry } from 'react-native';
-import AppWrapper from '../AppWrapper';
+import App from '../App';
+import { name as appName } from '../app.json';
 
-AppRegistry.registerComponent('RideTheBus', () => AppWrapper);
+AppRegistry.registerComponent(appName, () => App);
 
-AppRegistry.runApplication('RideTheBus', {
+AppRegistry.runApplication(appName, {
 	initialProps: {},
 	rootTag: document.getElementById('root'),
 });
