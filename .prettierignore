@@ -1,0 +1,13 @@
+node_modules
+.yarn
+dist
+dist-web
+build
+coverage
+*.log
+.DS_Store
+.vscode
+.idea
+ios/
+android/
+.git
