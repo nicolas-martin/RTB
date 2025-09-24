@@ -34,6 +34,9 @@ const App: React.FC = () => {
 		isRoundComplete,
 		betValue,
 		setBetValue,
+		gameWon,
+		gameLost,
+		hasGameStarted,
 	} = useGame();
 	const windowWidth = Dimensions.get('window').width;
 	const currentSelection = useMemo(
@@ -41,6 +44,7 @@ const App: React.FC = () => {
 			activeCardIndex < selections.length ? selections[activeCardIndex] : null,
 		[activeCardIndex, selections]
 	);
+	const betEditable = !hasGameStarted && !loading;
 
 	useEffect(() => {
 		drawCards();
@@ -90,14 +94,18 @@ const App: React.FC = () => {
 								})}
 							</View>
 							<Text style={styles.stageHint}>
-								Select an option, then flip the next card to see if you were right.
+								Select an option, then flip the next card to see if you were
+								right.
 							</Text>
 						</>
 					) : null}
 					<View style={styles.betContainer}>
 						<Text style={styles.betLabel}>Bet amount</Text>
 						<TextInput
-							style={styles.betInput}
+							style={[
+								styles.betInput,
+								!betEditable && styles.betInputDisabled,
+							]}
 							value={betValue}
 							onChangeText={setBetValue}
 							keyboardType="numeric"
@@ -105,8 +113,25 @@ const App: React.FC = () => {
 							placeholderTextColor="rgba(255, 255, 255, 0.5)"
 							autoCorrect={false}
 							autoCapitalize="none"
+							editable={betEditable}
+							selectTextOnFocus={betEditable}
 						/>
 					</View>
+
+					{gameWon && (
+						<View style={[styles.statusBadge, styles.statusBadgeSuccess]}>
+							<Text style={styles.statusText}>
+								Perfect round! You rode the bus.
+							</Text>
+						</View>
+					)}
+					{!gameWon && gameLost && (
+						<View style={[styles.statusBadge, styles.statusBadgeDanger]}>
+							<Text style={styles.statusText}>
+								Missed a guess — grab a drink and try again.
+							</Text>
+						</View>
+					)}
 				</View>
 
 				<View style={styles.buttons}>
@@ -143,7 +168,7 @@ const App: React.FC = () => {
 				)}
 
 				<View style={styles.cards}>
-					{loading && cards.every((c) => !c.image) ? (
+					{loading && cards.every((c) => !c.card) ? (
 						<ActivityIndicator size="large" color="#5cb85c" />
 					) : (
 						cards.map((card, index) => {
@@ -296,6 +321,32 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 14,
 		color: '#ffffff',
 		backgroundColor: 'rgba(255, 255, 255, 0.12)',
+	},
+	betInputDisabled: {
+		opacity: 0.5,
+	},
+	statusBadge: {
+		marginTop: 18,
+		alignSelf: 'center',
+		paddingVertical: 10,
+		paddingHorizontal: 18,
+		borderRadius: 999,
+	},
+	statusBadgeSuccess: {
+		backgroundColor: 'rgba(92, 184, 92, 0.2)',
+		borderWidth: 1,
+		borderColor: 'rgba(92, 184, 92, 0.6)',
+	},
+	statusBadgeDanger: {
+		backgroundColor: 'rgba(220, 53, 69, 0.2)',
+		borderWidth: 1,
+		borderColor: 'rgba(220, 53, 69, 0.6)',
+	},
+	statusText: {
+		color: '#ffffff',
+		fontSize: 14,
+		fontWeight: '600',
+		textAlign: 'center',
 	},
 	errorContainer: {
 		padding: 10,

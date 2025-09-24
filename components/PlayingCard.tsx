@@ -33,10 +33,11 @@ const shadowStyle: ViewStyle = Platform.select({
 
 const PlayingCard: React.FC<PlayingCardProps> = memo(
 	({ cardState, onCardPressed, width, disabled }) => {
-		const { isFlipped, image } = cardState;
+		const { isFlipped, card } = cardState;
 		const height = width * config.CARD_ASPECT_RATIO;
 		const marginPadding = width * 0.2;
 		const rotation = useRef(new Animated.Value(isFlipped ? 180 : 0)).current;
+		const frontImageUri = card?.image ?? config.CARD_BACK_URL;
 
 		useEffect(() => {
 			if (isFlipped) {
@@ -49,7 +50,7 @@ const PlayingCard: React.FC<PlayingCardProps> = memo(
 			} else {
 				rotation.setValue(0);
 			}
-		}, [isFlipped, rotation, image]);
+		}, [isFlipped, rotation, frontImageUri]);
 
 		const frontAnimatedStyle = {
 			transform: [
@@ -98,7 +99,7 @@ const PlayingCard: React.FC<PlayingCardProps> = memo(
 					>
 						<Image
 							style={styles.cardImage}
-							source={{ uri: image }}
+							source={{ uri: frontImageUri }}
 							resizeMode="contain"
 						/>
 					</Animated.View>
@@ -117,7 +118,7 @@ const PlayingCard: React.FC<PlayingCardProps> = memo(
 	},
 	(prevProps, nextProps) =>
 		prevProps.cardState.isFlipped === nextProps.cardState.isFlipped &&
-		prevProps.cardState.image === nextProps.cardState.image &&
+		prevProps.cardState.card?.image === nextProps.cardState.card?.image &&
 		prevProps.width === nextProps.width &&
 		prevProps.disabled === nextProps.disabled
 );
@@ -129,7 +130,7 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		justifyContent: 'center',
 		borderRadius: 12,
-		backgroundColor: '#ffffff',
+		backgroundColor: 'transparent',
 		overflow: 'hidden',
 	},
 	cardInner: {

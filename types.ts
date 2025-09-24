@@ -1,6 +1,6 @@
 export interface CardState {
 	isFlipped: boolean;
-	image: string;
+	card: Card | null;
 }
 
 export interface Card {
@@ -50,4 +50,8 @@ export interface GameContextType {
 	isRoundComplete: boolean;
 	betValue: string;
 	setBetValue: (value: string) => void;
+	results: (boolean | null)[];
+	gameWon: boolean;
+	gameLost: boolean;
+	hasGameStarted: boolean;
 }

@@ -46,12 +46,87 @@ const STAGES: StageConfig[] = [
 	},
 ];
 
+const CARD_VALUE_MAP: Record<string, number> = {
+	ACE: 14,
+	KING: 13,
+	QUEEN: 12,
+	JACK: 11,
+};
+
+const redSuits = new Set(['HEARTS', 'DIAMONDS']);
+
+const getCardNumericValue = (card: Card): number => {
+	const parsed = Number(card.value);
+	if (!Number.isNaN(parsed)) {
+		return parsed;
+	}
+	return CARD_VALUE_MAP[card.value] ?? 0;
+};
+
+const evaluateGuess = (
+	index: number,
+	selection: string,
+	cards: CardState[]
+): boolean | null => {
+	const currentCard = cards[index]?.card;
+	if (!currentCard) {
+		return null;
+	}
+
+	switch (index) {
+		case 0: {
+			const isRed = redSuits.has(currentCard.suit);
+			return (selection === 'red' && isRed) || (selection === 'black' && !isRed);
+		}
+		case 1: {
+			const previousCard = cards[0]?.card;
+			if (!previousCard) {
+				return null;
+			}
+			const currentValue = getCardNumericValue(currentCard);
+			const previousValue = getCardNumericValue(previousCard);
+			if (currentValue === previousValue) {
+				return false;
+			}
+			return selection === 'higher'
+				? currentValue > previousValue
+				: currentValue < previousValue;
+		}
+		case 2: {
+			const firstCard = cards[0]?.card;
+			const secondCard = cards[1]?.card;
+			if (!firstCard || !secondCard) {
+				return null;
+			}
+			const low = Math.min(
+				getCardNumericValue(firstCard),
+				getCardNumericValue(secondCard)
+			);
+			const high = Math.max(
+				getCardNumericValue(firstCard),
+				getCardNumericValue(secondCard)
+			);
+			const currentValue = getCardNumericValue(currentCard);
+			if (currentValue === low || currentValue === high) {
+				return false;
+			}
+			const isInside = currentValue > low && currentValue < high;
+			return selection === 'inside' ? isInside : !isInside;
+		}
+		case 3: {
+			return selection === currentCard.suit.toLowerCase();
+		}
+		default:
+			return null;
+	}
+};
+
 const createInitialCards = (): CardState[] =>
 	Array(config.CARDS_PER_HAND)
 		.fill(null)
 		.map(() => ({
 			isFlipped: false,
-			image: '',
+			card: null,
 		}));
 
 export const useGameLogic = () => {
@@ -64,6 +139,9 @@ export const useGameLogic = () => {
 	);
 	const [rulesVisible, setRulesVisible] = useState(false);
 	const [betValue, setBetValue] = useState('');
+	const [results, setResults] = useState<(boolean | null)[]>(() =>
+		new Array(STAGES.length).fill(null)
+	);
 
 	const drawCards = useCallback(async () => {
 		setLoading(true);
@@ -73,13 +151,14 @@ export const useGameLogic = () => {
 		setRulesVisible(false);
 		setCards(createInitialCards());
 		setBetValue('');
+		setResults(new Array(STAGES.length).fill(null));
 
 		try {
 			const newCards = await api.drawCards(config.CARDS_PER_HAND);
 			setCards(
 				newCards.map((card: Card) => ({
 					isFlipped: false,
-					image: card.image,
+					card,
 				}))
 			);
 		} catch (err) {
@@ -94,13 +173,18 @@ export const useGameLogic = () => {
 
 	const flipCard = useCallback(
 		(index: number) => {
+			if (index !== activeCardIndex) {
+				return;
+			}
+			const selection = selections[index];
+			if (!selection) {
+				return;
+			}
+
+			let flipped = false;
 			setCards((prevCards) => {
-				if (index !== activeCardIndex) {
-					return prevCards;
-				}
 				const targetCard = prevCards[index];
-				const selection = selections[index];
-				if (!targetCard || targetCard.isFlipped || !selection) {
+				if (!targetCard || targetCard.isFlipped) {
 					return prevCards;
 				}
 				const updatedCards = [...prevCards];
@@ -108,22 +192,39 @@ export const useGameLogic = () => {
 					...targetCard,
 					isFlipped: true,
 				};
+				flipped = true;
 				return updatedCards;
 			});
 
-			if (index === activeCardIndex && selections[index]) {
-				setActiveCardIndex((prev) => Math.min(prev + 1, cards.length));
-				setSelections((prev) => {
-					const nextSelections = [...prev];
-					const nextIndex = index + 1;
-					if (nextIndex < nextSelections.length) {
-						nextSelections[nextIndex] = null;
+			if (!flipped) {
+				return;
+			}
+
+			const guessResult = evaluateGuess(index, selection, cards);
+			if (guessResult !== null) {
+				setResults((prev) => {
+					if (prev[index] === guessResult) {
+						return prev;
 					}
-					return nextSelections;
+					const next = [...prev];
+					next[index] = guessResult;
+					return next;
 				});
 			}
+
+			setActiveCardIndex((prev) =>
+				Math.min(prev + 1, Math.max(cards.length - 1, 0))
+			);
+			setSelections((prev) => {
+				const nextSelections = [...prev];
+				const nextIndex = index + 1;
+				if (nextIndex < nextSelections.length) {
+					nextSelections[nextIndex] = null;
+				}
+				return nextSelections;
+			});
 		},
-		[activeCardIndex, selections, cards.length]
+		[activeCardIndex, selections, cards]
 	);
 
 	const makeSelection = useCallback(
@@ -148,12 +249,20 @@ export const useGameLogic = () => {
 		setRulesVisible(false);
 	}, []);
 
-	const updateBetValue = useCallback((value: string) => {
-		const sanitized = value.replace(/[^0-9.]/g, '');
-		const [whole, ...fractions] = sanitized.split('.');
-		const normalized = fractions.length > 0 ? `${whole}.${fractions.join('')}` : whole;
-		setBetValue(normalized);
-	}, []);
+	const updateBetValue = useCallback(
+		(value: string) => {
+			const hasStarted = cards.some((card) => card.isFlipped);
+			if (hasStarted) {
+				return;
+			}
+			const sanitized = value.replace(/[^0-9.]/g, '');
+			const [whole, ...fractions] = sanitized.split('.');
+			const normalized =
+				fractions.length > 0 ? `${whole}.${fractions.join('')}` : whole;
+			setBetValue(normalized);
+		},
+		[cards]
+	);
 
 	const currentStage = useMemo(() => {
 		return activeCardIndex < STAGES.length ? STAGES[activeCardIndex] : null;
@@ -162,6 +271,25 @@ export const useGameLogic = () => {
 	const isRoundComplete = useMemo(
 		() => cards.length > 0 && cards.every((card) => card.isFlipped),
 		[cards]
+	);
+
+	const hasGameStarted = useMemo(
+		() => cards.some((card) => card.isFlipped),
+		[cards]
+	);
+
+	const gameLost = useMemo(
+		() => results.some((result) => result === false),
+		[results]
+	);
+
+	const gameWon = useMemo(
+		() =>
+			results.length === STAGES.length &&
+			results.every((result) => result === true) &&
+			cards.length > 0 &&
+			cards.every((card) => card.isFlipped),
+		[results, cards]
 	);
 
 	return {
@@ -181,5 +309,9 @@ export const useGameLogic = () => {
 		isRoundComplete,
 		betValue,
 		setBetValue: updateBetValue,
+		results,
+		gameWon,
+		gameLost,
+		hasGameStarted,
 	};
 };
