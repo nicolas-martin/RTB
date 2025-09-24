@@ -1,0 +1,19 @@
+# Compiler files
+cache/
+out/
+
+# Environment variables
+.env
+
+# Broadcast logs
+broadcast/
+
+# Docs
+docs/
+
+# Dotenv config
+.env.local
+.env.*.local
+
+# Dependencies
+lib/

@@ -10,7 +10,7 @@ interface ContractABI {
 
 export const CONTRACT_CONFIG = {
 	RideTheBus: {
-		address: '0x0000000000000000000000000000000000000000', // Replace with deployed address on Plasma Testnet
+		address: '0x0000000000000000000000000000000000000000', // TODO: Replace with deployed address after running deploy.sh
 		abi: (ABI_JSON as ContractABI).abi,
 		bytecode: (ABI_JSON as ContractABI).bytecode,
 	},
