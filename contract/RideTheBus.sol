@@ -89,11 +89,21 @@ contract RideTheBus is Ownable, ReentrancyGuard, ERC2771Context, VRFConsumerBase
     }
 
     // House
-    function fundHouse(uint256 amount) external onlyOwner { treasuryToken.safeTransferFrom(_msgSender(), address(this), amount); houseLiquidity += amount; emit HouseFunded(amount);}    
-    function withdrawHouse(uint256 amount) external onlyOwner { require(amount <= houseLiquidity, "insufficient"); houseLiquidity -= amount; treasuryToken.safeTransfer(_msgSender(), amount); emit HouseWithdrawn(amount);}    
-    function setVRF(bytes32 _keyHash, uint16 _minConf, uint32 _cbGas) external onlyOwner { keyHash=_keyHash; minConf=_minConf; callbackGasLimit=_cbGas; }
-    function setRoundConfigs(RoundConfig[] calldata cfgs) external onlyOwner { delete roundConfigs; for (uint i; i<cfgs.length; i++) roundConfigs.push(cfgs[i]); }
-    function setMaxPayout(uint256 v) external onlyOwner { maxPayout = v; }
+    function fundHouse(uint256 amount) external onlyOwner { 
+	    treasuryToken.safeTransferFrom(_msgSender(), address(this), amount); houseLiquidity += amount; emit HouseFunded(amount);
+    }    
+    function withdrawHouse(uint256 amount) external onlyOwner {
+	    require(amount <= houseLiquidity, "insufficient"); houseLiquidity -= amount; treasuryToken.safeTransfer(_msgSender(), amount); emit HouseWithdrawn(amount);
+    }    
+    function setVRF(bytes32 _keyHash, uint16 _minConf, uint32 _cbGas) external onlyOwner {
+	    keyHash=_keyHash; minConf=_minConf; callbackGasLimit=_cbGas; 
+    }
+    function setRoundConfigs(RoundConfig[] calldata cfgs) external onlyOwner {
+	    delete roundConfigs; for (uint i; i<cfgs.length; i++) roundConfigs.push(cfgs[i]); 
+    }
+    function setMaxPayout(uint256 v) external onlyOwner {
+	    maxPayout = v; 
+    }
 
     // Start
     function startGame(uint128 wager, uint32 actionDeadlineSec) external nonReentrant returns (uint256 gameId) {
