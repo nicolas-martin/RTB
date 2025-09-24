@@ -76,7 +76,7 @@ class ContractService {
 			.startGame(wager, deadlineSeconds)
 			.send({
 				from: this.account,
-				gas: 300000,
+				gas: '300000',
 			})) as TransactionReceipt;
 
 		const gameStartedEvent = tx.events?.GameStarted;
@@ -102,7 +102,7 @@ class ContractService {
 			.playRound(gameId, choiceBytes)
 			.send({
 				from: this.account,
-				gas: 300000,
+				gas: '300000',
 			})) as TransactionReceipt;
 
 		const roundPlayedEvent = tx.events?.RoundPlayed;
@@ -118,7 +118,7 @@ class ContractService {
 
 		const tx = (await this.contract.methods.cashOut(gameId).send({
 			from: this.account,
-			gas: 300000,
+			gas: '300000',
 		})) as TransactionReceipt;
 
 		const cashedOutEvent = tx.events?.CashedOut;
@@ -134,7 +134,7 @@ class ContractService {
 	async getGame(gameId: string): Promise<Game> {
 		if (!this.contract) throw new Error('Wallet not connected');
 
-		const game = await this.contract.methods.games(gameId).call();
+		const game = await this.contract.methods.games(gameId).call() as any;
 		return {
 			player: game.player,
 			token: game.token,
@@ -155,13 +155,13 @@ class ContractService {
 
 	async getHouseLiquidity(): Promise<string> {
 		if (!this.contract) throw new Error('Wallet not connected');
-		const liquidity = await this.contract.methods.houseLiquidity().call();
+		const liquidity = await this.contract.methods.houseLiquidity().call() as string;
 		return this.web3.utils.fromWei(liquidity, 'ether');
 	}
 
 	async getMaxPayout(): Promise<string> {
 		if (!this.contract) throw new Error('Wallet not connected');
-		const maxPayout = await this.contract.methods.maxPayout().call();
+		const maxPayout = await this.contract.methods.maxPayout().call() as string;
 		return this.web3.utils.fromWei(maxPayout, 'ether');
 	}
 
@@ -219,7 +219,7 @@ class ContractService {
 			tokenContract.methods.decimals().call(),
 		]);
 
-		return this.web3.utils.fromWei(balance, 'ether');
+		return this.web3.utils.fromWei(balance as string, 'ether');
 	}
 
 	listenToGameEvents(

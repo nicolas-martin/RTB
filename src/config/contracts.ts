@@ -1,7 +1,7 @@
-// @ts-expect-error - JSON import not typed by default
-import * as ABI_JSON from '../abi.json';
-
 import { ContractAbi } from 'web3';
+
+// @ts-expect-error - JSON import not typed by default
+const ABI_JSON = require('../abi.json');
 
 interface ContractABI {
 	abi: ContractAbi;
