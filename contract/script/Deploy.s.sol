@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "forge-std/Script.sol";
-import {RideTheBus} from "../contracts/RideTheBus.sol";
+import {RideTheBus} from "../RideTheBus.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Deploy is Script {

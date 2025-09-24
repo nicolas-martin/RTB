@@ -3,8 +3,9 @@ pragma solidity ^0.8.24;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Context} from "@openzeppelin/contracts/utils/Context.sol";
 import {ERC2771Context} from "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 
 import {VRFCoordinatorV2_5Interface, VRFConsumerBaseV2_5} from "./interfaces/VRFCoordinatorV2_5.sol";
@@ -66,7 +67,7 @@ contract RideTheBus is Ownable, ReentrancyGuard, ERC2771Context, VRFConsumerBase
         bytes32 _keyHash,
         uint256 _subId,
         uint256 _maxPayout
-    ) ERC2771Context(trustedForwarder) {
+    ) Ownable(msg.sender) ERC2771Context(trustedForwarder) {
         treasuryToken = _treasuryToken;
         COORD = VRFCoordinatorV2_5Interface(vrfCoordinator);
         keyHash = _keyHash;
@@ -86,6 +87,9 @@ contract RideTheBus is Ownable, ReentrancyGuard, ERC2771Context, VRFConsumerBase
     }
     function _msgData() internal view override(Context, ERC2771Context) returns (bytes calldata) {
         return ERC2771Context._msgData();
+    }
+    function _contextSuffixLength() internal view override(Context, ERC2771Context) returns (uint256) {
+        return ERC2771Context._contextSuffixLength();
     }
 
     // House

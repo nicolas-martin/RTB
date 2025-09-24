@@ -19,10 +19,12 @@
 	},
 	"dependencies": {
 		"axios": "^0.21.1",
+		"ethers": "^6.13.4",
 		"react": "18.2.0",
 		"react-dom": "18.2.0",
 		"react-native": "0.62.2",
-		"react-native-web": "^0.21.1"
+		"react-native-web": "^0.21.1",
+		"viem": "^2.37.8"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.10.0",

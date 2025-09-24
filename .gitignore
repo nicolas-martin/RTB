@@ -58,3 +58,18 @@ buck-out/
 
 # CocoaPods
 /ios/Pods/
+
+# Foundry/Smart Contract
+contract/cache/
+contract/out/
+contract/broadcast/
+contract/.env
+contract/.env.*
+!contract/.env.example
+
+# Foundry coverage
+contract/lcov.info
+contract/coverage/
+
+# Test artifacts
+contract/test/RideTheBus.t.sol.bak
