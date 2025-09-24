@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { CardState, Card, StageConfig } from '../types';
-import { api } from '../services/api';
-import { config } from '../config';
+import { api } from '../src/services/api';
+import { config } from '../src/config';
 
 const STAGES: StageConfig[] = [
 	{

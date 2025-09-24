@@ -9,7 +9,7 @@ import {
 	ViewStyle,
 } from 'react-native';
 import { CardState } from '../types';
-import { config } from '../config';
+import { config } from '../src/config';
 
 interface PlayingCardProps {
 	cardState: CardState;
