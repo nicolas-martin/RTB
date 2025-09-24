@@ -102,10 +102,7 @@ const App: React.FC = () => {
 					<View style={styles.betContainer}>
 						<Text style={styles.betLabel}>Bet amount</Text>
 						<TextInput
-							style={[
-								styles.betInput,
-								!betEditable && styles.betInputDisabled,
-							]}
+							style={[styles.betInput, !betEditable && styles.betInputDisabled]}
 							value={betValue}
 							onChangeText={setBetValue}
 							keyboardType="numeric"

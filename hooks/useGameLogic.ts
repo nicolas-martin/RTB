@@ -7,7 +7,6 @@ const STAGES: StageConfig[] = [
 	{
 		id: 'color',
 		title: 'Round 1 – Pick the color',
-		description: 'Choose whether the next card will be red or black.',
 		options: [
 			{ value: 'red', label: 'Red' },
 			{ value: 'black', label: 'Black' },
@@ -16,8 +15,6 @@ const STAGES: StageConfig[] = [
 	{
 		id: 'number',
 		title: 'Round 2 – Higher or lower?',
-		description:
-			'Decide if the next card will be higher or lower than the previous card.',
 		options: [
 			{ value: 'higher', label: 'Higher' },
 			{ value: 'lower', label: 'Lower' },
@@ -26,8 +23,6 @@ const STAGES: StageConfig[] = [
 	{
 		id: 'range',
 		title: 'Round 3 – Inside or outside?',
-		description:
-			'Will the next card land inside or outside the range set by the first two cards?',
 		options: [
 			{ value: 'inside', label: 'Inside' },
 			{ value: 'outside', label: 'Outside' },
@@ -36,7 +31,6 @@ const STAGES: StageConfig[] = [
 	{
 		id: 'suit',
 		title: 'Round 4 – Pick the suit',
-		description: 'Choose the suit you think the final card will be.',
 		options: [
 			{ value: 'hearts', label: 'Hearts' },
 			{ value: 'diamonds', label: 'Diamonds' },
@@ -76,7 +70,9 @@ const evaluateGuess = (
 	switch (index) {
 		case 0: {
 			const isRed = redSuits.has(currentCard.suit);
-			return (selection === 'red' && isRed) || (selection === 'black' && !isRed);
+			return (
+				(selection === 'red' && isRed) || (selection === 'black' && !isRed)
+			);
 		}
 		case 1: {
 			const previousCard = cards[0]?.card;

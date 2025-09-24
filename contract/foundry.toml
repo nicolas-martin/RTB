@@ -5,10 +5,10 @@ libs = ["lib"]
 optimizer = true
 optimizer_runs = 200
 via_ir = true
-# Skip all Chainlink contracts since we only need local VRF interface
-skip = ["lib/chainlink-brownie-contracts/**", "lib/openzeppelin-contracts/certora/**", "lib/openzeppelin-contracts/test/**"]
-
-remappings = [
-	"@openzeppelin/=lib/openzeppelin-contracts/",
-	"chainlink/=lib/chainlink-brownie-contracts/",
+# Skip OpenZeppelin test files
+skip = [
+	"lib/openzeppelin-contracts/certora/**",
+	"lib/openzeppelin-contracts/test/**",
 ]
+
+remappings = ["@openzeppelin/=lib/openzeppelin-contracts/"]

@@ -20,6 +20,7 @@ module.exports = [
 			'babel.config.js',
 			'metro.config.js',
 			'__tests__/**',
+			'contract/**',
 		],
 	},
 	{

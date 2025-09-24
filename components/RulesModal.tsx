@@ -18,8 +18,7 @@ interface RulesModalProps {
 const RULE_SECTIONS = [
 	{
 		title: 'Setup',
-		body:
-			'Draw four cards face down. You will reveal each card in order by making a choice before you flip it.',
+		body: 'Draw four cards face down. You will reveal each card in order by making a choice before you flip it.',
 	},
 	{
 		title: 'Round 1 – Pick the color',
@@ -31,8 +30,7 @@ const RULE_SECTIONS = [
 	},
 	{
 		title: 'Round 3 – Inside or outside?',
-		body:
-			'Choose whether the third card will land inside or outside the values of the first two cards.',
+		body: 'Choose whether the third card will land inside or outside the values of the first two cards.',
 	},
 	{
 		title: 'Round 4 – Pick the suit',
@@ -40,8 +38,7 @@ const RULE_SECTIONS = [
 	},
 	{
 		title: 'Missed a guess?',
-		body:
-			'If you guess incorrectly, take a drink! Draw a new set of cards to play again and try to ride the bus without mistakes.',
+		body: 'If you guess incorrectly, take a drink! Draw a new set of cards to play again and try to ride the bus without mistakes.',
 	},
 ];
 

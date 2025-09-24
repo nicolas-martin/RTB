@@ -1,63 +1,87 @@
-import { ethers } from 'ethers';
+import Web3, { Contract, ContractAbi } from 'web3';
 import { CONTRACT_CONFIG, PLASMA_TESTNET } from '../config/contracts';
-import type { Game, RoundType, CardSuit, RoundChoice } from '../types/contract';
+import type { Game, RoundType, CardSuit } from '../types/contract';
+
+interface GameEvent {
+	returnValues: {
+		gameId?: string;
+		seed?: string;
+		roundIndex?: number;
+		card?: number;
+		win?: boolean;
+		newPayout?: string;
+		amount?: string;
+		player?: string;
+	};
+}
+
+interface TransactionReceipt {
+	events?: {
+		GameStarted?: GameEvent;
+		RoundPlayed?: GameEvent;
+		CashedOut?: GameEvent;
+		[key: string]: GameEvent | undefined;
+	};
+}
 
 class ContractService {
-	private provider: ethers.JsonRpcProvider;
-	private contract: ethers.Contract | null = null;
-	private signer: ethers.Signer | null = null;
+	private web3: Web3;
+	private contract: Contract<ContractAbi> | null = null;
+	private account: string | null = null;
 
 	constructor() {
-		this.provider = new ethers.JsonRpcProvider(PLASMA_TESTNET.rpcUrl);
+		this.web3 = new Web3(PLASMA_TESTNET.rpcUrl);
 	}
 
 	async connectWallet(privateKey: string) {
-		this.signer = new ethers.Wallet(privateKey, this.provider);
-		this.contract = new ethers.Contract(
-			CONTRACT_CONFIG.RideTheBus.address,
-			CONTRACT_CONFIG.RideTheBus.abi,
-			this.signer
+		const account = this.web3.eth.accounts.privateKeyToAccount(privateKey);
+		this.web3.eth.accounts.wallet.add(account);
+		this.account = account.address;
+		this.contract = new this.web3.eth.Contract(
+			CONTRACT_CONFIG.RideTheBus.abi as ContractAbi,
+			CONTRACT_CONFIG.RideTheBus.address
 		);
-		return await this.signer.getAddress();
+
+		return this.account;
 	}
 
-	async connectWithProvider(provider: ethers.BrowserProvider) {
-		this.signer = await provider.getSigner();
-		this.contract = new ethers.Contract(
-			CONTRACT_CONFIG.RideTheBus.address,
-			CONTRACT_CONFIG.RideTheBus.abi,
-			this.signer
+	async connectWithProvider() {
+		if (!window.ethereum) throw new Error('MetaMask not installed');
+
+		this.web3 = new Web3(window.ethereum);
+		const accounts = await this.web3.eth.requestAccounts();
+		this.account = accounts[0];
+		this.contract = new this.web3.eth.Contract(
+			CONTRACT_CONFIG.RideTheBus.abi as ContractAbi,
+			CONTRACT_CONFIG.RideTheBus.address
 		);
-		return await this.signer.getAddress();
+
+		return this.account;
 	}
 
 	async getBalance(address: string): Promise<string> {
-		const balance = await this.provider.getBalance(address);
-		return ethers.formatEther(balance);
+		const balance = await this.web3.eth.getBalance(address);
+		return this.web3.utils.fromWei(balance, 'ether');
 	}
 
 	async startGame(
 		wagerAmount: string,
 		deadlineSeconds: number = 300
 	): Promise<string> {
-		if (!this.contract || !this.signer) throw new Error('Wallet not connected');
+		if (!this.contract || !this.account)
+			throw new Error('Wallet not connected');
 
-		const wager = ethers.parseEther(wagerAmount);
-		const tx = await this.contract.startGame(wager, deadlineSeconds);
-		const receipt = await tx.wait();
+		const wager = this.web3.utils.toWei(wagerAmount, 'ether');
+		const tx = (await this.contract.methods
+			.startGame(wager, deadlineSeconds)
+			.send({
+				from: this.account,
+				gas: 300000,
+			})) as TransactionReceipt;
 
-		const event = receipt.logs.find((log: any) => {
-			try {
-				const parsed = this.contract!.interface.parseLog(log);
-				return parsed?.name === 'GameStarted';
-			} catch {
-				return false;
-			}
-		});
-
-		if (event) {
-			const parsed = this.contract.interface.parseLog(event);
-			return parsed?.args.gameId.toString();
+		const gameStartedEvent = tx.events?.GameStarted;
+		if (gameStartedEvent) {
+			return gameStartedEvent.returnValues.gameId.toString();
 		}
 		throw new Error('Failed to get game ID');
 	}
@@ -67,46 +91,42 @@ class ContractService {
 		roundType: RoundType,
 		choice: number | CardSuit
 	): Promise<boolean> {
-		if (!this.contract) throw new Error('Wallet not connected');
+		if (!this.contract || !this.account)
+			throw new Error('Wallet not connected');
 
-		const choiceBytes = ethers.zeroPadValue(ethers.toBeHex(choice), 1);
-		const tx = await this.contract.playRound(gameId, choiceBytes);
-		const receipt = await tx.wait();
+		const choiceBytes = this.web3.utils.padLeft(
+			this.web3.utils.toHex(choice),
+			2
+		);
+		const tx = (await this.contract.methods
+			.playRound(gameId, choiceBytes)
+			.send({
+				from: this.account,
+				gas: 300000,
+			})) as TransactionReceipt;
 
-		const event = receipt.logs.find((log: any) => {
-			try {
-				const parsed = this.contract!.interface.parseLog(log);
-				return parsed?.name === 'RoundPlayed';
-			} catch {
-				return false;
-			}
-		});
-
-		if (event) {
-			const parsed = this.contract.interface.parseLog(event);
-			return parsed?.args.win;
+		const roundPlayedEvent = tx.events?.RoundPlayed;
+		if (roundPlayedEvent) {
+			return roundPlayedEvent.returnValues.win;
 		}
 		return false;
 	}
 
 	async cashOut(gameId: string): Promise<string> {
-		if (!this.contract) throw new Error('Wallet not connected');
+		if (!this.contract || !this.account)
+			throw new Error('Wallet not connected');
 
-		const tx = await this.contract.cashOut(gameId);
-		const receipt = await tx.wait();
+		const tx = (await this.contract.methods.cashOut(gameId).send({
+			from: this.account,
+			gas: 300000,
+		})) as TransactionReceipt;
 
-		const event = receipt.logs.find((log: any) => {
-			try {
-				const parsed = this.contract!.interface.parseLog(log);
-				return parsed?.name === 'CashedOut';
-			} catch {
-				return false;
-			}
-		});
-
-		if (event) {
-			const parsed = this.contract.interface.parseLog(event);
-			return ethers.formatEther(parsed?.args.amount);
+		const cashedOutEvent = tx.events?.CashedOut;
+		if (cashedOutEvent) {
+			return this.web3.utils.fromWei(
+				cashedOutEvent.returnValues.amount,
+				'ether'
+			);
 		}
 		throw new Error('Failed to cash out');
 	}
@@ -114,7 +134,7 @@ class ContractService {
 	async getGame(gameId: string): Promise<Game> {
 		if (!this.contract) throw new Error('Wallet not connected');
 
-		const game = await this.contract.games(gameId);
+		const game = await this.contract.methods.games(gameId).call();
 		return {
 			player: game.player,
 			token: game.token,
@@ -135,38 +155,43 @@ class ContractService {
 
 	async getHouseLiquidity(): Promise<string> {
 		if (!this.contract) throw new Error('Wallet not connected');
-		const liquidity = await this.contract.houseLiquidity();
-		return ethers.formatEther(liquidity);
+		const liquidity = await this.contract.methods.houseLiquidity().call();
+		return this.web3.utils.fromWei(liquidity, 'ether');
 	}
 
 	async getMaxPayout(): Promise<string> {
 		if (!this.contract) throw new Error('Wallet not connected');
-		const maxPayout = await this.contract.maxPayout();
-		return ethers.formatEther(maxPayout);
+		const maxPayout = await this.contract.methods.maxPayout().call();
+		return this.web3.utils.fromWei(maxPayout, 'ether');
 	}
 
 	async getTreasuryToken(): Promise<string> {
 		if (!this.contract) throw new Error('Wallet not connected');
-		return await this.contract.treasuryToken();
+		return await this.contract.methods.treasuryToken().call();
 	}
 
 	async approveToken(tokenAddress: string, amount: string): Promise<void> {
-		if (!this.signer) throw new Error('Wallet not connected');
+		if (!this.account) throw new Error('Wallet not connected');
 
 		const tokenAbi = [
-			'function approve(address spender, uint256 amount) returns (bool)',
+			{
+				name: 'approve',
+				type: 'function',
+				inputs: [
+					{ name: 'spender', type: 'address' },
+					{ name: 'amount', type: 'uint256' },
+				],
+				outputs: [{ name: '', type: 'bool' }],
+			},
 		];
 
-		const tokenContract = new ethers.Contract(
-			tokenAddress,
-			tokenAbi,
-			this.signer
-		);
-		const tx = await tokenContract.approve(
-			CONTRACT_CONFIG.RideTheBus.address,
-			ethers.parseEther(amount)
-		);
-		await tx.wait();
+		const tokenContract = new this.web3.eth.Contract(tokenAbi, tokenAddress);
+		await tokenContract.methods
+			.approve(
+				CONTRACT_CONFIG.RideTheBus.address,
+				this.web3.utils.toWei(amount, 'ether')
+			)
+			.send({ from: this.account });
 	}
 
 	async getTokenBalance(
@@ -174,21 +199,27 @@ class ContractService {
 		userAddress: string
 	): Promise<string> {
 		const tokenAbi = [
-			'function balanceOf(address account) view returns (uint256)',
-			'function decimals() view returns (uint8)',
+			{
+				name: 'balanceOf',
+				type: 'function',
+				inputs: [{ name: 'account', type: 'address' }],
+				outputs: [{ name: '', type: 'uint256' }],
+			},
+			{
+				name: 'decimals',
+				type: 'function',
+				inputs: [],
+				outputs: [{ name: '', type: 'uint8' }],
+			},
 		];
 
-		const tokenContract = new ethers.Contract(
-			tokenAddress,
-			tokenAbi,
-			this.provider
-		);
-		const [balance, decimals] = await Promise.all([
-			tokenContract.balanceOf(userAddress),
-			tokenContract.decimals(),
+		const tokenContract = new this.web3.eth.Contract(tokenAbi, tokenAddress);
+		const [balance, _decimals] = await Promise.all([
+			tokenContract.methods.balanceOf(userAddress).call(),
+			tokenContract.methods.decimals().call(),
 		]);
 
-		return ethers.formatUnits(balance, decimals);
+		return this.web3.utils.fromWei(balance, 'ether');
 	}
 
 	listenToGameEvents(
@@ -207,64 +238,71 @@ class ContractService {
 	) {
 		if (!this.contract) throw new Error('Wallet not connected');
 
-		const gameIdBn = ethers.toBigInt(gameId);
+		const options = {
+			filter: { gameId },
+			fromBlock: 'latest',
+		};
 
 		if (callbacks.onSeedFulfilled) {
-			this.contract.on(
-				this.contract.filters.SeedFulfilled(gameIdBn),
-				(gameId, seed) => callbacks.onSeedFulfilled!(seed)
-			);
+			this.contract.events
+				.SeedFulfilled(options)
+				.on('data', (event: GameEvent) => {
+					callbacks.onSeedFulfilled!(event.returnValues.seed!);
+				});
 		}
 
 		if (callbacks.onRoundPlayed) {
-			this.contract.on(
-				this.contract.filters.RoundPlayed(gameIdBn),
-				(gameId, roundIndex, card, extra, win, newPayout) =>
+			this.contract.events
+				.RoundPlayed(options)
+				.on('data', (event: GameEvent) => {
+					const { roundIndex, card, win, newPayout } = event.returnValues;
 					callbacks.onRoundPlayed!(
-						roundIndex,
-						card,
-						win,
-						ethers.formatEther(newPayout)
-					)
-			);
+						roundIndex!,
+						card!,
+						win!,
+						this.web3.utils.fromWei(newPayout!, 'ether')
+					);
+				});
 		}
 
 		if (callbacks.onCashedOut) {
-			this.contract.on(
-				this.contract.filters.CashedOut(gameIdBn),
-				(gameId, player, amount) =>
-					callbacks.onCashedOut!(ethers.formatEther(amount))
-			);
+			this.contract.events.CashedOut(options).on('data', (event: GameEvent) => {
+				callbacks.onCashedOut!(
+					this.web3.utils.fromWei(event.returnValues.amount!, 'ether')
+				);
+			});
 		}
 
 		if (callbacks.onBusted) {
-			this.contract.on(this.contract.filters.Busted(gameIdBn), () =>
-				callbacks.onBusted!()
-			);
+			this.contract.events.Busted(options).on('data', () => {
+				callbacks.onBusted!();
+			});
 		}
 	}
 
 	removeAllListeners() {
 		if (this.contract) {
-			this.contract.removeAllListeners();
+			this.contract.events.allEvents().unsubscribe();
 		}
 	}
 
 	async switchToPlasmaTestnet() {
 		if (!window.ethereum) throw new Error('MetaMask not installed');
 
+		const chainIdHex = '0x' + PLASMA_TESTNET.chainId.toString(16);
+
 		try {
 			await window.ethereum.request({
 				method: 'wallet_switchEthereumChain',
-				params: [{ chainId: ethers.toQuantity(PLASMA_TESTNET.chainId) }],
+				params: [{ chainId: chainIdHex }],
 			});
-		} catch (error: any) {
+		} catch (error) {
 			if (error.code === 4902) {
 				await window.ethereum.request({
 					method: 'wallet_addEthereumChain',
 					params: [
 						{
-							chainId: ethers.toQuantity(PLASMA_TESTNET.chainId),
+							chainId: chainIdHex,
 							chainName: PLASMA_TESTNET.chainName,
 							nativeCurrency: PLASMA_TESTNET.nativeCurrency,
 							rpcUrls: [PLASMA_TESTNET.rpcUrl],
@@ -277,7 +315,45 @@ class ContractService {
 			}
 		}
 	}
+
+	async estimateGas(method: string, params: unknown[]): Promise<bigint> {
+		if (!this.contract || !this.account)
+			throw new Error('Wallet not connected');
+
+		const gas = await this.contract.methods[method](...params).estimateGas({
+			from: this.account,
+		});
+
+		return BigInt(gas);
+	}
+
+	async getBlockNumber(): Promise<bigint> {
+		return await this.web3.eth.getBlockNumber();
+	}
+
+	async getGasPrice(): Promise<string> {
+		const gasPrice = await this.web3.eth.getGasPrice();
+		return this.web3.utils.fromWei(gasPrice, 'gwei');
+	}
+
+	async getTransactionReceipt(txHash: string) {
+		return await this.web3.eth.getTransactionReceipt(txHash);
+	}
+
+	async getTransaction(txHash: string) {
+		return await this.web3.eth.getTransaction(txHash);
+	}
+
+	async sendTransaction(to: string, value: string, data?: string) {
+		if (!this.account) throw new Error('Wallet not connected');
+
+		return await this.web3.eth.sendTransaction({
+			from: this.account,
+			to,
+			value: this.web3.utils.toWei(value, 'ether'),
+			data,
+		});
+	}
 }
 
 export const contractService = new ContractService();
-

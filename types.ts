@@ -27,7 +27,6 @@ export interface StageOption {
 export interface StageConfig {
 	id: string;
 	title: string;
-	description: string;
 	options: StageOption[];
 }
 
