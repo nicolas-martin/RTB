@@ -1,7 +1,5 @@
 import { ContractAbi } from 'web3';
-
-// @ts-expect-error - JSON import not typed by default
-const ABI_JSON = require('../abi.json');
+import abiJson from '../abi.json' with { type: 'json' };
 
 interface ContractABI {
 	abi: ContractAbi;
@@ -11,8 +9,8 @@ interface ContractABI {
 export const CONTRACT_CONFIG = {
 	RideTheBus: {
 		address: '0x6Db8D133FE92F74F0F7CB45704394331E9593D89',
-		abi: (ABI_JSON as ContractABI).abi,
-		bytecode: (ABI_JSON as ContractABI).bytecode,
+		abi: (abiJson as ContractABI).abi,
+		bytecode: (abiJson as ContractABI).bytecode,
 	},
 };
 

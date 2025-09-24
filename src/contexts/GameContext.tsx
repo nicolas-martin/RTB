@@ -1,6 +1,6 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { useGameLogic } from '../hooks/useGameLogic';
-import { GameContextType } from '../types';
+import { useGameLogic } from '../../hooks/useGameLogic';
+import { GameContextType } from '../../types';
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 

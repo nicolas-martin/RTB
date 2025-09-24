@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import { Card, DeckAPIResponse } from '../types';
+import { Card, DeckAPIResponse } from '../../types';
 import { config } from '../config';
 
 class DeckAPI {

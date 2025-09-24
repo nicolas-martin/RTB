@@ -218,12 +218,12 @@ class ContractService {
 		];
 
 		const tokenContract = new this.web3.eth.Contract(tokenAbi, tokenAddress);
-		const [balance, _decimals] = await Promise.all([
-			tokenContract.methods.balanceOf(userAddress).call(),
-			tokenContract.methods.decimals().call(),
-		]);
+		const balanceRaw = (await tokenContract.methods
+			.balanceOf(userAddress)
+			.call()) as string;
+		await tokenContract.methods.decimals().call();
 
-		return this.web3.utils.fromWei(balance as string, 'ether');
+		return this.web3.utils.fromWei(balanceRaw, 'ether');
 	}
 
 	listenToGameEvents(

@@ -3,7 +3,7 @@ import { contractService } from '../src/services/contractService';
 import { useMetaMask } from '../src/contexts/MetaMaskContext';
 import { RoundType, CardSuit } from '../src/types/contract';
 import { CardState, Card, StageConfig } from '../types';
-import { config } from '../config';
+import { config } from '../src/config';
 
 const STAGES: StageConfig[] = [
 	{
@@ -48,7 +48,21 @@ const convertCardFromContract = (cardValue: number): Card => {
 	const rank = cardValue % 13;
 
 	const suitMap = ['HEARTS', 'DIAMONDS', 'CLUBS', 'SPADES'];
-	const valueMap = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'JACK', 'QUEEN', 'KING', 'ACE'];
+	const valueMap = [
+		'2',
+		'3',
+		'4',
+		'5',
+		'6',
+		'7',
+		'8',
+		'9',
+		'10',
+		'JACK',
+		'QUEEN',
+		'KING',
+		'ACE',
+	];
 
 	return {
 		suit: suitMap[suit],
