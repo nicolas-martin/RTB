@@ -4,7 +4,7 @@
 CONTRACT_ADDRESS="0xD0213A1413821344a9A440D560a98b032647a1eE"
 
 # Amount to fund (in XPL)
-FUND_AMOUNT="0.2ether"
+FUND_AMOUNT="0.4ether"
 
 # RPC URL
 RPC_URL="https://testnet-rpc.plasma.to"

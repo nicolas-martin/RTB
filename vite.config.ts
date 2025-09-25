@@ -3,6 +3,7 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig({
+	base: '/rtb/',
 	define: {
 		__DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
 		global: 'window',
