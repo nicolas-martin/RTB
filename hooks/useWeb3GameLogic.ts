@@ -146,6 +146,19 @@ export const useWeb3GameLogic = () => {
 		setCurrentPayout(betValue);
 
 		try {
+			// Debug: Check house liquidity and max payout before starting
+			const houseLiquidity = await contractService.getHouseLiquidity();
+			const maxPayout = await contractService.getMaxPayout();
+			console.log('House liquidity:', houseLiquidity, 'XPL');
+			console.log('Max payout:', maxPayout, 'XPL');
+			console.log('Attempting to wager:', betValue, 'XPL');
+
+			if (parseFloat(houseLiquidity) === 0) {
+				setError('House has no liquidity. The contract needs to be funded with XPL first.');
+				setLoading(false);
+				return;
+			}
+
 			const newGameId = await contractService.startGame(betValue);
 			setGameId(newGameId);
 

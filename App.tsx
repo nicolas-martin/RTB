@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
 	StyleSheet,
 	View,
@@ -9,6 +9,7 @@ import {
 	Pressable,
 	TextInput,
 } from 'react-native';
+import { contractService } from './src/services/contractService';
 
 import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
@@ -43,6 +44,8 @@ const AppContent: React.FC = () => {
 		isPlayingRound,
 		gameId,
 	} = useWeb3GameLogic();
+	const [houseLiquidity, setHouseLiquidity] = useState<string>('0');
+	const [maxPayout, setMaxPayout] = useState<string>('0');
 
 	const windowWidth = Dimensions.get('window').width;
 	const currentSelection = useMemo(
@@ -51,6 +54,26 @@ const AppContent: React.FC = () => {
 		[activeCardIndex, selections]
 	);
 	const betEditable = !hasGameStarted && !loading && isConnected;
+
+	// Fetch house liquidity and max payout when connected
+	useEffect(() => {
+		const fetchContractInfo = async () => {
+			if (isConnected) {
+				try {
+					const liquidity = await contractService.getHouseLiquidity();
+					const maxPay = await contractService.getMaxPayout();
+					setHouseLiquidity(liquidity);
+					setMaxPayout(maxPay);
+				} catch (err) {
+					console.error('Error fetching contract info:', err);
+				}
+			}
+		};
+		fetchContractInfo();
+		// Refresh every 10 seconds
+		const interval = setInterval(fetchContractInfo, 10000);
+		return () => clearInterval(interval);
+	}, [isConnected]);
 
 	const getStatusMessage = () => {
 		if (!isConnected) {
@@ -99,6 +122,21 @@ const AppContent: React.FC = () => {
 
 			<Header />
 
+			{/* Contract Info */}
+			{isConnected && (
+				<View style={styles.contractInfo}>
+					<Text style={styles.contractInfoText}>
+						House Liquidity: {houseLiquidity} XPL
+					</Text>
+					<Text style={styles.contractInfoText}>Max Payout: {maxPayout} XPL</Text>
+					{parseFloat(houseLiquidity) === 0 && (
+						<Text style={styles.warningText}>
+							⚠️ Contract needs funding with XPL to play
+						</Text>
+					)}
+				</View>
+			)}
+
 			{/* Bet Input */}
 			<View style={styles.betContainer}>
 				<Text style={styles.betLabel}>Bet Amount (XPL):</Text>
@@ -142,7 +180,7 @@ const AppContent: React.FC = () => {
 									<PlayingCard
 										cardState={card}
 										onCardPressed={() => flipCard(index)}
-										width={80}
+										width={120}
 										disabled={index !== activeCardIndex || isPlayingRound}
 									/>
 								</View>
@@ -234,6 +272,8 @@ const styles = StyleSheet.create({
 		top: 10,
 		right: 10,
 		zIndex: 1000,
+		minWidth: 150,
+		minHeight: 45,
 	},
 	connectButton: {
 		backgroundColor: '#f39c12',
@@ -275,8 +315,9 @@ const styles = StyleSheet.create({
 	betContainer: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		marginTop: 20,
+		marginTop: 70,
 		marginBottom: 10,
+		minHeight: 40,
 	},
 	betLabel: {
 		color: '#fff',
@@ -297,6 +338,7 @@ const styles = StyleSheet.create({
 	},
 	statusContainer: {
 		marginBottom: 20,
+		minHeight: 30,
 	},
 	statusText: {
 		color: '#fff',
@@ -330,9 +372,10 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
+		minHeight: 300,
 	},
 	cardsContainer: {
-		height: 200,
+		height: 280,
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
@@ -342,7 +385,7 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 	},
 	cardWrapper: {
-		marginHorizontal: 10,
+		marginHorizontal: 15,
 	},
 	loadingContainer: {
 		justifyContent: 'center',
@@ -355,6 +398,7 @@ const styles = StyleSheet.create({
 	stageContainer: {
 		marginBottom: 20,
 		alignItems: 'center',
+		minHeight: 80,
 	},
 	stageTitle: {
 		color: '#fff',
@@ -391,6 +435,7 @@ const styles = StyleSheet.create({
 	gameActions: {
 		marginTop: 20,
 		alignItems: 'center',
+		minHeight: 60,
 	},
 	actionButton: {
 		paddingHorizontal: 30,
@@ -411,6 +456,25 @@ const styles = StyleSheet.create({
 		color: '#fff',
 		fontSize: 16,
 		fontWeight: 'bold',
+	},
+	contractInfo: {
+		backgroundColor: '#2c2c54',
+		padding: 10,
+		borderRadius: 5,
+		marginTop: 10,
+		marginBottom: 10,
+		alignItems: 'center',
+	},
+	contractInfoText: {
+		color: '#fff',
+		fontSize: 12,
+		marginBottom: 3,
+	},
+	warningText: {
+		color: '#f39c12',
+		fontSize: 12,
+		fontWeight: 'bold',
+		marginTop: 5,
 	},
 });
 

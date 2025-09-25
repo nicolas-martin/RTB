@@ -21,6 +21,7 @@ const styles = StyleSheet.create({
 		paddingBottom: 10,
 		paddingHorizontal: 15,
 		alignItems: 'center',
+		minHeight: 70,
 	},
 	title: {
 		color: 'white',
