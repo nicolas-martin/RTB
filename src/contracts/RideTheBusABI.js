@@ -8,17 +8,16 @@ const ABI = [
         "internalType": "address"
       },
       {
-        "name": "_treasuryToken",
-        "type": "address",
-        "internalType": "contract IERC20"
-      },
-      {
         "name": "_maxPayout",
         "type": "uint256",
         "internalType": "uint256"
       }
     ],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "receive",
+    "stateMutability": "payable"
   },
   {
     "type": "function",
@@ -36,15 +35,9 @@ const ABI = [
   {
     "type": "function",
     "name": "fundHouse",
-    "inputs": [
-      {
-        "name": "amount",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
+    "inputs": [],
     "outputs": [],
-    "stateMutability": "nonpayable"
+    "stateMutability": "payable"
   },
   {
     "type": "function",
@@ -59,11 +52,6 @@ const ABI = [
     "outputs": [
       {
         "name": "player",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "token",
         "type": "address",
         "internalType": "address"
       },
@@ -297,7 +285,7 @@ const ABI = [
         "internalType": "uint256"
       }
     ],
-    "stateMutability": "nonpayable"
+    "stateMutability": "payable"
   },
   {
     "type": "function",
@@ -311,19 +299,6 @@ const ABI = [
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "treasuryToken",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "contract IERC20"
-      }
-    ],
-    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -528,17 +503,6 @@ const ABI = [
     "type": "error",
     "name": "ReentrancyGuardReentrantCall",
     "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "SafeERC20FailedOperation",
-    "inputs": [
-      {
-        "name": "token",
-        "type": "address",
-        "internalType": "address"
-      }
-    ]
   }
 ];
 

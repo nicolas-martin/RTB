@@ -72,26 +72,15 @@ class ContractService {
 			throw new Error('Wallet not connected');
 
 		try {
-			// Get treasury token address
-			const treasuryToken = await this.getTreasuryToken();
-
-			// Check if treasury token is properly configured
-			if (treasuryToken === '0x0000000000000000000000000000000000000000') {
-				throw new Error('Contract not properly configured: Missing treasury token. The contract needs to be redeployed with a valid ERC20 token address.');
-			}
-
 			const wager = this.web3.utils.toWei(wagerAmount, 'ether');
 
-			// Approve the ERC20 token
-			const approvalAmount = (parseFloat(wagerAmount) * 1.1).toString();
-			await this.approveToken(treasuryToken, approvalAmount);
-
-			// Send transaction
+			// Send transaction with native XPL as value
 			const tx = (await this.contract.methods
 				.startGame(wager, deadlineSeconds)
 				.send({
 					from: this.account,
 					gas: '300000',
+					value: wager, // Send native XPL with the transaction
 				})) as TransactionReceipt;
 
 			const gameStartedEvent = tx.events?.GameStarted;
@@ -102,10 +91,10 @@ class ContractService {
 		} catch (error: any) {
 			// Parse and throw a more user-friendly error
 			if (error.message?.includes('insufficient')) {
-				throw new Error('Insufficient balance or house liquidity');
+				throw new Error('Insufficient XPL balance or house liquidity');
 			}
-			if (error.message?.includes('treasury token')) {
-				throw error; // Pass through our custom error
+			if (error.message?.includes('cap')) {
+				throw new Error('Wager exceeds maximum payout or house liquidity');
 			}
 			throw error;
 		}
@@ -194,34 +183,7 @@ class ContractService {
 		return this.web3.utils.fromWei(maxPayout, 'ether');
 	}
 
-	async getTreasuryToken(): Promise<string> {
-		if (!this.contract) throw new Error('Wallet not connected');
-		return await this.contract.methods.treasuryToken().call();
-	}
-
-	async approveToken(tokenAddress: string, amount: string): Promise<void> {
-		if (!this.account) throw new Error('Wallet not connected');
-
-		const tokenAbi = [
-			{
-				name: 'approve',
-				type: 'function',
-				inputs: [
-					{ name: 'spender', type: 'address' },
-					{ name: 'amount', type: 'uint256' },
-				],
-				outputs: [{ name: '', type: 'bool' }],
-			},
-		];
-
-		const tokenContract = new this.web3.eth.Contract(tokenAbi, tokenAddress);
-		await tokenContract.methods
-			.approve(
-				CONTRACT_CONFIG.RideTheBus.address,
-				this.web3.utils.toWei(amount, 'ether')
-			)
-			.send({ from: this.account });
-	}
+	// Native token support - no treasury token or approval needed
 
 	async getTokenBalance(
 		tokenAddress: string,

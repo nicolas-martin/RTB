@@ -3,7 +3,7 @@ import ABI from '../contracts/RideTheBusABI';
 
 export const CONTRACT_CONFIG = {
 	RideTheBus: {
-		address: '0x6Db8D133FE92F74F0F7CB45704394331E9593D89',
+		address: '0xD0213A1413821344a9A440D560a98b032647a1eE', // Native XPL version
 		abi: ABI as ContractAbi,
 	},
 };
