@@ -346,8 +346,8 @@ export const useWeb3GameLogic = () => {
 	);
 
 	const hasGameStarted = useMemo(
-		() => gameId !== null || cards.some((card) => card.isFlipped),
-		[gameId, cards]
+		() => gameId !== null,
+		[gameId]
 	);
 
 	const gameLost = useMemo(

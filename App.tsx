@@ -98,44 +98,52 @@ const AppContent: React.FC = () => {
 		<View style={styles.container}>
 			<StatusBar backgroundColor="#1a1a2e" barStyle="light-content" />
 
-			{/* MetaMask Connection Status */}
-			<View style={styles.walletContainer}>
-				{!isConnected ? (
-					<Pressable style={styles.connectButton} onPress={connectWallet}>
-						<Text style={styles.connectButtonText}>Connect MetaMask</Text>
-					</Pressable>
-				) : (
-					<View style={styles.walletInfo}>
-						<Text style={styles.walletAddress}>
-							{account?.slice(0, 6)}...{account?.slice(-4)}
-						</Text>
-						<Text style={styles.walletBalance}>{balance} XPL</Text>
-						<Pressable
-							style={styles.disconnectButton}
-							onPress={disconnectWallet}
-						>
-							<Text style={styles.disconnectButtonText}>Disconnect</Text>
+			{/* Right Sidebar */}
+			<View style={styles.rightSidebar}>
+				{/* MetaMask Connection Status */}
+				<View style={styles.walletSection}>
+					{!isConnected ? (
+						<Pressable style={styles.connectButton} onPress={connectWallet}>
+							<Text style={styles.connectButtonText}>Connect MetaMask</Text>
 						</Pressable>
+					) : (
+						<View style={styles.walletInfo}>
+							<Text style={styles.walletAddress}>
+								{account?.slice(0, 6)}...{account?.slice(-4)}
+							</Text>
+							<Text style={styles.walletBalance}>{balance} XPL</Text>
+							<Pressable
+								style={styles.disconnectButton}
+								onPress={disconnectWallet}
+							>
+								<Text style={styles.disconnectButtonText}>Disconnect</Text>
+							</Pressable>
+						</View>
+					)}
+				</View>
+
+				{/* Contract Info */}
+				{isConnected && (
+					<View style={styles.contractInfoSection}>
+						<Text style={styles.sectionTitle}>Contract Info</Text>
+						<View style={styles.contractInfo}>
+							<Text style={styles.contractInfoText}>
+								House: {houseLiquidity} XPL
+							</Text>
+							<Text style={styles.contractInfoText}>
+								Max: {maxPayout} XPL
+							</Text>
+							{parseFloat(houseLiquidity) === 0 && (
+								<Text style={styles.warningText}>
+									⚠️ Needs funding
+								</Text>
+							)}
+						</View>
 					</View>
 				)}
 			</View>
 
 			<Header />
-
-			{/* Contract Info */}
-			{isConnected && (
-				<View style={styles.contractInfo}>
-					<Text style={styles.contractInfoText}>
-						House Liquidity: {houseLiquidity} XPL
-					</Text>
-					<Text style={styles.contractInfoText}>Max Payout: {maxPayout} XPL</Text>
-					{parseFloat(houseLiquidity) === 0 && (
-						<Text style={styles.warningText}>
-							⚠️ Contract needs funding with XPL to play
-						</Text>
-					)}
-				</View>
-			)}
 
 			{/* Bet Input */}
 			<View style={styles.betContainer}>
@@ -266,14 +274,22 @@ const styles = StyleSheet.create({
 		backgroundColor: '#1a1a2e',
 		alignItems: 'center',
 		paddingVertical: 20,
+		paddingRight: 210, // Account for sidebar
 	},
-	walletContainer: {
+	rightSidebar: {
 		position: 'absolute',
-		top: 10,
-		right: 10,
+		top: 0,
+		right: 0,
+		bottom: 0,
+		width: 200,
+		backgroundColor: '#232343',
+		borderLeftWidth: 1,
+		borderLeftColor: '#3d3d6b',
+		padding: 10,
 		zIndex: 1000,
-		minWidth: 150,
-		minHeight: 45,
+	},
+	walletSection: {
+		marginBottom: 20,
 	},
 	connectButton: {
 		backgroundColor: '#f39c12',
@@ -289,7 +305,6 @@ const styles = StyleSheet.create({
 		backgroundColor: '#2c2c54',
 		padding: 10,
 		borderRadius: 5,
-		alignItems: 'flex-end',
 	},
 	walletAddress: {
 		color: '#fff',
@@ -315,7 +330,7 @@ const styles = StyleSheet.create({
 	betContainer: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		marginTop: 70,
+		marginTop: 20,
 		marginBottom: 10,
 		minHeight: 40,
 	},
@@ -457,13 +472,19 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		fontWeight: 'bold',
 	},
+	contractInfoSection: {
+		marginTop: 10,
+	},
+	sectionTitle: {
+		color: '#fff',
+		fontSize: 14,
+		fontWeight: 'bold',
+		marginBottom: 8,
+	},
 	contractInfo: {
 		backgroundColor: '#2c2c54',
 		padding: 10,
 		borderRadius: 5,
-		marginTop: 10,
-		marginBottom: 10,
-		alignItems: 'center',
 	},
 	contractInfoText: {
 		color: '#fff',
@@ -472,7 +493,7 @@ const styles = StyleSheet.create({
 	},
 	warningText: {
 		color: '#f39c12',
-		fontSize: 12,
+		fontSize: 11,
 		fontWeight: 'bold',
 		marginTop: 5,
 	},
