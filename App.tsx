@@ -49,34 +49,56 @@ const AppContent: React.FC = () => {
 		gameId,
 		results,
 	} = useWeb3GameLogic();
-	const [houseLiquidity, setHouseLiquidity] = useState<string>('0');
-	const [maxPayout, setMaxPayout] = useState<string>('0');
+	const [houseLiquidity, setHouseLiquidity] = useState<string | null>(null);
+	const [maxPayout, setMaxPayout] = useState<string | null>(null);
+	const [isLoadingContractInfo, setIsLoadingContractInfo] = useState(false);
 
 	const windowWidth = Dimensions.get('window').width;
 	const currentSelection = useMemo(() => {
-		const selection = activeCardIndex < selections.length ? selections[activeCardIndex] : null;
-		console.log('currentSelection computed:', { activeCardIndex, selection, selections });
+		const selection =
+			activeCardIndex < selections.length ? selections[activeCardIndex] : null;
+		console.log('currentSelection computed:', {
+			activeCardIndex,
+			selection,
+			selections,
+		});
 		return selection;
 	}, [activeCardIndex, selections]);
 	const betEditable = !hasGameStarted && !loading && isConnected;
 
 	// Fetch house liquidity and max payout when connected
 	useEffect(() => {
+		if (!isConnected) {
+			// Reset when disconnected
+			setHouseLiquidity(null);
+			setMaxPayout(null);
+			setIsLoadingContractInfo(false);
+			return;
+		}
+
 		const fetchContractInfo = async () => {
-			if (isConnected) {
-				try {
-					const liquidity = await contractService.getHouseLiquidity();
-					const maxPay = await contractService.getMaxPayout();
-					setHouseLiquidity(liquidity);
-					setMaxPayout(maxPay);
-				} catch (err) {
-					console.error('Error fetching contract info:', err);
-				}
+			// Always set loading to true when starting fetch
+			setIsLoadingContractInfo(true);
+			try {
+				const liquidity = await contractService.getHouseLiquidity();
+				const maxPay = await contractService.getMaxPayout();
+				setHouseLiquidity(liquidity);
+				setMaxPayout(maxPay);
+			} catch (err) {
+				console.error('Error fetching contract info:', err);
+				// Set default values on error
+				setHouseLiquidity('0');
+				setMaxPayout('0');
+			} finally {
+				setIsLoadingContractInfo(false);
 			}
 		};
+
+		// Initial fetch
 		fetchContractInfo();
+
 		// Refresh every 10 seconds
-		const interval = setInterval(fetchContractInfo, 10000);
+		const interval = setInterval(fetchContractInfo, 30000);
 		return () => clearInterval(interval);
 	}, [isConnected]);
 
@@ -85,7 +107,7 @@ const AppContent: React.FC = () => {
 			return 'Connect wallet to play';
 		}
 		if (gameWon) {
-			return `🎉 You won all 4 rounds! Payout: ${currentPayout} XPL`;
+			return `🎉 You won all 4 rounds!`;
 		}
 		if (gameLost) {
 			const lastRoundResult = results.findIndex((r) => r === false);
@@ -101,12 +123,12 @@ const AppContent: React.FC = () => {
 			if (playedRounds > 0) {
 				const lastResult = results[playedRounds - 1];
 				if (lastResult === true) {
-					return `✅ Round ${playedRounds} won! Current payout: ${currentPayout} XPL`;
+					return `✅ Round ${playedRounds} won!`;
 				} else if (lastResult === false) {
 					return `❌ Round ${playedRounds} lost! Game over`;
 				}
 			}
-			return `Current payout: ${currentPayout} XPL`;
+			return 'Game in progress';
 		}
 		return 'Ready to play';
 	};
@@ -117,6 +139,29 @@ const AppContent: React.FC = () => {
 
 			{/* Right Sidebar */}
 			<View style={styles.rightSidebar}>
+				{/* Cash Out Button - Always visible at top */}
+				<Pressable
+					style={[
+						styles.cashOutButtonTop,
+						(!hasGameStarted ||
+							!results.some((r) => r === true) ||
+							isCashingOut ||
+							gameLost) &&
+							styles.cashOutButtonDisabled,
+					]}
+					onPress={cashOut}
+					disabled={
+						!hasGameStarted ||
+						!results.some((r) => r === true) ||
+						isCashingOut ||
+						gameLost
+					}
+				>
+					<Text style={styles.cashOutButtonText}>
+						{isCashingOut ? 'Cashing out...' : `Cash Out: ${currentPayout} XPL`}
+					</Text>
+				</Pressable>
+
 				{/* MetaMask Connection Status */}
 				<View style={styles.walletSection}>
 					{!isConnected ? (
@@ -153,12 +198,20 @@ const AppContent: React.FC = () => {
 					<View style={styles.contractInfoSection}>
 						<Text style={styles.sectionTitle}>Contract Info</Text>
 						<View style={styles.contractInfo}>
-							<Text style={styles.contractInfoText}>
-								House: {houseLiquidity} XPL
-							</Text>
-							<Text style={styles.contractInfoText}>Max: {maxPayout} XPL</Text>
-							{parseFloat(houseLiquidity) === 0 && (
-								<Text style={styles.warningText}>⚠️ Needs funding</Text>
+							{isLoadingContractInfo || houseLiquidity == null ? (
+								<View style={styles.contractLoadingContainer}>
+									<ActivityIndicator size="small" color="#f39c12" />
+									<Text style={styles.contractLoadingText}>Fetching...</Text>
+								</View>
+							) : (
+								<>
+									<Text style={styles.contractInfoText}>
+										House: {houseLiquidity ?? '0'} XPL
+									</Text>
+									<Text style={styles.contractInfoText}>
+										Max: {maxPayout ?? '0'} XPL
+									</Text>
+								</>
 							)}
 						</View>
 					</View>
@@ -184,21 +237,17 @@ const AppContent: React.FC = () => {
 			{/* Game Status */}
 			<View style={styles.statusContainer}>
 				<Text style={styles.statusText}>{getStatusMessage()}</Text>
-				{hasGameStarted && !gameLost && !gameWon && (
-					<Text style={styles.hintText}>
-						Tip: Each round requires a transaction signature
-					</Text>
-				)}
-				{error && (
-					<View style={styles.errorContainer}>
-						<Text style={styles.errorTitle}>Transaction Error:</Text>
-						<Text style={styles.errorText}>{error}</Text>
-					</View>
-				)}
 			</View>
 
 			{/* Cards Container */}
 			<View style={styles.cardsWrapper}>
+				{/* Error message above cards */}
+				{error && (
+					<View style={styles.errorContainer}>
+						<Text style={styles.errorTitle}>Error:</Text>
+						<Text style={styles.errorText}>{error}</Text>
+					</View>
+				)}
 				<View style={[styles.cardsContainer, { width: windowWidth }]}>
 					{loading && (
 						<View style={styles.loadingContainer}>
@@ -218,12 +267,6 @@ const AppContent: React.FC = () => {
 										width={120}
 										disabled={index !== activeCardIndex || isPlayingRound}
 									/>
-									{index === activeCardIndex &&
-										currentSelection &&
-										!isPlayingRound &&
-										hasGameStarted && (
-											<Text style={styles.clickToFlip}>Click to flip!</Text>
-										)}
 								</View>
 							))}
 						</View>
@@ -242,7 +285,7 @@ const AppContent: React.FC = () => {
 								style={[
 									styles.optionButton,
 									currentSelection === option.value &&
-									styles.optionButtonActive,
+										styles.optionButtonActive,
 								]}
 								onPress={() => {
 									console.log('Button pressed:', option.value);
@@ -254,7 +297,7 @@ const AppContent: React.FC = () => {
 									style={[
 										styles.optionText,
 										currentSelection === option.value &&
-										styles.optionTextActive,
+											styles.optionTextActive,
 									]}
 								>
 									{option.label}
@@ -267,36 +310,21 @@ const AppContent: React.FC = () => {
 
 			{/* Game Actions */}
 			<View style={styles.gameActions}>
-				{!hasGameStarted && isConnected && (
+				{(!hasGameStarted || gameLost || gameWon) && isConnected && (
 					<Pressable
 						style={[styles.actionButton, styles.startButton]}
-						onPress={startGame}
-						disabled={loading || !betValue}
-					>
-						<Text style={styles.actionButtonText}>Start Game</Text>
-					</Pressable>
-				)}
-
-				{gameWon && (
-					<Pressable
-						style={[styles.actionButton, styles.cashOutButton]}
-						onPress={cashOut}
-						disabled={isCashingOut}
+						onPress={() => {
+							if (gameLost || gameWon) {
+								window.location.reload();
+							} else {
+								startGame();
+							}
+						}}
+						disabled={loading || (!betValue && !gameLost && !gameWon)}
 					>
 						<Text style={styles.actionButtonText}>
-							{isCashingOut
-								? 'Cashing out...'
-								: `Cash out ${currentPayout} XPL`}
+							{gameLost || gameWon ? 'New Game' : 'Start Game'}
 						</Text>
-					</Pressable>
-				)}
-
-				{gameLost && (
-					<Pressable
-						style={[styles.actionButton, styles.newGameButton]}
-						onPress={() => window.location.reload()}
-					>
-						<Text style={styles.actionButtonText}>New Game</Text>
 					</Pressable>
 				)}
 			</View>
@@ -366,6 +394,23 @@ const styles = StyleSheet.create({
 		color: '#fff',
 		fontSize: 12,
 	},
+	cashOutButtonTop: {
+		backgroundColor: '#f39c12',
+		paddingHorizontal: 15,
+		paddingVertical: 10,
+		borderRadius: 5,
+		marginBottom: 15,
+	},
+	cashOutButtonDisabled: {
+		backgroundColor: '#555',
+		opacity: 0.5,
+	},
+	cashOutButtonText: {
+		color: '#fff',
+		fontSize: 13,
+		fontWeight: 'bold',
+		textAlign: 'center',
+	},
 	betContainer: {
 		flexDirection: 'row',
 		alignItems: 'center',
@@ -400,14 +445,15 @@ const styles = StyleSheet.create({
 		textAlign: 'center',
 	},
 	errorContainer: {
-		marginTop: 10,
-		backgroundColor: 'rgba(231, 76, 60, 0.1)',
+		backgroundColor: 'rgba(231, 76, 60, 0.15)',
 		borderWidth: 1,
 		borderColor: '#e74c3c',
 		borderRadius: 5,
 		padding: 10,
-		maxWidth: '90%',
+		marginBottom: 15,
+		maxWidth: 600,
 		alignSelf: 'center',
+		width: '90%',
 	},
 	errorTitle: {
 		color: '#e74c3c',
@@ -417,7 +463,7 @@ const styles = StyleSheet.create({
 	},
 	errorText: {
 		color: '#e74c3c',
-		fontSize: 11,
+		fontSize: 12,
 		fontFamily: 'monospace',
 		flexWrap: 'wrap',
 		wordBreak: 'break-word',
@@ -525,6 +571,23 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		fontWeight: 'bold',
 	},
+	cashOutContainer: {
+		alignItems: 'center',
+		marginTop: 10,
+	},
+	cashOutInfo: {
+		color: '#fff',
+		fontSize: 14,
+		marginBottom: 10,
+		textAlign: 'center',
+	},
+	continueHint: {
+		color: '#95a5a6',
+		fontSize: 12,
+		marginTop: 10,
+		fontStyle: 'italic',
+		textAlign: 'center',
+	},
 	contractInfoSection: {
 		marginTop: 10,
 	},
@@ -549,6 +612,17 @@ const styles = StyleSheet.create({
 		fontSize: 11,
 		fontWeight: 'bold',
 		marginTop: 5,
+	},
+	contractLoadingContainer: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'center',
+		padding: 5,
+	},
+	contractLoadingText: {
+		color: '#f39c12',
+		fontSize: 12,
+		marginLeft: 8,
 	},
 });
 

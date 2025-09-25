@@ -295,12 +295,16 @@ export const useWeb3GameLogic = () => {
 
 		try {
 			const amount = await contractService.cashOut(gameId);
-			setCurrentPayout(amount);
+			// Cash out successful, reset everything
 			setGameId(null);
+			setCurrentPayout('0');
 			// Reset game state
 			setActiveCardIndex(0);
 			setSelections(new Array(STAGES.length).fill(null));
+			selectionsRef.current = new Array(STAGES.length).fill(null);
 			setBetValue('');
+			setCards(createInitialCards());
+			setResults(new Array(STAGES.length).fill(null));
 		} catch (err) {
 			const errorMessage =
 				err instanceof Error ? err.message : 'Failed to cash out';
