@@ -149,12 +149,29 @@ export const useWeb3GameLogic = () => {
 			// Debug: Check house liquidity and max payout before starting
 			const houseLiquidity = await contractService.getHouseLiquidity();
 			const maxPayout = await contractService.getMaxPayout();
+			const wagerAmount = parseFloat(betValue);
+			const maxPotentialPayout = wagerAmount * 1.9 * 1.9 * 2.0 * 4.0; // Calculate max potential
+
 			console.log('House liquidity:', houseLiquidity, 'XPL');
-			console.log('Max payout:', maxPayout, 'XPL');
-			console.log('Attempting to wager:', betValue, 'XPL');
+			console.log('Max payout limit:', maxPayout, 'XPL');
+			console.log('Wager amount:', betValue, 'XPL');
+			console.log('Max potential payout:', maxPotentialPayout.toFixed(4), 'XPL');
+			console.log('House + wager:', (parseFloat(houseLiquidity) + wagerAmount).toFixed(4), 'XPL');
 
 			if (parseFloat(houseLiquidity) === 0) {
 				setError('House has no liquidity. The contract needs to be funded with XPL first.');
+				setLoading(false);
+				return;
+			}
+
+			if (maxPotentialPayout > parseFloat(maxPayout)) {
+				setError(`Wager too high. Max potential payout (${maxPotentialPayout.toFixed(4)} XPL) exceeds contract limit (${maxPayout} XPL)`);
+				setLoading(false);
+				return;
+			}
+
+			if (maxPotentialPayout > parseFloat(houseLiquidity) + wagerAmount) {
+				setError(`Wager too high. Max potential payout (${maxPotentialPayout.toFixed(4)} XPL) exceeds available liquidity (${(parseFloat(houseLiquidity) + wagerAmount).toFixed(4)} XPL)`);
 				setLoading(false);
 				return;
 			}
@@ -164,9 +181,6 @@ export const useWeb3GameLogic = () => {
 
 			// Set up event listeners for this game
 			contractService.listenToGameEvents(newGameId, {
-				onSeedFulfilled: (seed) => {
-					console.log('Game seed fulfilled:', seed);
-				},
 				onRoundPlayed: (roundIndex, card, win, newPayout) => {
 					console.log('Round played:', { roundIndex, card, win, newPayout });
 
@@ -289,6 +303,7 @@ export const useWeb3GameLogic = () => {
 			}
 			const selection = selections[index];
 			if (!selection) {
+				setError('Please make a selection first (Red or Black, etc.)');
 				return;
 			}
 

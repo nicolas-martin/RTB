@@ -89,13 +89,27 @@ class ContractService {
 			}
 			throw new Error('Failed to get game ID');
 		} catch (error: any) {
+			console.error('StartGame error:', error);
+
 			// Parse and throw a more user-friendly error
 			if (error.message?.includes('insufficient')) {
 				throw new Error('Insufficient XPL balance or house liquidity');
 			}
 			if (error.message?.includes('cap')) {
-				throw new Error('Wager exceeds maximum payout or house liquidity');
+				throw new Error('Wager exceeds maximum payout or house liquidity. Try a smaller bet.');
 			}
+			if (error.message?.includes('wager=0')) {
+				throw new Error('Wager amount must be greater than 0');
+			}
+			if (error.message?.includes('incorrect value')) {
+				throw new Error('Transaction value does not match wager amount');
+			}
+
+			// If it's an EVM revert, try to provide more context
+			if (error.message?.includes('revert')) {
+				throw new Error('Transaction failed. This usually means the wager exceeds house liquidity or max payout limits.');
+			}
+
 			throw error;
 		}
 	}
@@ -216,7 +230,6 @@ class ContractService {
 	listenToGameEvents(
 		gameId: string,
 		callbacks: {
-			onSeedFulfilled?: (seed: string) => void;
 			onRoundPlayed?: (
 				roundIndex: number,
 				card: number,
@@ -233,14 +246,6 @@ class ContractService {
 			filter: { gameId },
 			fromBlock: 'latest',
 		};
-
-		if (callbacks.onSeedFulfilled) {
-			this.contract.events
-				.SeedFulfilled(options)
-				.on('data', (event: GameEvent) => {
-					callbacks.onSeedFulfilled!(event.returnValues.seed!);
-				});
-		}
 
 		if (callbacks.onRoundPlayed) {
 			this.contract.events

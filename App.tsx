@@ -152,7 +152,7 @@ const AppContent: React.FC = () => {
 					style={[styles.betInput, !betEditable && styles.betInputDisabled]}
 					value={betValue}
 					onChangeText={setBetValue}
-					placeholder="0.1"
+					placeholder="0.01"
 					placeholderTextColor="#999"
 					keyboardType="decimal-pad"
 					editable={betEditable}
@@ -191,6 +191,9 @@ const AppContent: React.FC = () => {
 										width={120}
 										disabled={index !== activeCardIndex || isPlayingRound}
 									/>
+									{index === activeCardIndex && currentSelection && !isPlayingRound && (
+										<Text style={styles.clickToFlip}>Click to flip!</Text>
+									)}
 								</View>
 							))}
 						</View>
@@ -401,6 +404,13 @@ const styles = StyleSheet.create({
 	},
 	cardWrapper: {
 		marginHorizontal: 15,
+		alignItems: 'center',
+	},
+	clickToFlip: {
+		color: '#f39c12',
+		fontSize: 12,
+		fontWeight: 'bold',
+		marginTop: 5,
 	},
 	loadingContainer: {
 		justifyContent: 'center',
