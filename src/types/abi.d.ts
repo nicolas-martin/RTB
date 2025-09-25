@@ -6,3 +6,4 @@ declare module '../abi.json' {
 	};
 	export = abi;
 }
+
