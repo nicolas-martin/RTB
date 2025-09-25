@@ -71,19 +71,44 @@ class ContractService {
 		if (!this.contract || !this.account)
 			throw new Error('Wallet not connected');
 
-		const wager = this.web3.utils.toWei(wagerAmount, 'ether');
-		const tx = (await this.contract.methods
-			.startGame(wager, deadlineSeconds)
-			.send({
-				from: this.account,
-				gas: '300000',
-			})) as TransactionReceipt;
+		try {
+			// Get treasury token address
+			const treasuryToken = await this.getTreasuryToken();
 
-		const gameStartedEvent = tx.events?.GameStarted;
-		if (gameStartedEvent) {
-			return gameStartedEvent.returnValues.gameId.toString();
+			// Check if treasury token is properly configured
+			if (treasuryToken === '0x0000000000000000000000000000000000000000') {
+				throw new Error('Contract not properly configured: Missing treasury token. The contract needs to be redeployed with a valid ERC20 token address.');
+			}
+
+			const wager = this.web3.utils.toWei(wagerAmount, 'ether');
+
+			// Approve the ERC20 token
+			const approvalAmount = (parseFloat(wagerAmount) * 1.1).toString();
+			await this.approveToken(treasuryToken, approvalAmount);
+
+			// Send transaction
+			const tx = (await this.contract.methods
+				.startGame(wager, deadlineSeconds)
+				.send({
+					from: this.account,
+					gas: '300000',
+				})) as TransactionReceipt;
+
+			const gameStartedEvent = tx.events?.GameStarted;
+			if (gameStartedEvent) {
+				return gameStartedEvent.returnValues.gameId.toString();
+			}
+			throw new Error('Failed to get game ID');
+		} catch (error: any) {
+			// Parse and throw a more user-friendly error
+			if (error.message?.includes('insufficient')) {
+				throw new Error('Insufficient balance or house liquidity');
+			}
+			if (error.message?.includes('treasury token')) {
+				throw error; // Pass through our custom error
+			}
+			throw error;
 		}
-		throw new Error('Failed to get game ID');
 	}
 
 	async playRound(

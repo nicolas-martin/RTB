@@ -38,9 +38,6 @@ export interface GameContextType {
 	error: string | null;
 	drawCards: () => Promise<void>;
 	flipCard: (index: number) => void;
-	showRules: () => void;
-	hideRules: () => void;
-	rulesVisible: boolean;
 	activeCardIndex: number;
 	currentStage: StageConfig | null;
 	stages: StageConfig[];

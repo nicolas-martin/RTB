@@ -13,7 +13,6 @@ import {
 import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
 import PlayingCard from './components/PlayingCard';
-import RulesModal from './components/RulesModal';
 import { useWeb3GameLogic } from './hooks/useWeb3GameLogic';
 import { useOrientation } from './hooks/useOrientation';
 import { MetaMaskProvider, useMetaMask } from './src/contexts/MetaMaskContext';
@@ -28,9 +27,6 @@ const AppContent: React.FC = () => {
 		error,
 		startGame,
 		flipCard,
-		showRules,
-		hideRules,
-		rulesVisible,
 		activeCardIndex,
 		currentStage,
 		selections,
@@ -120,7 +116,12 @@ const AppContent: React.FC = () => {
 			{/* Game Status */}
 			<View style={styles.statusContainer}>
 				<Text style={styles.statusText}>{getStatusMessage()}</Text>
-				{error && <Text style={styles.errorText}>{error}</Text>}
+				{error && (
+					<View style={styles.errorContainer}>
+						<Text style={styles.errorTitle}>Transaction Error:</Text>
+						<Text style={styles.errorText}>{error}</Text>
+					</View>
+				)}
 			</View>
 
 			{/* Cards Container */}
@@ -162,7 +163,7 @@ const AppContent: React.FC = () => {
 								style={[
 									styles.optionButton,
 									currentSelection === option.value &&
-									styles.optionButtonActive,
+										styles.optionButtonActive,
 								]}
 								onPress={() => makeSelection(option.value)}
 								disabled={isPlayingRound}
@@ -171,7 +172,7 @@ const AppContent: React.FC = () => {
 									style={[
 										styles.optionText,
 										currentSelection === option.value &&
-										styles.optionTextActive,
+											styles.optionTextActive,
 									]}
 								>
 									{option.label}
@@ -216,13 +217,7 @@ const AppContent: React.FC = () => {
 						<Text style={styles.actionButtonText}>New Game</Text>
 					</Pressable>
 				)}
-
-				<Pressable style={styles.rulesButton} onPress={showRules}>
-					<Text style={styles.rulesButtonText}>Show Rules</Text>
-				</Pressable>
 			</View>
-
-			<RulesModal visible={rulesVisible} onClose={hideRules} />
 		</View>
 	);
 };
@@ -308,11 +303,28 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		textAlign: 'center',
 	},
-	errorText: {
+	errorContainer: {
+		marginTop: 10,
+		backgroundColor: 'rgba(231, 76, 60, 0.1)',
+		borderWidth: 1,
+		borderColor: '#e74c3c',
+		borderRadius: 5,
+		padding: 10,
+		maxWidth: '90%',
+		alignSelf: 'center',
+	},
+	errorTitle: {
 		color: '#e74c3c',
 		fontSize: 14,
-		marginTop: 5,
-		textAlign: 'center',
+		fontWeight: 'bold',
+		marginBottom: 5,
+	},
+	errorText: {
+		color: '#e74c3c',
+		fontSize: 11,
+		fontFamily: 'monospace',
+		flexWrap: 'wrap',
+		wordBreak: 'break-word',
 	},
 	cardsWrapper: {
 		flex: 1,
@@ -398,18 +410,6 @@ const styles = StyleSheet.create({
 	actionButtonText: {
 		color: '#fff',
 		fontSize: 16,
-		fontWeight: 'bold',
-	},
-	rulesButton: {
-		backgroundColor: '#8e44ad',
-		paddingHorizontal: 20,
-		paddingVertical: 10,
-		borderRadius: 5,
-		marginTop: 10,
-	},
-	rulesButtonText: {
-		color: '#fff',
-		fontSize: 14,
 		fontWeight: 'bold',
 	},
 });

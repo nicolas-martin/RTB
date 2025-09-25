@@ -133,7 +133,6 @@ export const useGameLogic = () => {
 	const [selections, setSelections] = useState<(string | null)[]>(() =>
 		new Array(STAGES.length).fill(null)
 	);
-	const [rulesVisible, setRulesVisible] = useState(false);
 	const [betValue, setBetValue] = useState('');
 	const [results, setResults] = useState<(boolean | null)[]>(() =>
 		new Array(STAGES.length).fill(null)
@@ -144,7 +143,6 @@ export const useGameLogic = () => {
 		setError(null);
 		setActiveCardIndex(0);
 		setSelections(new Array(STAGES.length).fill(null));
-		setRulesVisible(false);
 		setCards(createInitialCards());
 		setBetValue('');
 		setResults(new Array(STAGES.length).fill(null));
@@ -237,14 +235,6 @@ export const useGameLogic = () => {
 		[activeCardIndex, selections.length]
 	);
 
-	const showRules = useCallback(() => {
-		setRulesVisible(true);
-	}, []);
-
-	const hideRules = useCallback(() => {
-		setRulesVisible(false);
-	}, []);
-
 	const updateBetValue = useCallback(
 		(value: string) => {
 			const hasStarted = cards.some((card) => card.isFlipped);
@@ -294,9 +284,6 @@ export const useGameLogic = () => {
 		error,
 		drawCards,
 		flipCard,
-		showRules,
-		hideRules,
-		rulesVisible,
 		activeCardIndex,
 		currentStage,
 		stages: STAGES,

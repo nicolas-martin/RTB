@@ -117,7 +117,6 @@ export const useWeb3GameLogic = () => {
 	const [selections, setSelections] = useState<(string | null)[]>(() =>
 		new Array(STAGES.length).fill(null)
 	);
-	const [rulesVisible, setRulesVisible] = useState(false);
 	const [betValue, setBetValue] = useState('');
 	const [results, setResults] = useState<(boolean | null)[]>(() =>
 		new Array(STAGES.length).fill(null)
@@ -142,7 +141,6 @@ export const useWeb3GameLogic = () => {
 		setError(null);
 		setActiveCardIndex(0);
 		setSelections(new Array(STAGES.length).fill(null));
-		setRulesVisible(false);
 		setCards(createInitialCards());
 		setResults(new Array(STAGES.length).fill(null));
 		setCurrentPayout(betValue);
@@ -301,14 +299,6 @@ export const useWeb3GameLogic = () => {
 		[activeCardIndex, selections.length]
 	);
 
-	const showRules = useCallback(() => {
-		setRulesVisible(true);
-	}, []);
-
-	const hideRules = useCallback(() => {
-		setRulesVisible(false);
-	}, []);
-
 	const updateBetValue = useCallback(
 		(value: string) => {
 			if (gameId) {
@@ -379,9 +369,6 @@ export const useWeb3GameLogic = () => {
 		error,
 		drawCards: startGame, // Map drawCards to startGame for compatibility
 		flipCard,
-		showRules,
-		hideRules,
-		rulesVisible,
 		activeCardIndex,
 		currentStage,
 		stages: STAGES,

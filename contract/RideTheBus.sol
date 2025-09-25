@@ -1,22 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+// Removed ERC20 imports - using native tokens
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Context} from "@openzeppelin/contracts/utils/Context.sol";
 import {ERC2771Context} from "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 
 contract RideTheBus is Ownable, ReentrancyGuard, ERC2771Context {
-    using SafeERC20 for IERC20;
 
     enum RoundType { RedBlack, HigherLower, InsideOutside, Suit }
     struct RoundConfig { RoundType rtype; uint32 multiplierBps; }
 
     struct Game {
         address player;
-        address token;
         uint128 wager;
         uint128 currentPayout;
         uint64  startedAt;
@@ -31,7 +28,7 @@ contract RideTheBus is Ownable, ReentrancyGuard, ERC2771Context {
         uint8   lastRank2; // prev prev rank
     }
 
-    IERC20 public immutable treasuryToken;
+    // Using native tokens - no treasury token needed
 
     uint256 public maxPayout;        // cap
     uint256 public houseLiquidity;   // house float
@@ -51,10 +48,8 @@ contract RideTheBus is Ownable, ReentrancyGuard, ERC2771Context {
 
     constructor(
         address trustedForwarder,
-        IERC20 _treasuryToken,
         uint256 _maxPayout
     ) Ownable(msg.sender) ERC2771Context(trustedForwarder) {
-        treasuryToken = _treasuryToken;
         maxPayout = _maxPayout;
 
         // Simple 4-round script
@@ -75,12 +70,23 @@ contract RideTheBus is Ownable, ReentrancyGuard, ERC2771Context {
         return ERC2771Context._contextSuffixLength();
     }
 
-    // House
-    function fundHouse(uint256 amount) external onlyOwner { 
-	    treasuryToken.safeTransferFrom(_msgSender(), address(this), amount); houseLiquidity += amount; emit HouseFunded(amount);
-    }    
+    // Allow contract to receive native tokens
+    receive() external payable {
+        // Accept native token deposits
+    }
+
+    // House funding with native tokens
+    function fundHouse() external payable onlyOwner {
+        require(msg.value > 0, "no value");
+        houseLiquidity += msg.value;
+        emit HouseFunded(msg.value);
+    }
+
     function withdrawHouse(uint256 amount) external onlyOwner {
-	    require(amount <= houseLiquidity, "insufficient"); houseLiquidity -= amount; treasuryToken.safeTransfer(_msgSender(), amount); emit HouseWithdrawn(amount);
+        require(amount <= houseLiquidity, "insufficient");
+        houseLiquidity -= amount;
+        payable(owner()).transfer(amount);
+        emit HouseWithdrawn(amount);
     }    
     function setRoundConfigs(RoundConfig[] calldata cfgs) external onlyOwner {
 	    delete roundConfigs; for (uint i; i<cfgs.length; i++) roundConfigs.push(cfgs[i]); 
@@ -90,15 +96,15 @@ contract RideTheBus is Ownable, ReentrancyGuard, ERC2771Context {
     }
 
     // Start
-    function startGame(uint128 wager, uint32 actionDeadlineSec) external nonReentrant returns (uint256 gameId) {
+    function startGame(uint128 wager, uint32 actionDeadlineSec) external payable nonReentrant returns (uint256 gameId) {
         require(wager > 0, "wager=0");
-        treasuryToken.safeTransferFrom(_msgSender(), address(this), wager);
+        require(msg.value == wager, "incorrect value");
         uint256 maxPotential = _applyAllMultipliers(wager);
         require(maxPotential <= maxPayout && maxPotential <= houseLiquidity + wager, "cap");
 
         gameId = ++_gameSeq;
         Game storage g = games[gameId];
-        g.player = _msgSender(); g.token = address(treasuryToken); g.wager = wager; g.currentPayout = wager; g.startedAt = uint64(block.timestamp); g.deadline = actionDeadlineSec;
+        g.player = _msgSender(); g.wager = wager; g.currentPayout = wager; g.startedAt = uint64(block.timestamp); g.deadline = actionDeadlineSec;
 
         // Simple pseudo-random seed using block data (NOT secure for production)
         g.seed = keccak256(abi.encodePacked(block.timestamp, block.prevrandao, _msgSender(), gameId));
@@ -141,7 +147,7 @@ contract RideTheBus is Ownable, ReentrancyGuard, ERC2771Context {
         uint256 amount = g.currentPayout; g.ended = true; g.live = false;
         if (amount > g.wager) { uint256 net = amount - g.wager; require(net <= houseLiquidity, "illiquid"); houseLiquidity -= net; }
         else { houseLiquidity += (g.wager - amount); }
-        IERC20(g.token).safeTransfer(g.player, amount); emit CashedOut(gameId, g.player, amount);
+        payable(g.player).transfer(amount); emit CashedOut(gameId, g.player, amount);
     }
 
     // Logic
