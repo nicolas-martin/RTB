@@ -17,8 +17,6 @@ export interface DeckAPIResponse {
 	cards: Card[];
 }
 
-export type Orientation = 'portrait' | 'landscape';
-
 export interface StageOption {
 	value: string;
 	label: string;

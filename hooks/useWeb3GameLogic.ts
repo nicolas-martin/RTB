@@ -155,23 +155,37 @@ export const useWeb3GameLogic = () => {
 			console.log('House liquidity:', houseLiquidity, 'XPL');
 			console.log('Max payout limit:', maxPayout, 'XPL');
 			console.log('Wager amount:', betValue, 'XPL');
-			console.log('Max potential payout:', maxPotentialPayout.toFixed(4), 'XPL');
-			console.log('House + wager:', (parseFloat(houseLiquidity) + wagerAmount).toFixed(4), 'XPL');
+			console.log(
+				'Max potential payout:',
+				maxPotentialPayout.toFixed(4),
+				'XPL'
+			);
+			console.log(
+				'House + wager:',
+				(parseFloat(houseLiquidity) + wagerAmount).toFixed(4),
+				'XPL'
+			);
 
 			if (parseFloat(houseLiquidity) === 0) {
-				setError('House has no liquidity. The contract needs to be funded with XPL first.');
+				setError(
+					'House has no liquidity. The contract needs to be funded with XPL first.'
+				);
 				setLoading(false);
 				return;
 			}
 
 			if (maxPotentialPayout > parseFloat(maxPayout)) {
-				setError(`Wager too high. Max potential payout (${maxPotentialPayout.toFixed(4)} XPL) exceeds contract limit (${maxPayout} XPL)`);
+				setError(
+					`Wager too high. Max potential payout (${maxPotentialPayout.toFixed(4)} XPL) exceeds contract limit (${maxPayout} XPL)`
+				);
 				setLoading(false);
 				return;
 			}
 
 			if (maxPotentialPayout > parseFloat(houseLiquidity) + wagerAmount) {
-				setError(`Wager too high. Max potential payout (${maxPotentialPayout.toFixed(4)} XPL) exceeds available liquidity (${(parseFloat(houseLiquidity) + wagerAmount).toFixed(4)} XPL)`);
+				setError(
+					`Wager too high. Max potential payout (${maxPotentialPayout.toFixed(4)} XPL) exceeds available liquidity (${(parseFloat(houseLiquidity) + wagerAmount).toFixed(4)} XPL)`
+				);
 				setLoading(false);
 				return;
 			}
@@ -231,6 +245,8 @@ export const useWeb3GameLogic = () => {
 
 	// Play a round on the blockchain
 	const playRound = useCallback(async () => {
+		console.log('playRound called', { gameId, activeCardIndex, selections });
+
 		if (!gameId || !isConnected) {
 			setError('No active game');
 			return;
@@ -242,6 +258,7 @@ export const useWeb3GameLogic = () => {
 			return;
 		}
 
+		console.log('Playing round:', { selection, activeCardIndex });
 		setIsPlayingRound(true);
 		setError(null);
 
@@ -249,6 +266,7 @@ export const useWeb3GameLogic = () => {
 			const roundType = activeCardIndex as RoundType;
 			const choice = convertSelectionToContract(activeCardIndex, selection);
 
+			console.log('Calling contract playRound:', { gameId, roundType, choice });
 			const win = await contractService.playRound(gameId, roundType, choice);
 
 			// The event listeners will handle updating the UI
@@ -298,15 +316,20 @@ export const useWeb3GameLogic = () => {
 	// Wrapper for flipCard that plays the round on blockchain
 	const flipCard = useCallback(
 		(index: number) => {
+			console.log('flipCard called', { index, activeCardIndex, selections });
+
 			if (index !== activeCardIndex) {
+				console.log('Not active card index');
 				return;
 			}
 			const selection = selections[index];
 			if (!selection) {
+				console.log('No selection made');
 				setError('Please make a selection first (Red or Black, etc.)');
 				return;
 			}
 
+			console.log('Calling playRound...');
 			// Play the round on blockchain
 			playRound();
 		},
@@ -315,12 +338,19 @@ export const useWeb3GameLogic = () => {
 
 	const makeSelection = useCallback(
 		(value: string) => {
+			console.log('makeSelection called:', {
+				value,
+				activeCardIndex,
+				selectionsLength: selections.length,
+			});
 			if (activeCardIndex >= selections.length) {
+				console.log('activeCardIndex out of bounds');
 				return;
 			}
 			setSelections((prev) => {
 				const updated = [...prev];
 				updated[activeCardIndex] = value;
+				console.log('Updated selections:', updated);
 				return updated;
 			});
 		},
@@ -360,10 +390,7 @@ export const useWeb3GameLogic = () => {
 		[cards]
 	);
 
-	const hasGameStarted = useMemo(
-		() => gameId !== null,
-		[gameId]
-	);
+	const hasGameStarted = useMemo(() => gameId !== null, [gameId]);
 
 	const gameLost = useMemo(
 		() => results.some((result) => result === false),

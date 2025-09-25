@@ -15,13 +15,17 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Header from './components/Header';
 import PlayingCard from './components/PlayingCard';
 import { useWeb3GameLogic } from './hooks/useWeb3GameLogic';
-import { useOrientation } from './hooks/useOrientation';
 import { MetaMaskProvider, useMetaMask } from './src/contexts/MetaMaskContext';
 
 const AppContent: React.FC = () => {
-	const _orientation = useOrientation();
-	const { account, balance, isConnected, connectWallet, disconnectWallet } =
-		useMetaMask();
+	const {
+		account,
+		balance,
+		isConnected,
+		isConnecting,
+		connectWallet,
+		disconnectWallet,
+	} = useMetaMask();
 	const {
 		cards,
 		loading,
@@ -48,11 +52,11 @@ const AppContent: React.FC = () => {
 	const [maxPayout, setMaxPayout] = useState<string>('0');
 
 	const windowWidth = Dimensions.get('window').width;
-	const currentSelection = useMemo(
-		() =>
-			activeCardIndex < selections.length ? selections[activeCardIndex] : null,
-		[activeCardIndex, selections]
-	);
+	const currentSelection = useMemo(() => {
+		const selection = activeCardIndex < selections.length ? selections[activeCardIndex] : null;
+		console.log('currentSelection computed:', { activeCardIndex, selection, selections });
+		return selection;
+	}, [activeCardIndex, selections]);
 	const betEditable = !hasGameStarted && !loading && isConnected;
 
 	// Fetch house liquidity and max payout when connected
@@ -103,8 +107,17 @@ const AppContent: React.FC = () => {
 				{/* MetaMask Connection Status */}
 				<View style={styles.walletSection}>
 					{!isConnected ? (
-						<Pressable style={styles.connectButton} onPress={connectWallet}>
-							<Text style={styles.connectButtonText}>Connect MetaMask</Text>
+						<Pressable
+							style={[
+								styles.connectButton,
+								isConnecting && styles.connectButtonDisabled,
+							]}
+							onPress={connectWallet}
+							disabled={isConnecting}
+						>
+							<Text style={styles.connectButtonText}>
+								{isConnecting ? 'Connecting...' : 'Connect MetaMask'}
+							</Text>
 						</Pressable>
 					) : (
 						<View style={styles.walletInfo}>
@@ -130,13 +143,9 @@ const AppContent: React.FC = () => {
 							<Text style={styles.contractInfoText}>
 								House: {houseLiquidity} XPL
 							</Text>
-							<Text style={styles.contractInfoText}>
-								Max: {maxPayout} XPL
-							</Text>
+							<Text style={styles.contractInfoText}>Max: {maxPayout} XPL</Text>
 							{parseFloat(houseLiquidity) === 0 && (
-								<Text style={styles.warningText}>
-									⚠️ Needs funding
-								</Text>
+								<Text style={styles.warningText}>⚠️ Needs funding</Text>
 							)}
 						</View>
 					</View>
@@ -191,9 +200,12 @@ const AppContent: React.FC = () => {
 										width={120}
 										disabled={index !== activeCardIndex || isPlayingRound}
 									/>
-									{index === activeCardIndex && currentSelection && !isPlayingRound && (
-										<Text style={styles.clickToFlip}>Click to flip!</Text>
-									)}
+									{index === activeCardIndex &&
+										currentSelection &&
+										!isPlayingRound &&
+										hasGameStarted && (
+											<Text style={styles.clickToFlip}>Click to flip!</Text>
+										)}
 								</View>
 							))}
 						</View>
@@ -202,7 +214,7 @@ const AppContent: React.FC = () => {
 			</View>
 
 			{/* Stage Selection */}
-			{currentStage && !isRoundComplete && isConnected && (
+			{currentStage && !isRoundComplete && isConnected && hasGameStarted && (
 				<View style={styles.stageContainer}>
 					<Text style={styles.stageTitle}>{currentStage.title}</Text>
 					<View style={styles.optionsContainer}>
@@ -212,16 +224,19 @@ const AppContent: React.FC = () => {
 								style={[
 									styles.optionButton,
 									currentSelection === option.value &&
-										styles.optionButtonActive,
+									styles.optionButtonActive,
 								]}
-								onPress={() => makeSelection(option.value)}
+								onPress={() => {
+									console.log('Button pressed:', option.value);
+									makeSelection(option.value);
+								}}
 								disabled={isPlayingRound}
 							>
 								<Text
 									style={[
 										styles.optionText,
 										currentSelection === option.value &&
-											styles.optionTextActive,
+										styles.optionTextActive,
 									]}
 								>
 									{option.label}
@@ -303,6 +318,9 @@ const styles = StyleSheet.create({
 	connectButtonText: {
 		color: '#fff',
 		fontWeight: 'bold',
+	},
+	connectButtonDisabled: {
+		opacity: 0.6,
 	},
 	walletInfo: {
 		backgroundColor: '#2c2c54',

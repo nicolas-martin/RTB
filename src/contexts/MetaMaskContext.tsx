@@ -109,9 +109,17 @@ export const MetaMaskProvider: React.FC<MetaMaskProviderProps> = ({
 		setError(null);
 
 		try {
-			const provider = sdk.getProvider();
+			// Give SDK a moment to initialize if needed
+			let provider = sdk.getProvider();
+
+			// If provider not ready, wait a bit and try again
 			if (!provider) {
-				throw new Error('MetaMask provider not available');
+				await new Promise((resolve) => setTimeout(resolve, 1000));
+				provider = sdk.getProvider();
+			}
+
+			if (!provider) {
+				throw new Error('MetaMask provider not available. Please try again.');
 			}
 
 			// Request account access
@@ -127,7 +135,15 @@ export const MetaMaskProvider: React.FC<MetaMaskProviderProps> = ({
 			}
 		} catch (err: any) {
 			console.error('Failed to connect wallet:', err);
-			setError(err.message || 'Failed to connect wallet');
+
+			// More user-friendly error messages
+			if (err.code === 4001) {
+				setError('Connection request was rejected');
+			} else if (err.message?.includes('provider')) {
+				setError('MetaMask is initializing. Please try again.');
+			} else {
+				setError(err.message || 'Failed to connect wallet');
+			}
 		} finally {
 			setIsConnecting(false);
 		}

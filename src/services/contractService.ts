@@ -96,7 +96,9 @@ class ContractService {
 				throw new Error('Insufficient XPL balance or house liquidity');
 			}
 			if (error.message?.includes('cap')) {
-				throw new Error('Wager exceeds maximum payout or house liquidity. Try a smaller bet.');
+				throw new Error(
+					'Wager exceeds maximum payout or house liquidity. Try a smaller bet.'
+				);
 			}
 			if (error.message?.includes('wager=0')) {
 				throw new Error('Wager amount must be greater than 0');
@@ -107,7 +109,9 @@ class ContractService {
 
 			// If it's an EVM revert, try to provide more context
 			if (error.message?.includes('revert')) {
-				throw new Error('Transaction failed. This usually means the wager exceeds house liquidity or max payout limits.');
+				throw new Error(
+					'Transaction failed. This usually means the wager exceeds house liquidity or max payout limits.'
+				);
 			}
 
 			throw error;
@@ -122,22 +126,46 @@ class ContractService {
 		if (!this.contract || !this.account)
 			throw new Error('Wallet not connected');
 
-		const choiceBytes = this.web3.utils.padLeft(
-			this.web3.utils.toHex(choice),
-			2
-		);
-		const tx = (await this.contract.methods
-			.playRound(gameId, choiceBytes)
-			.send({
-				from: this.account,
-				gas: '300000',
-			})) as TransactionReceipt;
+		try {
+			console.log('PlayRound params:', { gameId, roundType, choice });
 
-		const roundPlayedEvent = tx.events?.RoundPlayed;
-		if (roundPlayedEvent) {
-			return roundPlayedEvent.returnValues.win;
+			const choiceBytes = this.web3.utils.padLeft(
+				this.web3.utils.toHex(choice),
+				2
+			);
+
+			console.log('Sending playRound transaction:', { gameId, choiceBytes });
+
+			const tx = (await this.contract.methods
+				.playRound(gameId, choiceBytes)
+				.send({
+					from: this.account,
+					gas: '300000',
+				})) as TransactionReceipt;
+
+			console.log('PlayRound transaction result:', tx);
+
+			const roundPlayedEvent = tx.events?.RoundPlayed;
+			if (roundPlayedEvent) {
+				console.log('Round played event:', roundPlayedEvent.returnValues);
+				return roundPlayedEvent.returnValues.win;
+			}
+			return false;
+		} catch (error: any) {
+			console.error('PlayRound error:', error);
+
+			if (error.message?.includes('not live')) {
+				throw new Error('Game is not active');
+			}
+			if (error.message?.includes('deadline')) {
+				throw new Error('Game deadline has passed');
+			}
+			if (error.message?.includes('done')) {
+				throw new Error('All rounds have been played');
+			}
+
+			throw error;
 		}
-		return false;
 	}
 
 	async cashOut(gameId: string): Promise<string> {
