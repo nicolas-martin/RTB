@@ -47,6 +47,7 @@ const AppContent: React.FC = () => {
 		isCashingOut,
 		isPlayingRound,
 		gameId,
+		results,
 	} = useWeb3GameLogic();
 	const [houseLiquidity, setHouseLiquidity] = useState<string>('0');
 	const [maxPayout, setMaxPayout] = useState<string>('0');
@@ -84,15 +85,27 @@ const AppContent: React.FC = () => {
 			return 'Connect wallet to play';
 		}
 		if (gameWon) {
-			return `🎉 You won! Payout: ${currentPayout} XPL`;
+			return `🎉 You won all 4 rounds! Payout: ${currentPayout} XPL`;
 		}
 		if (gameLost) {
-			return '💔 You lost! Better luck next time';
+			const lastRoundResult = results.findIndex((r) => r === false);
+			return `💔 You lost on round ${lastRoundResult + 1}! Better luck next time`;
 		}
 		if (isRoundComplete) {
-			return 'Round complete!';
+			return 'Game complete!';
 		}
 		if (hasGameStarted) {
+			// Show round results
+			const wonRounds = results.filter((r) => r === true).length;
+			const playedRounds = results.filter((r) => r !== null).length;
+			if (playedRounds > 0) {
+				const lastResult = results[playedRounds - 1];
+				if (lastResult === true) {
+					return `✅ Round ${playedRounds} won! Current payout: ${currentPayout} XPL`;
+				} else if (lastResult === false) {
+					return `❌ Round ${playedRounds} lost! Game over`;
+				}
+			}
 			return `Current payout: ${currentPayout} XPL`;
 		}
 		return 'Ready to play';
@@ -171,6 +184,11 @@ const AppContent: React.FC = () => {
 			{/* Game Status */}
 			<View style={styles.statusContainer}>
 				<Text style={styles.statusText}>{getStatusMessage()}</Text>
+				{hasGameStarted && !gameLost && !gameWon && (
+					<Text style={styles.hintText}>
+						Tip: Each round requires a transaction signature
+					</Text>
+				)}
 				{error && (
 					<View style={styles.errorContainer}>
 						<Text style={styles.errorTitle}>Transaction Error:</Text>
@@ -403,6 +421,13 @@ const styles = StyleSheet.create({
 		fontFamily: 'monospace',
 		flexWrap: 'wrap',
 		wordBreak: 'break-word',
+	},
+	hintText: {
+		color: '#95a5a6',
+		fontSize: 12,
+		textAlign: 'center',
+		marginTop: 5,
+		fontStyle: 'italic',
 	},
 	cardsWrapper: {
 		flex: 1,

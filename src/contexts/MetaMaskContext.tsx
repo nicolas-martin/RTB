@@ -9,6 +9,13 @@ import { MetaMaskSDK } from '@metamask/sdk';
 import { contractService } from '../services/contractService';
 import { PLASMA_TESTNET } from '../config/contracts';
 
+// Extend window interface for ethereum
+declare global {
+	interface Window {
+		ethereum?: any;
+	}
+}
+
 interface MetaMaskContextType {
 	account: string | null;
 	balance: string;
@@ -53,12 +60,21 @@ export const MetaMaskProvider: React.FC<MetaMaskProviderProps> = ({
 				url: window.location.origin,
 			},
 			infuraAPIKey: process.env.INFURA_API_KEY,
+			checkInstallationImmediately: false,
+			// Add these options to improve connection
+			preferDesktop: true,
+			openDeeplink: (link) => {
+				window.open(link, '_blank');
+			},
 		});
 
 		setSDK(MMSDK);
 
-		// Check if already connected
+		// Give SDK time to initialize before checking connection
 		const checkConnection = async () => {
+			// Wait a bit for SDK to initialize
+			await new Promise(resolve => setTimeout(resolve, 500));
+
 			try {
 				const provider = MMSDK.getProvider();
 				if (provider) {
@@ -92,6 +108,16 @@ export const MetaMaskProvider: React.FC<MetaMaskProviderProps> = ({
 			// Get balance
 			const balance = await contractService.getBalance(account);
 			setBalance(balance);
+
+			// Fetch house liquidity and max payout immediately
+			try {
+				const houseLiquidity = await contractService.getHouseLiquidity();
+				const maxPayout = await contractService.getMaxPayout();
+				console.log('House liquidity on connect:', houseLiquidity, 'XPL');
+				console.log('Max payout on connect:', maxPayout, 'XPL');
+			} catch (err) {
+				console.error('Error fetching contract info on connect:', err);
+			}
 		} else {
 			setAccount(null);
 			setIsConnected(false);
@@ -109,17 +135,27 @@ export const MetaMaskProvider: React.FC<MetaMaskProviderProps> = ({
 		setError(null);
 
 		try {
-			// Give SDK a moment to initialize if needed
+			// Try to connect directly first
+			await sdk.connect();
+
+			// Give SDK a moment to establish connection
+			await new Promise((resolve) => setTimeout(resolve, 500));
+
 			let provider = sdk.getProvider();
 
-			// If provider not ready, wait a bit and try again
+			// If provider still not ready, wait and retry
 			if (!provider) {
-				await new Promise((resolve) => setTimeout(resolve, 1000));
+				await new Promise((resolve) => setTimeout(resolve, 1500));
 				provider = sdk.getProvider();
 			}
 
 			if (!provider) {
-				throw new Error('MetaMask provider not available. Please try again.');
+				// Try one more time with direct ethereum object
+				if (window.ethereum) {
+					provider = window.ethereum;
+				} else {
+					throw new Error('MetaMask not found. Please install MetaMask extension or open in MetaMask mobile browser.');
+				}
 			}
 
 			// Request account access
@@ -141,6 +177,8 @@ export const MetaMaskProvider: React.FC<MetaMaskProviderProps> = ({
 				setError('Connection request was rejected');
 			} else if (err.message?.includes('provider')) {
 				setError('MetaMask is initializing. Please try again.');
+			} else if (err.message?.includes('not found')) {
+				setError('Please install MetaMask extension or use MetaMask mobile browser');
 			} else {
 				setError(err.message || 'Failed to connect wallet');
 			}

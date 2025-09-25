@@ -259,8 +259,8 @@ class ContractService {
 		gameId: string,
 		callbacks: {
 			onRoundPlayed?: (
-				roundIndex: number,
-				card: number,
+				roundIndex: number | bigint,
+				card: number | bigint,
 				win: boolean,
 				newPayout: string
 			) => void;

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { contractService } from '../src/services/contractService';
 import { useMetaMask } from '../src/contexts/MetaMaskContext';
 import { RoundType, CardSuit } from '../src/types/contract';
@@ -43,11 +43,14 @@ const STAGES: StageConfig[] = [
 ];
 
 // Convert card from contract format to frontend format
-const convertCardFromContract = (cardValue: number): Card => {
-	const suit = Math.floor(cardValue / 13);
-	const rank = cardValue % 13;
+const convertCardFromContract = (cardValue: number | bigint): Card => {
+	// Convert BigInt to number if needed
+	const value = typeof cardValue === 'bigint' ? Number(cardValue) : cardValue;
+	const suit = Math.floor(value / 13);
+	const rank = value % 13;
 
 	const suitMap = ['HEARTS', 'DIAMONDS', 'CLUBS', 'SPADES'];
+	const suitSymbolMap = ['H', 'D', 'C', 'S'];
 	const valueMap = [
 		'2',
 		'3',
@@ -63,12 +66,29 @@ const convertCardFromContract = (cardValue: number): Card => {
 		'KING',
 		'ACE',
 	];
+	const codeMap = [
+		'2',
+		'3',
+		'4',
+		'5',
+		'6',
+		'7',
+		'8',
+		'9',
+		'0', // 10 is represented as 0
+		'J',
+		'Q',
+		'K',
+		'A',
+	];
+
+	const cardCode = `${codeMap[rank]}${suitSymbolMap[suit]}`;
 
 	return {
 		suit: suitMap[suit],
 		value: valueMap[rank],
-		code: `${valueMap[rank][0]}${suitMap[suit][0]}`,
-		image: '', // We'll generate this if needed
+		code: cardCode,
+		image: `https://deckofcardsapi.com/static/img/${cardCode}.png`,
 	};
 };
 
@@ -117,6 +137,7 @@ export const useWeb3GameLogic = () => {
 	const [selections, setSelections] = useState<(string | null)[]>(() =>
 		new Array(STAGES.length).fill(null)
 	);
+	const selectionsRef = useRef<(string | null)[]>(new Array(STAGES.length).fill(null));
 	const [betValue, setBetValue] = useState('');
 	const [results, setResults] = useState<(boolean | null)[]>(() =>
 		new Array(STAGES.length).fill(null)
@@ -124,6 +145,11 @@ export const useWeb3GameLogic = () => {
 	const [currentPayout, setCurrentPayout] = useState<string>('0');
 	const [isPlayingRound, setIsPlayingRound] = useState(false);
 	const [isCashingOut, setIsCashingOut] = useState(false);
+
+	// Keep ref in sync with state
+	useEffect(() => {
+		selectionsRef.current = selections;
+	}, [selections]);
 
 	// Start a new game on the blockchain
 	const startGame = useCallback(async () => {
@@ -141,54 +167,21 @@ export const useWeb3GameLogic = () => {
 		setError(null);
 		setActiveCardIndex(0);
 		setSelections(new Array(STAGES.length).fill(null));
+		selectionsRef.current = new Array(STAGES.length).fill(null);
 		setCards(createInitialCards());
 		setResults(new Array(STAGES.length).fill(null));
 		setCurrentPayout(betValue);
 
 		try {
-			// Debug: Check house liquidity and max payout before starting
-			const houseLiquidity = await contractService.getHouseLiquidity();
-			const maxPayout = await contractService.getMaxPayout();
 			const wagerAmount = parseFloat(betValue);
 			const maxPotentialPayout = wagerAmount * 1.9 * 1.9 * 2.0 * 4.0; // Calculate max potential
 
-			console.log('House liquidity:', houseLiquidity, 'XPL');
-			console.log('Max payout limit:', maxPayout, 'XPL');
 			console.log('Wager amount:', betValue, 'XPL');
 			console.log(
 				'Max potential payout:',
 				maxPotentialPayout.toFixed(4),
 				'XPL'
 			);
-			console.log(
-				'House + wager:',
-				(parseFloat(houseLiquidity) + wagerAmount).toFixed(4),
-				'XPL'
-			);
-
-			if (parseFloat(houseLiquidity) === 0) {
-				setError(
-					'House has no liquidity. The contract needs to be funded with XPL first.'
-				);
-				setLoading(false);
-				return;
-			}
-
-			if (maxPotentialPayout > parseFloat(maxPayout)) {
-				setError(
-					`Wager too high. Max potential payout (${maxPotentialPayout.toFixed(4)} XPL) exceeds contract limit (${maxPayout} XPL)`
-				);
-				setLoading(false);
-				return;
-			}
-
-			if (maxPotentialPayout > parseFloat(houseLiquidity) + wagerAmount) {
-				setError(
-					`Wager too high. Max potential payout (${maxPotentialPayout.toFixed(4)} XPL) exceeds available liquidity (${(parseFloat(houseLiquidity) + wagerAmount).toFixed(4)} XPL)`
-				);
-				setLoading(false);
-				return;
-			}
 
 			const newGameId = await contractService.startGame(betValue);
 			setGameId(newGameId);
@@ -198,11 +191,14 @@ export const useWeb3GameLogic = () => {
 				onRoundPlayed: (roundIndex, card, win, newPayout) => {
 					console.log('Round played:', { roundIndex, card, win, newPayout });
 
+					// Convert BigInt if needed
+					const index = typeof roundIndex === 'bigint' ? Number(roundIndex) : roundIndex;
+
 					// Update card
 					const convertedCard = convertCardFromContract(card);
 					setCards((prev) => {
 						const updated = [...prev];
-						updated[roundIndex] = {
+						updated[index] = {
 							card: convertedCard,
 							isFlipped: true,
 						};
@@ -212,7 +208,7 @@ export const useWeb3GameLogic = () => {
 					// Update result
 					setResults((prev) => {
 						const updated = [...prev];
-						updated[roundIndex] = win;
+						updated[index] = win;
 						return updated;
 					});
 
@@ -220,8 +216,8 @@ export const useWeb3GameLogic = () => {
 					setCurrentPayout(newPayout);
 
 					// Move to next round if won
-					if (win && roundIndex < 3) {
-						setActiveCardIndex(roundIndex + 1);
+					if (win && index < 3) {
+						setActiveCardIndex(index + 1);
 					}
 				},
 				onCashedOut: (amount) => {
@@ -244,46 +240,48 @@ export const useWeb3GameLogic = () => {
 	}, [isConnected, account, betValue]);
 
 	// Play a round on the blockchain
-	const playRound = useCallback(async () => {
-		console.log('playRound called', { gameId, activeCardIndex, selections });
+	const playRound = useCallback(
+		async (selection: string) => {
+			console.log('playRound called', { gameId, activeCardIndex, selection });
 
-		if (!gameId || !isConnected) {
-			setError('No active game');
-			return;
-		}
-
-		const selection = selections[activeCardIndex];
-		if (!selection) {
-			setError('Please make a selection first');
-			return;
-		}
-
-		console.log('Playing round:', { selection, activeCardIndex });
-		setIsPlayingRound(true);
-		setError(null);
-
-		try {
-			const roundType = activeCardIndex as RoundType;
-			const choice = convertSelectionToContract(activeCardIndex, selection);
-
-			console.log('Calling contract playRound:', { gameId, roundType, choice });
-			const win = await contractService.playRound(gameId, roundType, choice);
-
-			// The event listeners will handle updating the UI
-			// Just handle the loading state here
-			if (!win) {
-				// Game lost
-				setGameId(null);
+			if (!gameId || !isConnected) {
+				setError('No active game');
+				return;
 			}
-		} catch (err) {
-			const errorMessage =
-				err instanceof Error ? err.message : 'Failed to play round';
-			setError(errorMessage);
-			console.error('Error playing round:', err);
-		} finally {
-			setIsPlayingRound(false);
-		}
-	}, [gameId, isConnected, activeCardIndex, selections]);
+
+			if (!selection) {
+				setError('Please make a selection first');
+				return;
+			}
+
+			console.log('Playing round:', { selection, activeCardIndex });
+			setIsPlayingRound(true);
+			setError(null);
+
+			try {
+				const roundType = activeCardIndex as RoundType;
+				const choice = convertSelectionToContract(activeCardIndex, selection);
+
+				console.log('Calling contract playRound:', { gameId, roundType, choice });
+				const win = await contractService.playRound(gameId, roundType, choice);
+
+				// The event listeners will handle updating the UI
+				// Just handle the loading state here
+				if (!win) {
+					// Game lost
+					setGameId(null);
+				}
+			} catch (err) {
+				const errorMessage =
+					err instanceof Error ? err.message : 'Failed to play round';
+				setError(errorMessage);
+				console.error('Error playing round:', err);
+			} finally {
+				setIsPlayingRound(false);
+			}
+		},
+		[gameId, isConnected, activeCardIndex]
+	);
 
 	// Cash out winnings
 	const cashOut = useCallback(async () => {
@@ -316,24 +314,26 @@ export const useWeb3GameLogic = () => {
 	// Wrapper for flipCard that plays the round on blockchain
 	const flipCard = useCallback(
 		(index: number) => {
-			console.log('flipCard called', { index, activeCardIndex, selections });
+			console.log('flipCard called', { index, activeCardIndex, selections: selectionsRef.current });
 
 			if (index !== activeCardIndex) {
 				console.log('Not active card index');
 				return;
 			}
-			const selection = selections[index];
+
+			// Use ref to get current selections
+			const selection = selectionsRef.current[index];
 			if (!selection) {
 				console.log('No selection made');
 				setError('Please make a selection first (Red or Black, etc.)');
 				return;
 			}
 
-			console.log('Calling playRound...');
+			console.log('Calling playRound with selection:', selection);
 			// Play the round on blockchain
-			playRound();
+			playRound(selection);
 		},
-		[activeCardIndex, selections, playRound]
+		[activeCardIndex, playRound]
 	);
 
 	const makeSelection = useCallback(
