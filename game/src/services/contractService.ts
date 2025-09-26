@@ -225,6 +225,22 @@ class ContractService {
 		return this.web3.utils.fromWei(maxPayout, 'ether');
 	}
 
+	async getRoundMultipliers(): Promise<Array<{ roundType: RoundType; multiplierBps: number; multiplier: number }>> {
+		if (!this.contract) throw new Error('Wallet not connected');
+
+		const multipliers = [];
+		for (let i = 0; i < 4; i++) {
+			const config = (await this.contract.methods.roundConfigs(i).call()) as any;
+			const multiplierBps = Number(config.multiplierBps);
+			multipliers.push({
+				roundType: Number(config.rtype) as RoundType,
+				multiplierBps,
+				multiplier: multiplierBps / 1000
+			});
+		}
+		return multipliers;
+	}
+
 	// Native token support - no treasury token or approval needed
 
 	async getTokenBalance(
