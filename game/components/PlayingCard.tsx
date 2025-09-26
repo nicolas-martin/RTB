@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { CardState } from '../types';
 import { config } from '../src/config';
+import { useSounds, SoundType } from '../hooks/useSounds';
 
 interface PlayingCardProps {
 	cardState: CardState;
@@ -38,6 +39,7 @@ const PlayingCard: React.FC<PlayingCardProps> = memo(
 		const marginPadding = width * 0.2;
 		const rotation = useRef(new Animated.Value(isFlipped ? 180 : 0)).current;
 		const frontImageUri = card?.image ?? config.CARD_BACK_URL;
+		const { playSound } = useSounds();
 
 		useEffect(() => {
 			if (isFlipped) {
@@ -78,7 +80,10 @@ const PlayingCard: React.FC<PlayingCardProps> = memo(
 
 		return (
 			<Pressable
-				onPress={onCardPressed}
+				onPress={() => {
+					playSound(SoundType.CardSelect);
+					onCardPressed();
+				}}
 				disabled={disabled}
 				style={({ pressed }) => [
 					styles.pressable,

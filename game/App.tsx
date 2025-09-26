@@ -17,7 +17,7 @@ import PlayingCard from './components/PlayingCard';
 import { useWeb3GameLogic } from './hooks/useWeb3GameLogic';
 import { MetaMaskProvider, useMetaMask } from './src/contexts/MetaMaskContext';
 import { config } from './src/config';
-import { useSounds } from './hooks/useSounds';
+import { useSounds, SoundType } from './hooks/useSounds';
 import { Motion } from 'motion/react';
 import { SoundProvider } from 'react-sounds';
 
@@ -68,20 +68,20 @@ const AppContent: React.FC = () => {
 	// Play sounds on game events
 	useEffect(() => {
 		if (gameWon) {
-			playSound('winRound');
+			playSound(SoundType.WinRound);
 		}
 	}, [gameWon]);
 
 	useEffect(() => {
 		if (gameLost) {
-			playSound('lose');
+			playSound(SoundType.Lose);
 		}
 	}, [gameLost]);
 
 	useEffect(() => {
 		const lastResult = results[results.length - 1];
 		if (lastResult === true && !gameWon) {
-			playSound('winRound');
+			playSound(SoundType.WinRound);
 		}
 	}, [results]);
 
@@ -236,6 +236,7 @@ const AppContent: React.FC = () => {
 												styles.optionButtonActive,
 											]}
 											onPress={() => {
+												playSound(SoundType.SelectionButton);
 												makeSelection(option.value);
 											}}
 											disabled={isPlayingRound}
@@ -264,7 +265,7 @@ const AppContent: React.FC = () => {
 									isCashingOut && styles.cashOutButtonDisabled,
 								]}
 								onPress={() => {
-									playSound('cashOut');
+									playSound(SoundType.CashOut);
 									cashOut();
 								}}
 								disabled={isCashingOut}
