@@ -6,6 +6,7 @@ export const config = {
 
 	// Game settings
 	CARDS_PER_HAND: 4,
+	DEFAULT_WAGER: '0.001',
 
 	// UI settings
 	CARD_ASPECT_RATIO: 314 / 226,

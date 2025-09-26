@@ -16,6 +16,7 @@ import Header from './components/Header';
 import PlayingCard from './components/PlayingCard';
 import { useWeb3GameLogic } from './hooks/useWeb3GameLogic';
 import { MetaMaskProvider, useMetaMask } from './src/contexts/MetaMaskContext';
+import { config } from './src/config';
 
 const AppContent: React.FC = () => {
 	const {
@@ -124,7 +125,7 @@ const AppContent: React.FC = () => {
 					return `❌ Round ${playedRounds} lost! Game over`;
 				}
 			}
-			return 'Game in progress';
+			return '';
 		}
 		return '';
 	};
@@ -144,7 +145,7 @@ const AppContent: React.FC = () => {
 							style={[styles.betInput, !betEditable && styles.betInputDisabled]}
 							value={betValue}
 							onChangeText={setBetValue}
-							placeholder="0.01"
+							placeholder={config.DEFAULT_WAGER}
 							placeholderTextColor="#999"
 							keyboardType="decimal-pad"
 							editable={betEditable}
@@ -154,22 +155,22 @@ const AppContent: React.FC = () => {
 
 				{/* Area 2: Cards */}
 				<View style={styles.middleSection}>
-					{/* Game Status */}
-					<View style={styles.statusContainer}>
-						<Text style={styles.statusText}>{getStatusMessage()}</Text>
-					</View>
-
+					{/* Status/Error Container - Always takes same space */}
 					<View
 						style={[
-							styles.errorContainer,
-							!error && styles.errorContainerHidden,
+							error || gameLost
+								? styles.messageContainerError
+								: styles.messageContainerSuccess,
+							!error && !getStatusMessage() && styles.messageContainerHidden,
 						]}
 					>
-						{error && (
+						{error ? (
 							<>
 								<Text style={styles.errorTitle}>Error:</Text>
 								<Text style={styles.errorText}>{error}</Text>
 							</>
+						) : (
+							<Text style={styles.statusText}>{getStatusMessage()}</Text>
 						)}
 					</View>
 
@@ -258,8 +259,8 @@ const AppContent: React.FC = () => {
 						</View>
 					)}
 
-					{/* New Game Button */}
-					{(gameLost || gameWon) && isConnected && (
+					{/* New Game Button - Only show when lost */}
+					{gameLost && isConnected && (
 						<View style={styles.newGameSection}>
 							<Pressable
 								style={[styles.actionButton, styles.newGameButton]}
@@ -459,15 +460,7 @@ const styles = StyleSheet.create({
 	betInputDisabled: {
 		opacity: 0.5,
 	},
-	statusContainer: {
-		marginBottom: 5,
-	},
-	statusText: {
-		color: '#fff',
-		fontSize: 16,
-		textAlign: 'center',
-	},
-	errorContainer: {
+	messageContainerError: {
 		backgroundColor: 'rgba(231, 76, 60, 0.15)',
 		borderWidth: 1,
 		borderColor: '#e74c3c',
@@ -479,11 +472,33 @@ const styles = StyleSheet.create({
 		alignSelf: 'center',
 		width: '90%',
 		height: 70,
+		justifyContent: 'center',
+		alignItems: 'center',
 	},
-	errorContainerHidden: {
+	messageContainerSuccess: {
+		backgroundColor: 'rgba(46, 204, 113, 0.15)',
+		borderWidth: 1,
+		borderColor: '#2ecc71',
+		borderRadius: 5,
+		padding: 10,
+		marginBottom: 30,
+		marginTop: 5,
+		maxWidth: 600,
+		alignSelf: 'center',
+		width: '90%',
+		height: 70,
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	messageContainerHidden: {
 		opacity: 0,
 		borderColor: 'transparent',
 		backgroundColor: 'transparent',
+	},
+	statusText: {
+		color: '#fff',
+		fontSize: 16,
+		textAlign: 'center',
 	},
 	errorTitle: {
 		color: '#e74c3c',

@@ -142,6 +142,7 @@ export const useWeb3GameLogic = () => {
 	);
 	const accountRef = useRef<string | null>(account);
 	const [betValue, setBetValue] = useState('');
+	const betValueRef = useRef<string>(betValue);
 	const [results, setResults] = useState<(boolean | null)[]>(() =>
 		new Array(STAGES.length).fill(null)
 	);
@@ -157,6 +158,10 @@ export const useWeb3GameLogic = () => {
 	useEffect(() => {
 		accountRef.current = account;
 	}, [account]);
+
+	useEffect(() => {
+		betValueRef.current = betValue;
+	}, [betValue]);
 
 	// Start a new game on the blockchain
 	const startGame = useCallback(async () => {
@@ -346,7 +351,7 @@ export const useWeb3GameLogic = () => {
 
 			// If no game started yet and user clicks first card with selection, auto-start
 			if (!gameId && index === 0 && connected) {
-				const bet = betValue || '0.01';
+				const bet = betValueRef.current || config.DEFAULT_WAGER;
 				setBetValue(bet);
 
 				setLoading(true);
@@ -433,7 +438,7 @@ export const useWeb3GameLogic = () => {
 			// Play the round on blockchain
 			playRound(selection);
 		},
-		[activeCardIndex, playRound, gameId, betValue]
+		[activeCardIndex, playRound, gameId]
 	);
 
 	const makeSelection = useCallback(
