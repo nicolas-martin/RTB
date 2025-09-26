@@ -10,7 +10,6 @@ title = "Win 1 Game on RTB"
 description = "Win 1 game of Ride The Bus!!"
 reward = 1000
 type = "singular"
-resultField = "player.games"
 query = """
 query WinOneGame($playerId: ID!) {
   player(id: $playerId) {
@@ -23,7 +22,7 @@ query WinOneGame($playerId: ID!) {
 """
 
 [quest.condition]
-field = "length"
+field = "len(player.games)"
 operator = ">="
 value = 1
 
@@ -71,7 +70,6 @@ title = "Cashout on round 2, 2 times in a row"
 description = "Cashout on round 2, 2 times in a row"
 reward = 3000
 type = "sequential"
-resultField = "player.games"
 query = """
 query CashoutRound2Twice($playerId: ID!) {
   player(id: $playerId) {
@@ -84,7 +82,8 @@ query CashoutRound2Twice($playerId: ID!) {
 """
 
 [quest.condition]
-field = "status"
+field = "player.games"
+itemConditionField = "status"
 operator = "="
 value = "CASHED_OUT"
 
@@ -98,7 +97,6 @@ title = "Busted at round 2"
 description = "Lose at round 2 by getting the same card"
 reward = 500
 type = "conditional"
-resultField = "player.games"
 customValidator = "validateBustedRound2"
 query = """
 query BustedRound2($playerId: ID!) {
@@ -115,7 +113,8 @@ query BustedRound2($playerId: ID!) {
 """
 
 [[quest.conditions]]
-field = "status"
+field = "player.games"
+itemConditionField = "status"
 operator = "="
 value = "BUSTED"
 

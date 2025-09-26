@@ -69,16 +69,15 @@ export class QuestValidator {
 		quest: QuestConfig,
 		queryResult: any
 	): { completed: boolean } {
-		const value = this.getNestedValue(queryResult, quest.resultField);
-
-		if (quest.condition) {
-			const conditionValue = Array.isArray(value) ? value.length : value;
-			return {
-				completed: this.evaluateCondition(quest.condition, conditionValue),
-			};
+		if (!quest.condition) {
+			return { completed: false };
 		}
 
-		return { completed: !!value };
+		const conditionValue = this.resolveFieldValue(queryResult, quest.condition.field);
+
+		return {
+			completed: this.evaluateCondition(quest.condition, conditionValue),
+		};
 	}
 
 	private validateProgress(
@@ -89,7 +88,7 @@ export class QuestValidator {
 			return { completed: false, progress: 0 };
 		}
 
-		const fieldValue = this.getNestedValue(queryResult, quest.condition.field);
+		const fieldValue = this.resolveFieldValue(queryResult, quest.condition.field);
 		const numericValue =
 			typeof fieldValue === 'number' ? fieldValue : parseFloat(fieldValue) || 0;
 
@@ -102,18 +101,25 @@ export class QuestValidator {
 		quest: QuestConfig,
 		queryResult: any
 	): { completed: boolean; progress?: number } {
-		const data = this.getNestedValue(queryResult, quest.resultField);
+		if (!quest.sequenceCondition || !quest.condition) {
+			return { completed: false };
+		}
 
-		if (!Array.isArray(data) || !quest.sequenceCondition || !quest.condition) {
+		const data = this.getNestedValue(queryResult, quest.condition.field);
+
+		if (!Array.isArray(data)) {
 			return { completed: false };
 		}
 
 		const sequenceField = quest.sequenceCondition.field;
 		const sequenceLength = quest.sequenceCondition.sequenceLength;
+		const itemConditionField = quest.condition.itemConditionField;
 
-		const validItems = data.filter((item: any) =>
-			this.evaluateCondition(quest.condition!, item[quest.condition!.field])
-		);
+		const validItems = itemConditionField
+			? data.filter((item: any) =>
+				this.evaluateCondition(quest.condition!, item[itemConditionField])
+			)
+			: data;
 
 		if (validItems.length < sequenceLength) {
 			return {
@@ -160,13 +166,14 @@ export class QuestValidator {
 			return { completed: false };
 		}
 
-		const data = this.getNestedValue(queryResult, quest.resultField);
+		const data = this.getNestedValue(queryResult, quest.conditions[0].field);
 
 		if (Array.isArray(data)) {
 			return {
 				completed: data.some((item) =>
 					quest.conditions!.every((condition) => {
-						const value = this.getNestedValue(item, condition.field);
+						const itemField = condition.itemConditionField || condition.field;
+						const value = this.getNestedValue(item, itemField);
 						return this.evaluateCondition(condition, value);
 					})
 				),
@@ -200,6 +207,15 @@ export class QuestValidator {
 			default:
 				return false;
 		}
+	}
+
+	private resolveFieldValue(obj: any, field: string): any {
+		const lenMatch = field.match(/^len\((.+)\)$/);
+		if (lenMatch) {
+			const value = this.getNestedValue(obj, lenMatch[1]);
+			return Array.isArray(value) ? value.length : 0;
+		}
+		return this.getNestedValue(obj, field);
 	}
 
 	private getNestedValue(obj: any, path: string): any {

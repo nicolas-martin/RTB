@@ -9,6 +9,7 @@ export interface ProjectMetadata {
 
 export interface QuestCondition {
 	field: string;
+	itemConditionField?: string;
 	operator: '=' | '!=' | '>' | '>=' | '<' | '<=';
 	value: string | number;
 }
@@ -25,14 +26,12 @@ export interface QuestConfig {
 	reward: number;
 	type: QuestType;
 	query: string;
-	resultField: string;
 	startDate?: string;
 	endDate?: string;
 	condition?: QuestCondition;
 	sequenceCondition?: SequenceCondition;
 	conditions?: QuestCondition[];
 	customValidator?: string;
-	targetValue?: number;
 }
 
 export interface Quest extends QuestConfig {
