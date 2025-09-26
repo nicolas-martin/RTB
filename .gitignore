@@ -5,6 +5,7 @@ ios/
 .yarn/
 dist-web/
 .yarn/
+.vite/
 
 # Xcode
 #

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Quest } from '../src/types/quest';
-import { QuestService } from '../src/services/questService';
-import { config } from '../src/config';
+import { Quest } from '../types/quest';
+import { QuestService } from '../services/questService';
+import { config } from '../../../src/config';
 
 export const useQuests = (playerId?: string) => {
 	const [quests, setQuests] = useState<Quest[]>([]);

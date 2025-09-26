@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { ProjectMetadata, Quest } from '../src/types/quest';
-import { projectManager } from '../src/services/projectManager';
+import { ProjectMetadata, Quest } from '../types/quest';
+import { projectManager } from '../services/projectManager';
 
 interface ProjectQuestsConfig {
 	projectId: string;

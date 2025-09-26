@@ -1,9 +1,5 @@
 import * as toml from 'toml';
-import {
-	QuestConfig,
-	ProjectMetadata,
-	ProjectWithQuests,
-} from '../types/quest';
+import { QuestConfig, ProjectMetadata, ProjectWithQuests } from '../types/quest';
 
 export class QuestParser {
 	async parseProjectFromFile(tomlContent: string): Promise<ProjectWithQuests> {

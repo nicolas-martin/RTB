@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { Quest } from '../src/types/quest';
+import { Quest } from '../types/quest';
 
 interface QuestCardProps {
 	quest: Quest;

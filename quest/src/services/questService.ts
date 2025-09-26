@@ -1,9 +1,4 @@
-import {
-	QuestConfig,
-	Quest,
-	QuestProgress,
-	ProjectMetadata,
-} from '../types/quest';
+import { QuestConfig, Quest, QuestProgress, ProjectMetadata } from '../types/quest';
 import { questParser } from './questParser';
 import { questValidator } from './questValidator';
 import { GraphQLService } from './graphqlClient';
