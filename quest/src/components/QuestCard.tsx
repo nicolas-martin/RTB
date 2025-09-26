@@ -1,12 +1,5 @@
+import { Quest } from '../types/quest'
 import './QuestCard.css'
-
-interface Quest {
-	id: string
-	title: string
-	description: string
-	reward: number
-	completed: boolean
-}
 
 interface QuestCardProps {
 	quest: Quest

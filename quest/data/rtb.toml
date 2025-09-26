@@ -122,4 +122,3 @@ query BustedRound2($playerId: ID!) {
 field = "status"
 operator = "="
 value = "BUSTED"
-
