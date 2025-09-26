@@ -2,7 +2,7 @@
 id = "rtb"
 name = "Ride The Bus"
 description = "Card game on Plume testnet"
-graphqlEndpoint = "https://api.goldsky.com/api/public/project_cmfy6mw327h2401xm82q555dj/subgraphs/rtb/2.0.0/gn"
+graphqlEndpoint = "https://api.goldsky.com/api/public/project_cmfy6mw327h2401xm82q555dj/subgraphs/rtb/2.0.1/gn"
 
 [[quest]]
 id = "win_1_game"
@@ -115,6 +115,7 @@ query = """
 query PlayThirtyGames($playerId: ID!) {
   player(id: $playerId) {
     totalGames
+    id
   }
 }
 """

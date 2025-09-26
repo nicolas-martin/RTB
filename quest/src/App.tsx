@@ -18,13 +18,14 @@ function App() {
 				const response = await fetch('/rtb/project.toml')
 				const tomlContent = await response.text()
 				await questService.loadProject(tomlContent)
-				setQuests(questService.getQuestsWithProgress())
 
 				const params = new URLSearchParams(window.location.search)
 				const walletFromUrl = params.get('wallet')
 				if (walletFromUrl) {
 					setPlayerId(walletFromUrl)
-					checkProgress(walletFromUrl)
+					await checkProgress(walletFromUrl)
+				} else {
+					setQuests(questService.getQuestsWithProgress())
 				}
 			} catch (error) {
 				console.error('Failed to load quests:', error)

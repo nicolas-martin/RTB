@@ -13,6 +13,14 @@ export class ProgressQuest extends BaseQuest {
 
 		const completed = this.evaluateCondition(condition, fieldValue);
 
+		console.log(`[ProgressQuest ${this.config.id}]`, {
+			field: condition.field,
+			fieldValue,
+			numericValue,
+			completed,
+			queryResult
+		});
+
 		return { completed, progress: numericValue };
 	}
 }

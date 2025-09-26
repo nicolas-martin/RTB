@@ -16,7 +16,9 @@ export class GraphQLService {
 		variables?: Record<string, any>
 	): Promise<T> {
 		try {
+			console.log('[GraphQLService] Executing query:', { query: query.substring(0, 100), variables });
 			const data = await this.client.request<T>(query, variables);
+			console.log('[GraphQLService] Response:', data);
 			return data;
 		} catch (error) {
 			console.error('GraphQL query error:', error);
