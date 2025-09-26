@@ -21,7 +21,7 @@ export class QuestParser {
 			}
 
 			const project = this.validateAndMapProject(parsed.project);
-			const quests = parsed.quest.map((q: any) => this.createQuestInstance(q));
+			const quests = parsed.quest.map((q: any) => this.createQuestInstance(q, project.id));
 
 			return { project, quests };
 		} catch (error) {
@@ -32,7 +32,7 @@ export class QuestParser {
 		}
 	}
 
-	private createQuestInstance(questData: any): BaseQuest {
+	private createQuestInstance(questData: any, projectId: string): BaseQuest {
 		const config = this.validateAndMapQuest(questData);
 
 		switch (config.type) {
@@ -43,7 +43,7 @@ export class QuestParser {
 			case 'sequential':
 				return new SequentialQuest(config);
 			case 'custom':
-				return new CustomQuest(config);
+				return new CustomQuest(config, projectId);
 			default:
 				throw new Error(`Unknown quest type: ${config.type}`);
 		}
@@ -96,8 +96,6 @@ export class QuestParser {
 			endDate: questData.endDate,
 			conditions: questData.conditions,
 			sequenceCondition: questData.sequenceCondition,
-			validatorFile: questData.validatorFile,
-			validatorFunction: questData.validatorFunction,
 			validatorParams: questData.validatorParams,
 		};
 	}

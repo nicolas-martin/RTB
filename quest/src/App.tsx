@@ -15,7 +15,7 @@ function App() {
 	useEffect(() => {
 		async function loadQuests() {
 			try {
-				const response = await fetch('/rtb.toml')
+				const response = await fetch('/rtb/project.toml')
 				const tomlContent = await response.text()
 				await questService.loadProject(tomlContent)
 				setQuests(questService.getQuestsWithProgress())

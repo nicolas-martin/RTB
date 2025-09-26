@@ -30,8 +30,6 @@ export interface QuestConfig {
 	endDate?: string;
 	conditions?: QuestCondition[];
 	sequenceCondition?: SequenceCondition;
-	validatorFile?: string;
-	validatorFunction?: string;
 	validatorParams?: Record<string, any>;
 }
 

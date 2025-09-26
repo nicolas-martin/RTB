@@ -1,4 +1,4 @@
-export function validateBustedRound2(data: any, params?: Record<string, any>): boolean {
+export function validate(data: any, params?: Record<string, any>): boolean {
 	if (!data.player?.games || !Array.isArray(data.player.games)) {
 		return false;
 	}

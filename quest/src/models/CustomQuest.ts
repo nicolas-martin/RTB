@@ -3,22 +3,21 @@ import { loadCustomValidator } from '../validators/customValidators';
 
 export class CustomQuest extends BaseQuest {
 	private validatorCache: ((data: any, params?: Record<string, any>) => boolean) | null = null;
+	private projectName: string;
+
+	constructor(config: any, projectName: string) {
+		super(config);
+		this.projectName = projectName;
+	}
 
 	async validate(queryResult: any): Promise<ValidationResult> {
-		if (!this.config.validatorFile || !this.config.validatorFunction) {
-			console.error('Custom quest requires validatorFile and validatorFunction');
-			return { completed: false };
+		if (!this.validatorCache) {
+			const validatorPath = `/data/${this.projectName}/validators/${this.config.id}`;
+			this.validatorCache = await loadCustomValidator(validatorPath, 'validate');
 		}
 
 		if (!this.validatorCache) {
-			this.validatorCache = await loadCustomValidator(
-				this.config.validatorFile,
-				this.config.validatorFunction
-			);
-		}
-
-		if (!this.validatorCache) {
-			console.error(`Failed to load validator: ${this.config.validatorFile}#${this.config.validatorFunction}`);
+			console.error(`Failed to load validator for quest: ${this.config.id}`);
 			return { completed: false };
 		}
 

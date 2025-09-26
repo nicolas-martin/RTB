@@ -1,0 +1,131 @@
+[project]
+id = "rtb"
+name = "Ride The Bus"
+description = "Card game on Plume testnet"
+graphqlEndpoint = "https://api.goldsky.com/api/public/project_cmfy6mw327h2401xm82q555dj/subgraphs/rtb/2.0.0/gn"
+
+[[quest]]
+id = "win_1_game"
+title = "Win 1 Game on RTB"
+description = "Win 1 game of Ride The Bus!!"
+reward = 1000
+type = "conditional"
+query = """
+query WinOneGame($playerId: ID!) {
+  player(id: $playerId) {
+    id
+    games(where: {rounds_: {roundIndex: 3}, status: CASHED_OUT}) {
+      status
+    }
+  }
+}
+"""
+
+[[quest.conditions]]
+field = "len(player.games)"
+operator = ">="
+value = 1
+
+[[quest]]
+id = "play_10_games"
+title = "Play 10 Games on RTB"
+description = "No matter if you win or lose, just play 10 games."
+reward = 4000
+type = "progress"
+query = """
+query PlayTenGames($playerId: ID!) {
+  player(id: $playerId) {
+    totalGames
+  }
+}
+"""
+
+[[quest.conditions]]
+field = "player.totalGames"
+operator = ">="
+value = 10
+
+[[quest]]
+id = "bet_half_xpl"
+title = "Bet 0.5 XPL in total"
+description = "Bet more than 0.5 XPL in total"
+reward = 2000
+type = "progress"
+query = """
+query BetHalfXPL($playerId: ID!) {
+  player(id: $playerId) {
+    totalWagered
+  }
+}
+"""
+
+[[quest.conditions]]
+field = "player.totalWagered"
+operator = ">="
+value = 0.5
+
+[[quest]]
+id = "cashout_round_2_twice"
+title = "Cashout on round 2, 2 times in a row"
+description = "Cashout on round 2, 2 times in a row"
+reward = 3000
+type = "sequential"
+query = """
+query CashoutRound2Twice($playerId: ID!) {
+  player(id: $playerId) {
+    games(where: {status: CASHED_OUT}) {
+      status
+      playerGameIndex
+    }
+  }
+}
+"""
+
+[[quest.conditions]]
+field = "player.games"
+itemConditionField = "status"
+operator = "="
+value = "CASHED_OUT"
+
+[quest.sequenceCondition]
+field = "playerGameIndex"
+sequenceLength = 2
+
+[[quest]]
+id = "busted_round_2_same_card"
+title = "Busted at round 2"
+description = "Lose at round 2 by getting the same card"
+reward = 500
+type = "custom"
+query = """
+query BustedRound2($playerId: ID!) {
+  player(id: $playerId) {
+    games(where: {status: BUSTED}) {
+      status
+      rounds {
+        roundIndex
+        roundOutcome
+      }
+    }
+  }
+}
+"""
+
+[[quest]]
+id = "play_30_games"
+title = "Play 30 Games on RTB"
+description = "Play a total of 30 games on Ride The Bus"
+reward = 10000
+type = "progress"
+query = """
+query PlayThirtyGames($playerId: ID!) {
+  player(id: $playerId) {
+    totalGames
+  }
+}
+"""
+
+[[quest.conditions]]
+field = "player.totalGames"
+operator = ">="
+value = 30
