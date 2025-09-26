@@ -1,5 +1,11 @@
 import * as toml from 'toml';
-import { QuestConfig, ProjectMetadata, ProjectWithQuests } from '../types/quest';
+import { QuestConfig, ProjectMetadata } from '../types/quest';
+import { BaseQuest, ConditionalQuest, ProgressQuest, SequentialQuest, CustomQuest } from '../models';
+
+export interface ProjectWithQuests {
+	project: ProjectMetadata;
+	quests: BaseQuest[];
+}
 
 export class QuestParser {
 	async parseProjectFromFile(tomlContent: string): Promise<ProjectWithQuests> {
@@ -15,7 +21,7 @@ export class QuestParser {
 			}
 
 			const project = this.validateAndMapProject(parsed.project);
-			const quests = parsed.quest.map((q: any) => this.validateAndMapQuest(q));
+			const quests = parsed.quest.map((q: any) => this.createQuestInstance(q));
 
 			return { project, quests };
 		} catch (error) {
@@ -23,6 +29,23 @@ export class QuestParser {
 			throw new Error(
 				`Project parsing error: ${error instanceof Error ? error.message : 'Unknown error'}`
 			);
+		}
+	}
+
+	private createQuestInstance(questData: any): BaseQuest {
+		const config = this.validateAndMapQuest(questData);
+
+		switch (config.type) {
+			case 'conditional':
+				return new ConditionalQuest(config);
+			case 'progress':
+				return new ProgressQuest(config);
+			case 'sequential':
+				return new SequentialQuest(config);
+			case 'custom':
+				return new CustomQuest(config);
+			default:
+				throw new Error(`Unknown quest type: ${config.type}`);
 		}
 	}
 
@@ -50,7 +73,6 @@ export class QuestParser {
 			'reward',
 			'type',
 			'query',
-			'resultField',
 		];
 		for (const field of required) {
 			if (!questData[field]) {
@@ -58,7 +80,7 @@ export class QuestParser {
 			}
 		}
 
-		const validTypes = ['singular', 'progress', 'sequential', 'conditional'];
+		const validTypes = ['conditional', 'progress', 'sequential', 'custom'];
 		if (!validTypes.includes(questData.type)) {
 			throw new Error(`Invalid quest type: ${questData.type}`);
 		}
@@ -70,14 +92,13 @@ export class QuestParser {
 			reward: questData.reward,
 			type: questData.type,
 			query: questData.query.trim(),
-			resultField: questData.resultField,
 			startDate: questData.startDate,
 			endDate: questData.endDate,
-			condition: questData.condition,
-			sequenceCondition: questData.sequenceCondition,
 			conditions: questData.conditions,
-			customValidator: questData.customValidator,
-			targetValue: questData.targetValue,
+			sequenceCondition: questData.sequenceCondition,
+			validatorFile: questData.validatorFile,
+			validatorFunction: questData.validatorFunction,
+			validatorParams: questData.validatorParams,
 		};
 	}
 }

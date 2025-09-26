@@ -13,7 +13,7 @@ function QuestCard({ quest }: QuestCardProps) {
 
 		if (quest.progress !== undefined && quest.type === 'progress') {
 			const current = Math.round(quest.progress)
-			const target = quest.condition?.value || 100
+			const target = quest.conditions?.[0]?.value || 100
 			const targetNum = typeof target === 'number' ? target : parseFloat(target as string) || 100
 			const percentage = (quest.progress / targetNum) * 100
 			return (

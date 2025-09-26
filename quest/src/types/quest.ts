@@ -1,4 +1,4 @@
-export type QuestType = 'singular' | 'progress' | 'sequential' | 'conditional';
+export type QuestType = 'conditional' | 'progress' | 'sequential' | 'custom';
 
 export interface ProjectMetadata {
 	id: string;
@@ -28,10 +28,11 @@ export interface QuestConfig {
 	query: string;
 	startDate?: string;
 	endDate?: string;
-	condition?: QuestCondition;
-	sequenceCondition?: SequenceCondition;
 	conditions?: QuestCondition[];
-	customValidator?: string;
+	sequenceCondition?: SequenceCondition;
+	validatorFile?: string;
+	validatorFunction?: string;
+	validatorParams?: Record<string, any>;
 }
 
 export interface Quest extends QuestConfig {

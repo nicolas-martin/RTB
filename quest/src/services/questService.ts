@@ -1,11 +1,11 @@
-import { QuestConfig, Quest, QuestProgress, ProjectMetadata } from '../types/quest';
+import { Quest, QuestProgress, ProjectMetadata } from '../types/quest';
 import { questParser } from './questParser';
-import { questValidator } from './questValidator';
 import { GraphQLService } from './graphqlClient';
+import { BaseQuest } from '../models';
 
 export class QuestService {
 	private project: ProjectMetadata | null = null;
-	private quests: QuestConfig[] = [];
+	private quests: BaseQuest[] = [];
 	private questProgress: Map<string, QuestProgress> = new Map();
 	private graphqlService: GraphQLService;
 
@@ -32,21 +32,21 @@ export class QuestService {
 	}
 
 	async checkQuest(questId: string, playerId: string): Promise<Quest | null> {
-		const questConfig = this.quests.find((q) => q.id === questId);
-		if (!questConfig) {
+		const quest = this.quests.find((q) => q.getId() === questId);
+		if (!quest) {
 			console.error(`Quest not found: ${questId}`);
 			return null;
 		}
 
 		try {
 			const queryResult = await this.graphqlService.executeQuery(
-				questConfig.query,
+				quest.getQuery(),
 				{
 					playerId,
 				}
 			);
 
-			const validation = questValidator.validateQuest(questConfig, queryResult);
+			const validation = quest.validate(queryResult);
 
 			const progress: QuestProgress = {
 				questId,
@@ -59,7 +59,7 @@ export class QuestService {
 			this.saveProgressToStorage();
 
 			return {
-				...questConfig,
+				...quest.getConfig(),
 				completed: validation.completed,
 				progress: validation.progress,
 			};
@@ -72,25 +72,25 @@ export class QuestService {
 	async checkAllQuests(playerId: string): Promise<Quest[]> {
 		const results: Quest[] = [];
 
-		for (const questConfig of this.quests) {
-			const quest = await this.checkQuest(questConfig.id, playerId);
-			if (quest) {
-				results.push(quest);
+		for (const quest of this.quests) {
+			const result = await this.checkQuest(quest.getId(), playerId);
+			if (result) {
+				results.push(result);
 			}
 		}
 
 		return results;
 	}
 
-	getQuests(): QuestConfig[] {
+	getQuests(): BaseQuest[] {
 		return this.quests;
 	}
 
 	getQuestsWithProgress(): Quest[] {
 		return this.quests.map((quest) => {
-			const progress = this.questProgress.get(quest.id);
+			const progress = this.questProgress.get(quest.getId());
 			return {
-				...quest,
+				...quest.getConfig(),
 				completed: progress?.completed ?? false,
 				progress: progress?.progress,
 			};
@@ -98,12 +98,12 @@ export class QuestService {
 	}
 
 	getQuestById(questId: string): Quest | null {
-		const questConfig = this.quests.find((q) => q.id === questId);
-		if (!questConfig) return null;
+		const quest = this.quests.find((q) => q.getId() === questId);
+		if (!quest) return null;
 
 		const progress = this.questProgress.get(questId);
 		return {
-			...questConfig,
+			...quest.getConfig(),
 			completed: progress?.completed ?? false,
 			progress: progress?.progress,
 		};

@@ -19,6 +19,13 @@ function App() {
 				const tomlContent = await response.text()
 				await questService.loadProject(tomlContent)
 				setQuests(questService.getQuestsWithProgress())
+
+				const params = new URLSearchParams(window.location.search)
+				const walletFromUrl = params.get('wallet')
+				if (walletFromUrl) {
+					setPlayerId(walletFromUrl)
+					checkProgress(walletFromUrl)
+				}
 			} catch (error) {
 				console.error('Failed to load quests:', error)
 			} finally {
@@ -28,17 +35,25 @@ function App() {
 		loadQuests()
 	}, [])
 
-	const handleCheckProgress = async () => {
-		if (!playerId.trim()) return
+	const checkProgress = async (wallet: string) => {
+		if (!wallet.trim()) return
 		setChecking(true)
 		try {
-			const updatedQuests = await questService.checkAllQuests(playerId)
+			const updatedQuests = await questService.checkAllQuests(wallet)
 			setQuests(updatedQuests)
 		} catch (error) {
 			console.error('Failed to check quest progress:', error)
 		} finally {
 			setChecking(false)
 		}
+	}
+
+	const handleCheckProgress = async () => {
+		if (!playerId.trim()) return
+		const url = new URL(window.location.href)
+		url.searchParams.set('wallet', playerId)
+		window.history.pushState({}, '', url)
+		await checkProgress(playerId)
 	}
 
 	if (loading) {
