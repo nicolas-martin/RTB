@@ -19,10 +19,13 @@
     "@metamask/sdk-react": "^0.33.1",
     "axios": "^0.21.1",
     "ether": "^0.0.9",
+    "graphql": "^16.11.0",
+    "graphql-request": "^7.2.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-native": "0.62.2",
     "react-native-web": "^0.21.1",
+    "toml": "^3.0.0",
     "viem": "^2.37.8",
     "web3": "^4.16.0"
   },

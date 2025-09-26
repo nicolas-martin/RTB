@@ -73,7 +73,7 @@ export const MetaMaskProvider: React.FC<MetaMaskProviderProps> = ({
 		// Give SDK time to initialize before checking connection
 		const checkConnection = async () => {
 			// Wait a bit for SDK to initialize
-			await new Promise(resolve => setTimeout(resolve, 500));
+			await new Promise((resolve) => setTimeout(resolve, 500));
 
 			try {
 				const provider = MMSDK.getProvider();
@@ -154,7 +154,9 @@ export const MetaMaskProvider: React.FC<MetaMaskProviderProps> = ({
 				if (window.ethereum) {
 					provider = window.ethereum;
 				} else {
-					throw new Error('MetaMask not found. Please install MetaMask extension or open in MetaMask mobile browser.');
+					throw new Error(
+						'MetaMask not found. Please install MetaMask extension or open in MetaMask mobile browser.'
+					);
 				}
 			}
 
@@ -178,7 +180,9 @@ export const MetaMaskProvider: React.FC<MetaMaskProviderProps> = ({
 			} else if (err.message?.includes('provider')) {
 				setError('MetaMask is initializing. Please try again.');
 			} else if (err.message?.includes('not found')) {
-				setError('Please install MetaMask extension or use MetaMask mobile browser');
+				setError(
+					'Please install MetaMask extension or use MetaMask mobile browser'
+				);
 			} else {
 				setError(err.message || 'Failed to connect wallet');
 			}

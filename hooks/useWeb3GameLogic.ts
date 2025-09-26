@@ -137,7 +137,9 @@ export const useWeb3GameLogic = () => {
 	const [selections, setSelections] = useState<(string | null)[]>(() =>
 		new Array(STAGES.length).fill(null)
 	);
-	const selectionsRef = useRef<(string | null)[]>(new Array(STAGES.length).fill(null));
+	const selectionsRef = useRef<(string | null)[]>(
+		new Array(STAGES.length).fill(null)
+	);
 	const [betValue, setBetValue] = useState('');
 	const [results, setResults] = useState<(boolean | null)[]>(() =>
 		new Array(STAGES.length).fill(null)
@@ -192,7 +194,8 @@ export const useWeb3GameLogic = () => {
 					console.log('Round played:', { roundIndex, card, win, newPayout });
 
 					// Convert BigInt if needed
-					const index = typeof roundIndex === 'bigint' ? Number(roundIndex) : roundIndex;
+					const index =
+						typeof roundIndex === 'bigint' ? Number(roundIndex) : roundIndex;
 
 					// Update card
 					const convertedCard = convertCardFromContract(card);
@@ -262,7 +265,11 @@ export const useWeb3GameLogic = () => {
 				const roundType = activeCardIndex as RoundType;
 				const choice = convertSelectionToContract(activeCardIndex, selection);
 
-				console.log('Calling contract playRound:', { gameId, roundType, choice });
+				console.log('Calling contract playRound:', {
+					gameId,
+					roundType,
+					choice,
+				});
 				const win = await contractService.playRound(gameId, roundType, choice);
 
 				// The event listeners will handle updating the UI
@@ -318,7 +325,11 @@ export const useWeb3GameLogic = () => {
 	// Wrapper for flipCard that plays the round on blockchain
 	const flipCard = useCallback(
 		(index: number) => {
-			console.log('flipCard called', { index, activeCardIndex, selections: selectionsRef.current });
+			console.log('flipCard called', {
+				index,
+				activeCardIndex,
+				selections: selectionsRef.current,
+			});
 
 			if (index !== activeCardIndex) {
 				console.log('Not active card index');

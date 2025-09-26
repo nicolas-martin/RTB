@@ -4,6 +4,7 @@
 ios/
 .yarn/
 dist-web/
+.yarn/
 
 # Xcode
 #
