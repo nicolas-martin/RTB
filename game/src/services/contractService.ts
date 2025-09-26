@@ -89,8 +89,6 @@ class ContractService {
 			}
 			throw new Error('Failed to get game ID');
 		} catch (error: any) {
-			console.error('StartGame error:', error);
-
 			// Parse and throw a more user-friendly error
 			if (error.message?.includes('insufficient')) {
 				throw new Error('Insufficient XPL balance or house liquidity');
@@ -127,14 +125,10 @@ class ContractService {
 			throw new Error('Wallet not connected');
 
 		try {
-			console.log('PlayRound params:', { gameId, roundType, choice });
-
 			const choiceBytes = this.web3.utils.padLeft(
 				this.web3.utils.toHex(choice),
 				2
 			);
-
-			console.log('Sending playRound transaction:', { gameId, choiceBytes });
 
 			const tx = (await this.contract.methods
 				.playRound(gameId, choiceBytes)
@@ -143,17 +137,12 @@ class ContractService {
 					gas: '300000',
 				})) as TransactionReceipt;
 
-			console.log('PlayRound transaction result:', tx);
-
 			const roundPlayedEvent = tx.events?.RoundPlayed;
 			if (roundPlayedEvent) {
-				console.log('Round played event:', roundPlayedEvent.returnValues);
 				return roundPlayedEvent.returnValues.win;
 			}
 			return false;
 		} catch (error: any) {
-			console.error('PlayRound error:', error);
-
 			if (error.message?.includes('not live')) {
 				throw new Error('Game is not active');
 			}
@@ -225,17 +214,21 @@ class ContractService {
 		return this.web3.utils.fromWei(maxPayout, 'ether');
 	}
 
-	async getRoundMultipliers(): Promise<Array<{ roundType: RoundType; multiplierBps: number; multiplier: number }>> {
+	async getRoundMultipliers(): Promise<
+		Array<{ roundType: RoundType; multiplierBps: number; multiplier: number }>
+	> {
 		if (!this.contract) throw new Error('Wallet not connected');
 
 		const multipliers = [];
 		for (let i = 0; i < 4; i++) {
-			const config = (await this.contract.methods.roundConfigs(i).call()) as any;
+			const config = (await this.contract.methods
+				.roundConfigs(i)
+				.call()) as any;
 			const multiplierBps = Number(config.multiplierBps);
 			multipliers.push({
 				roundType: Number(config.rtype) as RoundType,
 				multiplierBps,
-				multiplier: multiplierBps / 1000
+				multiplier: multiplierBps / 1000,
 			});
 		}
 		return multipliers;

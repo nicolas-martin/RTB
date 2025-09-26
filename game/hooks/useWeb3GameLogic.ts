@@ -188,21 +188,12 @@ export const useWeb3GameLogic = () => {
 			const wagerAmount = parseFloat(betValue);
 			const maxPotentialPayout = wagerAmount * 1.9 * 1.9 * 2.0 * 4.0; // Calculate max potential
 
-			console.log('Wager amount:', betValue, 'XPL');
-			console.log(
-				'Max potential payout:',
-				maxPotentialPayout.toFixed(4),
-				'XPL'
-			);
-
 			const newGameId = await contractService.startGame(betValue);
 			setGameId(newGameId);
 
 			// Set up event listeners for this game
 			contractService.listenToGameEvents(newGameId, {
 				onRoundPlayed: (roundIndex, card, win, newPayout) => {
-					console.log('Round played:', { roundIndex, card, win, newPayout });
-
 					// Convert BigInt if needed
 					const index =
 						typeof roundIndex === 'bigint' ? Number(roundIndex) : roundIndex;
@@ -234,11 +225,9 @@ export const useWeb3GameLogic = () => {
 					}
 				},
 				onCashedOut: (amount) => {
-					console.log('Cashed out:', amount);
 					setCurrentPayout(amount);
 				},
 				onBusted: () => {
-					console.log('Busted!');
 					setCurrentPayout('0');
 				},
 			});
@@ -246,7 +235,6 @@ export const useWeb3GameLogic = () => {
 			const errorMessage =
 				err instanceof Error ? err.message : 'Failed to start game';
 			setError(errorMessage);
-			console.error('Error starting game:', err);
 		} finally {
 			setLoading(false);
 		}
@@ -255,8 +243,6 @@ export const useWeb3GameLogic = () => {
 	// Play a round on the blockchain
 	const playRound = useCallback(
 		async (selection: string) => {
-			console.log('playRound called', { gameId, activeCardIndex, selection });
-
 			if (!gameId || !isConnected) {
 				setError('No active game');
 				return;
@@ -267,7 +253,6 @@ export const useWeb3GameLogic = () => {
 				return;
 			}
 
-			console.log('Playing round:', { selection, activeCardIndex });
 			setIsPlayingRound(true);
 			setError(null);
 
@@ -275,11 +260,6 @@ export const useWeb3GameLogic = () => {
 				const roundType = activeCardIndex as RoundType;
 				const choice = convertSelectionToContract(activeCardIndex, selection);
 
-				console.log('Calling contract playRound:', {
-					gameId,
-					roundType,
-					choice,
-				});
 				const win = await contractService.playRound(gameId, roundType, choice);
 
 				// The event listeners will handle updating the UI
@@ -292,7 +272,6 @@ export const useWeb3GameLogic = () => {
 				const errorMessage =
 					err instanceof Error ? err.message : 'Failed to play round';
 				setError(errorMessage);
-				console.error('Error playing round:', err);
 			} finally {
 				setIsPlayingRound(false);
 			}
@@ -326,7 +305,6 @@ export const useWeb3GameLogic = () => {
 			const errorMessage =
 				err instanceof Error ? err.message : 'Failed to cash out';
 			setError(errorMessage);
-			console.error('Error cashing out:', err);
 		} finally {
 			setIsCashingOut(false);
 		}
@@ -370,7 +348,6 @@ export const useWeb3GameLogic = () => {
 					// Set up event listeners
 					contractService.listenToGameEvents(newGameId, {
 						onRoundPlayed: (roundIndex, card, win, newPayout) => {
-
 							const idx =
 								typeof roundIndex === 'bigint'
 									? Number(roundIndex)

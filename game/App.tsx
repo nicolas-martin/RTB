@@ -17,6 +17,9 @@ import PlayingCard from './components/PlayingCard';
 import { useWeb3GameLogic } from './hooks/useWeb3GameLogic';
 import { MetaMaskProvider, useMetaMask } from './src/contexts/MetaMaskContext';
 import { config } from './src/config';
+import { useSounds } from './hooks/useSounds';
+import { Motion } from 'motion/react';
+import { SoundProvider } from 'react-sounds';
 
 const AppContent: React.FC = () => {
 	const {
@@ -53,19 +56,34 @@ const AppContent: React.FC = () => {
 	const [houseLiquidity, setHouseLiquidity] = useState<string | null>(null);
 	const [maxPayout, setMaxPayout] = useState<string | null>(null);
 	const [isLoadingContractInfo, setIsLoadingContractInfo] = useState(false);
+	const { playSound } = useSounds();
 
-	const windowWidth = Dimensions.get('window').width;
 	const currentSelection = useMemo(() => {
 		const selection =
 			activeCardIndex < selections.length ? selections[activeCardIndex] : null;
-		console.log('currentSelection computed:', {
-			activeCardIndex,
-			selection,
-			selections,
-		});
 		return selection;
 	}, [activeCardIndex, selections]);
 	const betEditable = !hasGameStarted && !loading && isConnected;
+
+	// Play sounds on game events
+	useEffect(() => {
+		if (gameWon) {
+			playSound('winRound');
+		}
+	}, [gameWon]);
+
+	useEffect(() => {
+		if (gameLost) {
+			playSound('lose');
+		}
+	}, [gameLost]);
+
+	useEffect(() => {
+		const lastResult = results[results.length - 1];
+		if (lastResult === true && !gameWon) {
+			playSound('winRound');
+		}
+	}, [results]);
 
 	// Fetch house liquidity and max payout when connected
 	useEffect(() => {
@@ -86,7 +104,6 @@ const AppContent: React.FC = () => {
 				setHouseLiquidity(liquidity);
 				setMaxPayout(maxPay);
 			} catch (err) {
-				console.error('Error fetching contract info:', err);
 				// Set default values on error
 				setHouseLiquidity('0');
 				setMaxPayout('0');
@@ -219,7 +236,6 @@ const AppContent: React.FC = () => {
 												styles.optionButtonActive,
 											]}
 											onPress={() => {
-												console.log('Button pressed:', option.value);
 												makeSelection(option.value);
 											}}
 											disabled={isPlayingRound}
@@ -247,7 +263,10 @@ const AppContent: React.FC = () => {
 									styles.cashOutButton,
 									isCashingOut && styles.cashOutButtonDisabled,
 								]}
-								onPress={cashOut}
+								onPress={() => {
+									playSound('cashOut');
+									cashOut();
+								}}
 								disabled={isCashingOut}
 							>
 								<Text style={styles.cashOutButtonText}>
@@ -644,9 +663,11 @@ const styles = StyleSheet.create({
 const App: React.FC = () => {
 	return (
 		<ErrorBoundary>
-			<MetaMaskProvider>
-				<AppContent />
-			</MetaMaskProvider>
+			<SoundProvider>
+				<MetaMaskProvider>
+					<AppContent />
+				</MetaMaskProvider>
+			</SoundProvider>
 		</ErrorBoundary>
 	);
 };
