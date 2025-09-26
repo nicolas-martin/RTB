@@ -140,6 +140,7 @@ export const useWeb3GameLogic = () => {
 	const selectionsRef = useRef<(string | null)[]>(
 		new Array(STAGES.length).fill(null)
 	);
+	const accountRef = useRef<string | null>(account);
 	const [betValue, setBetValue] = useState('');
 	const [results, setResults] = useState<(boolean | null)[]>(() =>
 		new Array(STAGES.length).fill(null)
@@ -148,10 +149,14 @@ export const useWeb3GameLogic = () => {
 	const [isPlayingRound, setIsPlayingRound] = useState(false);
 	const [isCashingOut, setIsCashingOut] = useState(false);
 
-	// Keep ref in sync with state
+	// Keep refs in sync with state
 	useEffect(() => {
 		selectionsRef.current = selections;
 	}, [selections]);
+
+	useEffect(() => {
+		accountRef.current = account;
+	}, [account]);
 
 	// Start a new game on the blockchain
 	const startGame = useCallback(async () => {
@@ -325,29 +330,22 @@ export const useWeb3GameLogic = () => {
 	// Wrapper for flipCard that plays the round on blockchain
 	const flipCard = useCallback(
 		async (index: number) => {
-			console.log('flipCard called', {
-				index,
-				activeCardIndex,
-				selections: selectionsRef.current,
-				gameId,
-			});
+			// Always get fresh account value from ref
+			const connected = !!accountRef.current;
 
 			if (index !== activeCardIndex) {
-				console.log('Not active card index');
 				return;
 			}
 
 			// Use ref to get current selections
 			const selection = selectionsRef.current[index];
 			if (!selection) {
-				console.log('No selection made');
 				setError('Please make a selection first (Red or Black, etc.)');
 				return;
 			}
 
 			// If no game started yet and user clicks first card with selection, auto-start
-			if (!gameId && index === 0 && isConnected) {
-				console.log('Auto-starting game...');
+			if (!gameId && index === 0 && connected) {
 				const bet = betValue || '0.01';
 				setBetValue(bet);
 
@@ -361,21 +359,17 @@ export const useWeb3GameLogic = () => {
 				setCurrentPayout(bet);
 
 				try {
-					const wagerAmount = parseFloat(bet);
-					const maxPotentialPayout = wagerAmount * 1.9 * 1.9 * 2.0 * 4.0;
-
-					console.log('Wager amount:', bet, 'XPL');
-					console.log('Max potential payout:', maxPotentialPayout.toFixed(4), 'XPL');
-
 					const newGameId = await contractService.startGame(bet);
 					setGameId(newGameId);
 
 					// Set up event listeners
 					contractService.listenToGameEvents(newGameId, {
 						onRoundPlayed: (roundIndex, card, win, newPayout) => {
-							console.log('Round played:', { roundIndex, card, win, newPayout });
 
-							const idx = typeof roundIndex === 'bigint' ? Number(roundIndex) : roundIndex;
+							const idx =
+								typeof roundIndex === 'bigint'
+									? Number(roundIndex)
+									: roundIndex;
 							const convertedCard = convertCardFromContract(card);
 
 							setCards((prev) => {
@@ -400,29 +394,30 @@ export const useWeb3GameLogic = () => {
 							}
 						},
 						onCashedOut: (amount) => {
-							console.log('Cashed out:', amount);
 							setCurrentPayout(amount);
 						},
 						onBusted: () => {
-							console.log('Busted!');
 							setCurrentPayout('0');
 						},
 					});
 
 					// Now play the first round
-					console.log('Playing first round with selection:', selection);
 					setIsPlayingRound(true);
 					const roundType = 0 as RoundType;
 					const choice = convertSelectionToContract(0, selection);
-					const win = await contractService.playRound(newGameId, roundType, choice);
+					const win = await contractService.playRound(
+						newGameId,
+						roundType,
+						choice
+					);
 
 					if (!win) {
 						setGameId(null);
 					}
 				} catch (err) {
-					const errorMessage = err instanceof Error ? err.message : 'Failed to start game';
+					const errorMessage =
+						err instanceof Error ? err.message : 'Failed to start game';
 					setError(errorMessage);
-					console.error('Error in auto-start:', err);
 				} finally {
 					setLoading(false);
 					setIsPlayingRound(false);
@@ -430,28 +425,25 @@ export const useWeb3GameLogic = () => {
 				return;
 			}
 
-			console.log('Calling playRound with selection:', selection);
+			// If no game started, don't try to play
+			if (!gameId) {
+				return;
+			}
+
 			// Play the round on blockchain
 			playRound(selection);
 		},
-		[activeCardIndex, playRound, gameId, isConnected, betValue]
+		[activeCardIndex, playRound, gameId, betValue]
 	);
 
 	const makeSelection = useCallback(
 		(value: string) => {
-			console.log('makeSelection called:', {
-				value,
-				activeCardIndex,
-				selectionsLength: selections.length,
-			});
 			if (activeCardIndex >= selections.length) {
-				console.log('activeCardIndex out of bounds');
 				return;
 			}
 			setSelections((prev) => {
 				const updated = [...prev];
 				updated[activeCardIndex] = value;
-				console.log('Updated selections:', updated);
 				return updated;
 			});
 		},
