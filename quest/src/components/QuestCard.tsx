@@ -24,19 +24,6 @@ function QuestCard({ quest }: QuestCardProps) {
 			)
 		}
 
-		if (quest.progress !== undefined && quest.type === 'sequential') {
-			const current = quest.sequenceCondition
-				? Math.round((quest.progress / 100) * quest.sequenceCondition.sequenceLength)
-				: quest.progress
-			const total = quest.sequenceCondition?.sequenceLength || 100
-			return (
-				<div className="progress-bar">
-					<div className="progress-fill" style={{ width: `${quest.progress}%` }} />
-					<span className="progress-text">{current}/{total}</span>
-				</div>
-			)
-		}
-
 		return null
 	}
 

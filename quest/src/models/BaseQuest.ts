@@ -1,9 +1,9 @@
 import { QuestConfig, QuestCondition } from '../types/quest';
 
-export interface ValidationResult {
+export type ValidationResult = {
 	completed: boolean;
 	progress?: number;
-}
+};
 
 export abstract class BaseQuest {
 	protected config: QuestConfig;

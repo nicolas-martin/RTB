@@ -1,6 +1,6 @@
 import * as toml from 'toml';
 import { QuestConfig, ProjectMetadata } from '../types/quest';
-import { BaseQuest, ConditionalQuest, ProgressQuest, SequentialQuest, CustomQuest } from '../models';
+import { BaseQuest, ConditionalQuest, ProgressQuest, CustomQuest } from '../models';
 
 export interface ProjectWithQuests {
 	project: ProjectMetadata;
@@ -40,8 +40,6 @@ export class QuestParser {
 				return new ConditionalQuest(config);
 			case 'progress':
 				return new ProgressQuest(config);
-			case 'sequential':
-				return new SequentialQuest(config);
 			case 'custom':
 				return new CustomQuest(config, projectId);
 			default:
@@ -80,7 +78,7 @@ export class QuestParser {
 			}
 		}
 
-		const validTypes = ['conditional', 'progress', 'sequential', 'custom'];
+		const validTypes = ['conditional', 'progress', 'custom'];
 		if (!validTypes.includes(questData.type)) {
 			throw new Error(`Invalid quest type: ${questData.type}`);
 		}
@@ -95,7 +93,6 @@ export class QuestParser {
 			startDate: questData.startDate,
 			endDate: questData.endDate,
 			conditions: questData.conditions,
-			sequenceCondition: questData.sequenceCondition,
 			validatorParams: questData.validatorParams,
 		};
 	}

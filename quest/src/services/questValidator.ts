@@ -52,8 +52,6 @@ export class QuestValidator {
 					return this.validateSingular(quest, queryResult);
 				case 'progress':
 					return this.validateProgress(quest, queryResult);
-				case 'sequential':
-					return this.validateSequential(quest, queryResult);
 				case 'conditional':
 					return this.validateConditional(quest, queryResult);
 				default:
@@ -97,59 +95,6 @@ export class QuestValidator {
 		return { completed, progress: numericValue };
 	}
 
-	private validateSequential(
-		quest: QuestConfig,
-		queryResult: any
-	): { completed: boolean; progress?: number } {
-		if (!quest.sequenceCondition || !quest.condition) {
-			return { completed: false };
-		}
-
-		const data = this.getNestedValue(queryResult, quest.condition.field);
-
-		if (!Array.isArray(data)) {
-			return { completed: false };
-		}
-
-		const sequenceField = quest.sequenceCondition.field;
-		const sequenceLength = quest.sequenceCondition.sequenceLength;
-		const itemConditionField = quest.condition.itemConditionField;
-
-		const validItems = itemConditionField
-			? data.filter((item: any) =>
-				this.evaluateCondition(quest.condition!, item[itemConditionField])
-			)
-			: data;
-
-		if (validItems.length < sequenceLength) {
-			return {
-				completed: false,
-				progress: (validItems.length / sequenceLength) * 100,
-			};
-		}
-
-		for (let i = 0; i <= validItems.length - sequenceLength; i++) {
-			let isSequential = true;
-			const startIndex = validItems[i][sequenceField];
-
-			for (let j = 1; j < sequenceLength; j++) {
-				const currentIndex = validItems[i + j][sequenceField];
-				if (currentIndex !== startIndex + j) {
-					isSequential = false;
-					break;
-				}
-			}
-
-			if (isSequential) {
-				return { completed: true, progress: 100 };
-			}
-		}
-
-		return {
-			completed: false,
-			progress: (validItems.length / sequenceLength) * 100,
-		};
-	}
 
 	private validateConditional(
 		quest: QuestConfig,

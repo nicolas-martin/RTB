@@ -1,5 +1,5 @@
-export { BaseQuest, ValidationResult } from './BaseQuest';
+export { BaseQuest } from './BaseQuest';
+export type { ValidationResult } from './BaseQuest';
 export { ConditionalQuest } from './ConditionalQuest';
 export { ProgressQuest } from './ProgressQuest';
-export { SequentialQuest } from './SequentialQuest';
 export { CustomQuest } from './CustomQuest';

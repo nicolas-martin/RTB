@@ -66,30 +66,24 @@ value = 0.5
 
 [[quest]]
 id = "cashout_round_2_twice"
-title = "Cashout on round 2, 2 times in a row"
-description = "Cashout on round 2, 2 times in a row"
+title = "Cashout on round 2, 2 times"
+description = "Cashout on round 2, 2 times"
 reward = 3000
-type = "sequential"
+type = "progress"
 query = """
 query CashoutRound2Twice($playerId: ID!) {
   player(id: $playerId) {
-    games(where: {status: CASHED_OUT}) {
+    games(where: {rounds_: {roundIndex: 1}, status: CASHED_OUT}) {
       status
-      playerGameIndex
     }
   }
 }
 """
 
 [[quest.conditions]]
-field = "player.games"
-itemConditionField = "status"
-operator = "="
-value = "CASHED_OUT"
-
-[quest.sequenceCondition]
-field = "playerGameIndex"
-sequenceLength = 2
+field = "len(player.games)"
+operator = ">="
+value = 2
 
 [[quest]]
 id = "busted_round_2_same_card"

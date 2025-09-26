@@ -5,7 +5,7 @@ export async function loadCustomValidator(
 	functionName: string
 ): Promise<CustomValidator | null> {
 	try {
-		const module = await import(filePath);
+		const module = await import(/* @vite-ignore */ filePath);
 		const validator = module[functionName];
 
 		if (typeof validator !== 'function') {
