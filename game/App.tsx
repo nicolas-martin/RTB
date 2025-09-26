@@ -103,9 +103,6 @@ const AppContent: React.FC = () => {
 	}, [isConnected]);
 
 	const getStatusMessage = () => {
-		if (!isConnected) {
-			return 'Connect wallet to play';
-		}
 		if (gameWon) {
 			return `🎉 You won all 4 rounds!`;
 		}
@@ -117,7 +114,6 @@ const AppContent: React.FC = () => {
 			return 'Game complete!';
 		}
 		if (hasGameStarted) {
-			// Show round results
 			const wonRounds = results.filter((r) => r === true).length;
 			const playedRounds = results.filter((r) => r !== null).length;
 			if (playedRounds > 0) {
@@ -130,38 +126,155 @@ const AppContent: React.FC = () => {
 			}
 			return 'Game in progress';
 		}
-		return 'Ready to play';
+		return '';
 	};
 
 	return (
 		<View style={styles.container}>
 			<StatusBar backgroundColor="#1a1a2e" barStyle="light-content" />
 
+			{/* Main Content */}
+			<View style={styles.mainContent}>
+				{/* Area 1: Title and Bet Input */}
+				<View style={styles.topSection}>
+					<Header />
+					<View style={styles.betContainer}>
+						<Text style={styles.betLabel}>Bet Amount (XPL):</Text>
+						<TextInput
+							style={[styles.betInput, !betEditable && styles.betInputDisabled]}
+							value={betValue}
+							onChangeText={setBetValue}
+							placeholder="0.01"
+							placeholderTextColor="#999"
+							keyboardType="decimal-pad"
+							editable={betEditable}
+						/>
+					</View>
+				</View>
+
+				{/* Area 2: Cards */}
+				<View style={styles.middleSection}>
+					{/* Game Status */}
+					<View style={styles.statusContainer}>
+						<Text style={styles.statusText}>{getStatusMessage()}</Text>
+					</View>
+
+					<View
+						style={[
+							styles.errorContainer,
+							!error && styles.errorContainerHidden,
+						]}
+					>
+						{error && (
+							<>
+								<Text style={styles.errorTitle}>Error:</Text>
+								<Text style={styles.errorText}>{error}</Text>
+							</>
+						)}
+					</View>
+
+					<View style={styles.cardsContainer}>
+						{loading && (
+							<View style={styles.loadingContainer}>
+								<ActivityIndicator size="large" color="#ffffff" />
+								<Text style={styles.loadingText}>
+									{gameId ? 'Playing round...' : 'Starting game...'}
+								</Text>
+							</View>
+						)}
+						{!loading && cards.length > 0 && (
+							<View style={styles.cardsRow}>
+								{cards.map((card, index) => (
+									<View key={index} style={styles.cardWrapper}>
+										<PlayingCard
+											cardState={card}
+											onCardPressed={() => flipCard(index)}
+											width={120}
+											disabled={index !== activeCardIndex || isPlayingRound}
+										/>
+									</View>
+								))}
+							</View>
+						)}
+					</View>
+				</View>
+
+				{/* Area 3: User Choice and Checkout */}
+				<View style={styles.bottomSection}>
+					{currentStage &&
+						!isRoundComplete &&
+						isConnected &&
+						!gameWon &&
+						!gameLost && (
+							<View style={styles.stageContainer}>
+								<Text style={styles.stageTitle}>{currentStage.title}</Text>
+								<View style={styles.optionsContainer}>
+									{currentStage.options.map((option) => (
+										<Pressable
+											key={option.value}
+											style={[
+												styles.optionButton,
+												currentSelection === option.value &&
+												styles.optionButtonActive,
+											]}
+											onPress={() => {
+												console.log('Button pressed:', option.value);
+												makeSelection(option.value);
+											}}
+											disabled={isPlayingRound}
+										>
+											<Text
+												style={[
+													styles.optionText,
+													currentSelection === option.value &&
+													styles.optionTextActive,
+												]}
+											>
+												{option.label}
+											</Text>
+										</Pressable>
+									))}
+								</View>
+							</View>
+						)}
+
+					{/* Cash Out Section */}
+					{hasGameStarted && results.some((r) => r === true) && !gameLost && (
+						<View style={styles.cashOutSection}>
+							<Pressable
+								style={[
+									styles.cashOutButton,
+									isCashingOut && styles.cashOutButtonDisabled,
+								]}
+								onPress={cashOut}
+								disabled={isCashingOut}
+							>
+								<Text style={styles.cashOutButtonText}>
+									{isCashingOut
+										? 'Cashing out...'
+										: `Cash Out: ${currentPayout} XPL`}
+								</Text>
+							</Pressable>
+						</View>
+					)}
+
+					{/* New Game Button */}
+					{(gameLost || gameWon) && isConnected && (
+						<View style={styles.newGameSection}>
+							<Pressable
+								style={[styles.actionButton, styles.newGameButton]}
+								onPress={() => window.location.reload()}
+								disabled={loading}
+							>
+								<Text style={styles.actionButtonText}>New Game</Text>
+							</Pressable>
+						</View>
+					)}
+				</View>
+			</View>
+
 			{/* Right Sidebar */}
 			<View style={styles.rightSidebar}>
-				{/* Cash Out Button - Always visible at top */}
-				<Pressable
-					style={[
-						styles.cashOutButtonTop,
-						(!hasGameStarted ||
-							!results.some((r) => r === true) ||
-							isCashingOut ||
-							gameLost) &&
-							styles.cashOutButtonDisabled,
-					]}
-					onPress={cashOut}
-					disabled={
-						!hasGameStarted ||
-						!results.some((r) => r === true) ||
-						isCashingOut ||
-						gameLost
-					}
-				>
-					<Text style={styles.cashOutButtonText}>
-						{isCashingOut ? 'Cashing out...' : `Cash Out: ${currentPayout} XPL`}
-					</Text>
-				</Pressable>
-
 				{/* MetaMask Connection Status */}
 				<View style={styles.walletSection}>
 					{!isConnected ? (
@@ -217,117 +330,6 @@ const AppContent: React.FC = () => {
 					</View>
 				)}
 			</View>
-
-			<Header />
-
-			{/* Bet Input */}
-			<View style={styles.betContainer}>
-				<Text style={styles.betLabel}>Bet Amount (XPL):</Text>
-				<TextInput
-					style={[styles.betInput, !betEditable && styles.betInputDisabled]}
-					value={betValue}
-					onChangeText={setBetValue}
-					placeholder="0.01"
-					placeholderTextColor="#999"
-					keyboardType="decimal-pad"
-					editable={betEditable}
-				/>
-			</View>
-
-			{/* Game Status */}
-			<View style={styles.statusContainer}>
-				<Text style={styles.statusText}>{getStatusMessage()}</Text>
-			</View>
-
-			{/* Cards Container */}
-			<View style={styles.cardsWrapper}>
-				{/* Error message above cards */}
-				{error && (
-					<View style={styles.errorContainer}>
-						<Text style={styles.errorTitle}>Error:</Text>
-						<Text style={styles.errorText}>{error}</Text>
-					</View>
-				)}
-				<View style={[styles.cardsContainer, { width: windowWidth }]}>
-					{loading && (
-						<View style={styles.loadingContainer}>
-							<ActivityIndicator size="large" color="#ffffff" />
-							<Text style={styles.loadingText}>
-								{gameId ? 'Playing round...' : 'Starting game...'}
-							</Text>
-						</View>
-					)}
-					{!loading && cards.length > 0 && (
-						<View style={styles.cardsRow}>
-							{cards.map((card, index) => (
-								<View key={index} style={styles.cardWrapper}>
-									<PlayingCard
-										cardState={card}
-										onCardPressed={() => flipCard(index)}
-										width={120}
-										disabled={index !== activeCardIndex || isPlayingRound}
-									/>
-								</View>
-							))}
-						</View>
-					)}
-				</View>
-			</View>
-
-			{/* Stage Selection */}
-			{currentStage && !isRoundComplete && isConnected && hasGameStarted && (
-				<View style={styles.stageContainer}>
-					<Text style={styles.stageTitle}>{currentStage.title}</Text>
-					<View style={styles.optionsContainer}>
-						{currentStage.options.map((option) => (
-							<Pressable
-								key={option.value}
-								style={[
-									styles.optionButton,
-									currentSelection === option.value &&
-										styles.optionButtonActive,
-								]}
-								onPress={() => {
-									console.log('Button pressed:', option.value);
-									makeSelection(option.value);
-								}}
-								disabled={isPlayingRound}
-							>
-								<Text
-									style={[
-										styles.optionText,
-										currentSelection === option.value &&
-											styles.optionTextActive,
-									]}
-								>
-									{option.label}
-								</Text>
-							</Pressable>
-						))}
-					</View>
-				</View>
-			)}
-
-			{/* Game Actions */}
-			<View style={styles.gameActions}>
-				{(!hasGameStarted || gameLost || gameWon) && isConnected && (
-					<Pressable
-						style={[styles.actionButton, styles.startButton]}
-						onPress={() => {
-							if (gameLost || gameWon) {
-								window.location.reload();
-							} else {
-								startGame();
-							}
-						}}
-						disabled={loading || (!betValue && !gameLost && !gameWon)}
-					>
-						<Text style={styles.actionButtonText}>
-							{gameLost || gameWon ? 'New Game' : 'Start Game'}
-						</Text>
-					</Pressable>
-				)}
-			</View>
 		</View>
 	);
 };
@@ -336,21 +338,40 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: '#1a1a2e',
+		flexDirection: 'row',
+	},
+	mainContent: {
+		flex: 1,
+		flexDirection: 'column',
+	},
+	topSection: {
+		flex: 1,
+		justifyContent: 'center',
+		alignItems: 'center',
+		borderBottomWidth: 1,
+		borderBottomColor: '#3d3d6b',
+		paddingVertical: 20,
+	},
+	middleSection: {
+		flex: 2,
+		justifyContent: 'center',
+		alignItems: 'center',
+		borderBottomWidth: 1,
+		borderBottomColor: '#3d3d6b',
+		paddingVertical: 20,
+	},
+	bottomSection: {
+		flex: 1,
+		justifyContent: 'center',
 		alignItems: 'center',
 		paddingVertical: 20,
-		paddingRight: 210, // Account for sidebar
 	},
 	rightSidebar: {
-		position: 'absolute',
-		top: 0,
-		right: 0,
-		bottom: 0,
 		width: 200,
 		backgroundColor: '#232343',
 		borderLeftWidth: 1,
 		borderLeftColor: '#3d3d6b',
 		padding: 10,
-		zIndex: 1000,
 	},
 	walletSection: {
 		marginBottom: 20,
@@ -394,12 +415,15 @@ const styles = StyleSheet.create({
 		color: '#fff',
 		fontSize: 12,
 	},
-	cashOutButtonTop: {
+	cashOutSection: {
+		marginTop: 20,
+		alignItems: 'center',
+	},
+	cashOutButton: {
 		backgroundColor: '#f39c12',
-		paddingHorizontal: 15,
-		paddingVertical: 10,
+		paddingHorizontal: 30,
+		paddingVertical: 15,
 		borderRadius: 5,
-		marginBottom: 15,
 	},
 	cashOutButtonDisabled: {
 		backgroundColor: '#555',
@@ -436,8 +460,7 @@ const styles = StyleSheet.create({
 		opacity: 0.5,
 	},
 	statusContainer: {
-		marginBottom: 20,
-		minHeight: 30,
+		marginBottom: 5,
 	},
 	statusText: {
 		color: '#fff',
@@ -450,10 +473,17 @@ const styles = StyleSheet.create({
 		borderColor: '#e74c3c',
 		borderRadius: 5,
 		padding: 10,
-		marginBottom: 15,
+		marginBottom: 30,
+		marginTop: 5,
 		maxWidth: 600,
 		alignSelf: 'center',
 		width: '90%',
+		height: 70,
+	},
+	errorContainerHidden: {
+		opacity: 0,
+		borderColor: 'transparent',
+		backgroundColor: 'transparent',
 	},
 	errorTitle: {
 		color: '#e74c3c',
@@ -466,7 +496,6 @@ const styles = StyleSheet.create({
 		fontSize: 12,
 		fontFamily: 'monospace',
 		flexWrap: 'wrap',
-		wordBreak: 'break-word',
 	},
 	hintText: {
 		color: '#95a5a6',
@@ -475,14 +504,7 @@ const styles = StyleSheet.create({
 		marginTop: 5,
 		fontStyle: 'italic',
 	},
-	cardsWrapper: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
-		minHeight: 300,
-	},
 	cardsContainer: {
-		height: 280,
 		justifyContent: 'center',
 		alignItems: 'center',
 	},
@@ -510,9 +532,8 @@ const styles = StyleSheet.create({
 		marginTop: 10,
 	},
 	stageContainer: {
-		marginBottom: 20,
 		alignItems: 'center',
-		minHeight: 80,
+		marginBottom: 15,
 	},
 	stageTitle: {
 		color: '#fff',
@@ -546,10 +567,9 @@ const styles = StyleSheet.create({
 	optionTextActive: {
 		color: '#f39c12',
 	},
-	gameActions: {
+	newGameSection: {
 		marginTop: 20,
 		alignItems: 'center',
-		minHeight: 60,
 	},
 	actionButton: {
 		paddingHorizontal: 30,
@@ -560,9 +580,6 @@ const styles = StyleSheet.create({
 	startButton: {
 		backgroundColor: '#27ae60',
 	},
-	cashOutButton: {
-		backgroundColor: '#f39c12',
-	},
 	newGameButton: {
 		backgroundColor: '#3498db',
 	},
@@ -570,23 +587,6 @@ const styles = StyleSheet.create({
 		color: '#fff',
 		fontSize: 16,
 		fontWeight: 'bold',
-	},
-	cashOutContainer: {
-		alignItems: 'center',
-		marginTop: 10,
-	},
-	cashOutInfo: {
-		color: '#fff',
-		fontSize: 14,
-		marginBottom: 10,
-		textAlign: 'center',
-	},
-	continueHint: {
-		color: '#95a5a6',
-		fontSize: 12,
-		marginTop: 10,
-		fontStyle: 'italic',
-		textAlign: 'center',
 	},
 	contractInfoSection: {
 		marginTop: 10,

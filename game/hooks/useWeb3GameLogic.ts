@@ -324,11 +324,12 @@ export const useWeb3GameLogic = () => {
 
 	// Wrapper for flipCard that plays the round on blockchain
 	const flipCard = useCallback(
-		(index: number) => {
+		async (index: number) => {
 			console.log('flipCard called', {
 				index,
 				activeCardIndex,
 				selections: selectionsRef.current,
+				gameId,
 			});
 
 			if (index !== activeCardIndex) {
@@ -344,11 +345,96 @@ export const useWeb3GameLogic = () => {
 				return;
 			}
 
+			// If no game started yet and user clicks first card with selection, auto-start
+			if (!gameId && index === 0 && isConnected) {
+				console.log('Auto-starting game...');
+				const bet = betValue || '0.01';
+				setBetValue(bet);
+
+				setLoading(true);
+				setError(null);
+				setActiveCardIndex(0);
+				setSelections([selection, null, null, null]);
+				selectionsRef.current = [selection, null, null, null];
+				setCards(createInitialCards());
+				setResults(new Array(STAGES.length).fill(null));
+				setCurrentPayout(bet);
+
+				try {
+					const wagerAmount = parseFloat(bet);
+					const maxPotentialPayout = wagerAmount * 1.9 * 1.9 * 2.0 * 4.0;
+
+					console.log('Wager amount:', bet, 'XPL');
+					console.log('Max potential payout:', maxPotentialPayout.toFixed(4), 'XPL');
+
+					const newGameId = await contractService.startGame(bet);
+					setGameId(newGameId);
+
+					// Set up event listeners
+					contractService.listenToGameEvents(newGameId, {
+						onRoundPlayed: (roundIndex, card, win, newPayout) => {
+							console.log('Round played:', { roundIndex, card, win, newPayout });
+
+							const idx = typeof roundIndex === 'bigint' ? Number(roundIndex) : roundIndex;
+							const convertedCard = convertCardFromContract(card);
+
+							setCards((prev) => {
+								const updated = [...prev];
+								updated[idx] = {
+									card: convertedCard,
+									isFlipped: true,
+								};
+								return updated;
+							});
+
+							setResults((prev) => {
+								const updated = [...prev];
+								updated[idx] = win;
+								return updated;
+							});
+
+							setCurrentPayout(newPayout);
+
+							if (win && idx < 3) {
+								setActiveCardIndex(idx + 1);
+							}
+						},
+						onCashedOut: (amount) => {
+							console.log('Cashed out:', amount);
+							setCurrentPayout(amount);
+						},
+						onBusted: () => {
+							console.log('Busted!');
+							setCurrentPayout('0');
+						},
+					});
+
+					// Now play the first round
+					console.log('Playing first round with selection:', selection);
+					setIsPlayingRound(true);
+					const roundType = 0 as RoundType;
+					const choice = convertSelectionToContract(0, selection);
+					const win = await contractService.playRound(newGameId, roundType, choice);
+
+					if (!win) {
+						setGameId(null);
+					}
+				} catch (err) {
+					const errorMessage = err instanceof Error ? err.message : 'Failed to start game';
+					setError(errorMessage);
+					console.error('Error in auto-start:', err);
+				} finally {
+					setLoading(false);
+					setIsPlayingRound(false);
+				}
+				return;
+			}
+
 			console.log('Calling playRound with selection:', selection);
 			// Play the round on blockchain
 			playRound(selection);
 		},
-		[activeCardIndex, playRound]
+		[activeCardIndex, playRound, gameId, isConnected, betValue]
 	);
 
 	const makeSelection = useCallback(
