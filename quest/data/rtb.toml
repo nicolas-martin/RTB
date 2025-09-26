@@ -33,8 +33,6 @@ title = "Play 10 Games on RTB"
 description = "No matter if you win or lose, just play 10 games."
 reward = 4000
 type = "progress"
-resultField = "player.totalGames"
-targetValue = 10
 query = """
 query PlayTenGames($playerId: ID!) {
   player(id: $playerId) {
@@ -44,7 +42,7 @@ query PlayTenGames($playerId: ID!) {
 """
 
 [quest.condition]
-field = "totalGames"
+field = "player.totalGames"
 operator = ">="
 value = 10
 
@@ -54,8 +52,6 @@ title = "Bet 0.5 XPL in total"
 description = "Bet more than 0.5 XPL in total"
 reward = 2000
 type = "progress"
-resultField = "player.totalWagered"
-targetValue = 0.5
 query = """
 query BetHalfXPL($playerId: ID!) {
   player(id: $playerId) {
@@ -65,7 +61,7 @@ query BetHalfXPL($playerId: ID!) {
 """
 
 [quest.condition]
-field = "totalWagered"
+field = "player.totalWagered"
 operator = ">="
 value = 0.5
 
@@ -122,3 +118,22 @@ query BustedRound2($playerId: ID!) {
 field = "status"
 operator = "="
 value = "BUSTED"
+
+[[quest]]
+id = "play_30_games"
+title = "Play 30 Games on RTB"
+description = "Play a total of 30 games on Ride The Bus"
+reward = 10000
+type = "progress"
+query = """
+query PlayThirtyGames($playerId: ID!) {
+  player(id: $playerId) {
+    totalGames
+  }
+}
+"""
+
+[quest.condition]
+field = "player.totalGames"
+operator = ">="
+value = 30

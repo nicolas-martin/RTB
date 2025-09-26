@@ -10,6 +10,47 @@ h1 {
   color: #333;
 }
 
+.player-input {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.player-input input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #3a3a4e;
+  border-radius: 8px;
+  background: #1e1e2e;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.player-input input::placeholder {
+  color: #6b7280;
+}
+
+.player-input button {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(90deg, #3b82f6 0%, #6366f1 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.player-input button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.player-input button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .quests-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

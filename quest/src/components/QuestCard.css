@@ -41,8 +41,44 @@
   font-size: 1rem;
 }
 
+.quest-type {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6366f1;
+  background: #2a2a3e;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
 .status {
   color: #4ade80;
   font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.progress-bar {
+  position: relative;
+  height: 24px;
+  background: #2a2a3e;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #6366f1 100%);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 0.75rem;
   font-weight: 600;
 }

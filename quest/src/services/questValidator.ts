@@ -85,21 +85,17 @@ export class QuestValidator {
 		quest: QuestConfig,
 		queryResult: any
 	): { completed: boolean; progress: number } {
-		const value = this.getNestedValue(queryResult, quest.resultField);
+		if (!quest.condition) {
+			return { completed: false, progress: 0 };
+		}
+
+		const fieldValue = this.getNestedValue(queryResult, quest.condition.field);
 		const numericValue =
-			typeof value === 'number' ? value : parseFloat(value) || 0;
+			typeof fieldValue === 'number' ? fieldValue : parseFloat(fieldValue) || 0;
 
-		const target = quest.targetValue || quest.condition?.value || 0;
-		const targetNum =
-			typeof target === 'number' ? target : parseFloat(target as string) || 0;
+		const completed = this.evaluateCondition(quest.condition, fieldValue);
 
-		const progress =
-			targetNum > 0 ? Math.min((numericValue / targetNum) * 100, 100) : 0;
-		const completed = quest.condition
-			? this.evaluateCondition(quest.condition, numericValue)
-			: numericValue >= targetNum;
-
-		return { completed, progress };
+		return { completed, progress: numericValue };
 	}
 
 	private validateSequential(
