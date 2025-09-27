@@ -645,7 +645,7 @@ const styles = StyleSheet.create({
 const App: React.FC = () => {
 	return (
 		<ErrorBoundary>
-			<SoundProvider preload={getSoundsToPreload()} initialEnabled={true}>
+			<SoundProvider initialEnabled={true}>
 				<MetaMaskProvider>
 					<AppContent />
 				</MetaMaskProvider>
