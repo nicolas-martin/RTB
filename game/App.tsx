@@ -4,7 +4,6 @@ import {
 	View,
 	Text,
 	StatusBar,
-	Dimensions,
 	ActivityIndicator,
 	Pressable,
 	TextInput,
@@ -17,7 +16,7 @@ import PlayingCard from './components/PlayingCard';
 import { useWeb3GameLogic } from './hooks/useWeb3GameLogic';
 import { MetaMaskProvider, useMetaMask } from './src/contexts/MetaMaskContext';
 import { config } from './src/config';
-import { useSounds, SoundType } from './hooks/useSounds';
+import { useSounds, SoundType, getSoundsToPreload } from './hooks/useSounds';
 import { SoundProvider } from 'react-sounds';
 import { AnimatedStatusMessage } from './components/AnimatedStatusMessage';
 
@@ -80,7 +79,11 @@ const AppContent: React.FC = () => {
 
 	useEffect(() => {
 		const completedRounds = results.filter((r) => r !== null).length;
-		if (completedRounds > 0 && results[completedRounds - 1] === true && !gameWon) {
+		if (
+			completedRounds > 0 &&
+			results[completedRounds - 1] === true &&
+			!gameWon
+		) {
 			playSound(SoundType.WinRound);
 		}
 	}, [results, gameWon]);
@@ -602,7 +605,7 @@ const styles = StyleSheet.create({
 const App: React.FC = () => {
 	return (
 		<ErrorBoundary>
-			<SoundProvider>
+			<SoundProvider preload={getSoundsToPreload()} initialEnabled={true}>
 				<MetaMaskProvider>
 					<AppContent />
 				</MetaMaskProvider>
