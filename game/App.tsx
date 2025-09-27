@@ -131,11 +131,11 @@ const AppContent: React.FC = () => {
 
 	const getStatusMessage = () => {
 		if (gameWon) {
-			return `🎉 You won all 4 rounds!`;
+			return `You won all 4 rounds!`;
 		}
 		if (gameLost) {
 			const lastRoundResult = results.findIndex((r) => r === false);
-			return `💔 You lost on round ${lastRoundResult + 1}! Better luck next time`;
+			return `You lost on round ${lastRoundResult + 1}! Better luck next time`;
 		}
 		if (isRoundComplete) {
 			return 'Game complete!';
@@ -146,9 +146,9 @@ const AppContent: React.FC = () => {
 			if (playedRounds > 0) {
 				const lastResult = results[playedRounds - 1];
 				if (lastResult === true) {
-					return `✅ Round ${playedRounds} won!`;
+					return `Round ${playedRounds} won!`;
 				} else if (lastResult === false) {
-					return `❌ Round ${playedRounds} lost! Game over`;
+					return `Round ${playedRounds} lost! Game over`;
 				}
 			}
 			return '';
@@ -315,7 +315,9 @@ const AppContent: React.FC = () => {
 							<Text style={styles.walletAddress}>
 								{account?.slice(0, 6)}...{account?.slice(-4)}
 							</Text>
-							<Text style={styles.walletBalance}>{balance} XPL</Text>
+							<Text style={styles.walletBalance}>
+								{parseFloat(balance).toFixed(4)} XPL
+							</Text>
 							<Pressable
 								style={styles.disconnectButton}
 								onPress={disconnectWallet}
@@ -385,16 +387,12 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
-		borderBottomWidth: 1,
-		borderBottomColor: '#3d3d6b',
 		paddingVertical: 20,
 	},
 	middleSection: {
 		flex: 2,
 		justifyContent: 'center',
 		alignItems: 'center',
-		borderBottomWidth: 1,
-		borderBottomColor: '#3d3d6b',
 		paddingVertical: 20,
 	},
 	bottomSection: {
@@ -406,8 +404,6 @@ const styles = StyleSheet.create({
 	rightSidebar: {
 		width: 200,
 		backgroundColor: '#232343',
-		borderLeftWidth: 1,
-		borderLeftColor: '#3d3d6b',
 		padding: 10,
 	},
 	walletSection: {
