@@ -20,7 +20,6 @@ import { config } from './src/config';
 import { useSounds, SoundType } from './hooks/useSounds';
 import { SoundProvider } from 'react-sounds';
 import { AnimatedStatusMessage } from './components/AnimatedStatusMessage';
-import { AnimatedPayout } from './components/AnimatedPayout';
 
 const AppContent: React.FC = () => {
 	const {
@@ -159,27 +158,16 @@ const AppContent: React.FC = () => {
 					<Header />
 
 					<View style={styles.betContainer}>
-						<Text style={styles.betLabel}>
-							{hasGameStarted && results.some((r) => r === true)
-								? 'Current Payout (XPL):'
-								: 'Bet Amount (XPL):'}
-						</Text>
-						{hasGameStarted && results.some((r) => r === true) ? (
-							<AnimatedPayout currentPayout={currentPayout} />
-						) : (
-							<TextInput
-								style={[
-									styles.betInput,
-									!betEditable && styles.betInputDisabled,
-								]}
-								value={betValue}
-								onChangeText={setBetValue}
-								placeholder={config.DEFAULT_WAGER}
-								placeholderTextColor="#999"
-								keyboardType="decimal-pad"
-								editable={betEditable}
-							/>
-						)}
+						<Text style={styles.betLabel}>Bet Amount (XPL):</Text>
+						<TextInput
+							style={[styles.betInput, !betEditable && styles.betInputDisabled]}
+							value={betValue}
+							onChangeText={setBetValue}
+							placeholder={config.DEFAULT_WAGER}
+							placeholderTextColor="#999"
+							keyboardType="decimal-pad"
+							editable={betEditable}
+						/>
 					</View>
 				</View>
 
