@@ -9,12 +9,6 @@ import { MetaMaskSDK } from '@metamask/sdk';
 import { contractService } from '../services/contractService';
 import { PLASMA_TESTNET } from '../config/contracts';
 
-// Extend window interface for ethereum
-declare global {
-	interface Window {
-		ethereum?: any;
-	}
-}
 
 interface MetaMaskContextType {
 	account: string | null;

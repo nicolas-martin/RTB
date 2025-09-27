@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, StyleSheet } from 'react-native';
-import { motion, spring } from 'motion/react';
+import { motion } from 'motion/react';
 
 interface AnimatedStatusMessageProps {
 	error: string | null;
@@ -26,7 +26,8 @@ export const AnimatedStatusMessage: React.FC<AnimatedStatusMessageProps> = ({
 			}}
 			transition={{
 				duration: 0.6,
-				easing: spring(),
+				type: 'spring',
+				bounce: 0.5,
 			}}
 			style={{
 				borderWidth: 1,
