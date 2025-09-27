@@ -46,7 +46,7 @@ export class QuestService {
 				}
 			);
 
-			const validation = quest.validate(queryResult);
+			const validation = await quest.validate(queryResult);
 
 			const progress: QuestProgress = {
 				questId,

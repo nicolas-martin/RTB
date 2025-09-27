@@ -21,8 +21,15 @@ export class CustomQuest extends BaseQuest {
 			return { completed: false };
 		}
 
-		return {
-			completed: this.validatorCache(queryResult, this.config.validatorParams || {})
-		};
+		const completed = this.validatorCache(queryResult, this.config.validatorParams || {});
+
+		console.log(`[CustomQuest] ${this.config.id}`, {
+			questId: this.config.id,
+			validatorPath: `/data/${this.projectName}/validators/${this.config.id}`,
+			queryResult,
+			completed
+		});
+
+		return { completed };
 	}
 }

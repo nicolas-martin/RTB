@@ -9,8 +9,18 @@ export class ConditionalQuest extends BaseQuest {
 		const condition = this.config.conditions[0];
 		const conditionValue = this.resolveFieldValue(queryResult, condition.field);
 
+		const completed = this.evaluateCondition(condition, conditionValue);
+
+		console.log(`[ProgressQuest] ${this.config.id}`, {
+			questId: this.config.id,
+			condition,
+			conditionValue,
+			queryResult,
+			completed
+		});
+
 		return {
-			completed: this.evaluateCondition(condition, conditionValue),
+			completed: completed,
 		};
 	}
 }
