@@ -5,9 +5,7 @@ export function validate(data: any, params?: Record<string, any>): boolean {
 
 	return data.player.games.some((game: any) => {
 		if (
-			game.status !== 'BUSTED' ||
-			!game.rounds ||
-			game.rounds.length < 2
+			game.status !== 'BUSTED' || !game.rounds || game.rounds.length < 2
 		) {
 			return false;
 		}
@@ -15,12 +13,13 @@ export function validate(data: any, params?: Record<string, any>): boolean {
 		const round0 = game.rounds.find((r: any) => r.roundIndex === 0);
 		const round1 = game.rounds.find((r: any) => r.roundIndex === 1);
 
-		return (
-			round0 &&
-			round1 &&
-			round0.roundOutcome &&
-			round1.roundOutcome &&
-			round0.roundOutcome === round1.roundOutcome
-		);
+		if (!round0?.roundOutcome || !round1?.roundOutcome) {
+			return false;
+		}
+
+		const rank0 = round0.roundOutcome.slice(0, -1);
+		const rank1 = round1.roundOutcome.slice(0, -1);
+
+		return rank0 === rank1;
 	});
 }
