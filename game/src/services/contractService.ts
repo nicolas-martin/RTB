@@ -74,12 +74,23 @@ class ContractService {
 		try {
 			const wager = this.web3.utils.toWei(wagerAmount, 'ether');
 
+			// Estimate gas first
+			const gasEstimate = await this.contract.methods
+				.startGame(wager, deadlineSeconds)
+				.estimateGas({
+					from: this.account,
+					value: wager,
+				});
+
+			// Add 20% buffer to gas estimate
+			const gasLimit = (BigInt(gasEstimate) * 120n) / 100n;
+
 			// Send transaction with native XPL as value
 			const tx = (await this.contract.methods
 				.startGame(wager, deadlineSeconds)
 				.send({
 					from: this.account,
-					gas: '300000',
+					gas: gasLimit.toString(),
 					value: wager, // Send native XPL with the transaction
 				})) as TransactionReceipt;
 
@@ -130,11 +141,21 @@ class ContractService {
 				2
 			);
 
+			// Estimate gas first
+			const gasEstimate = await this.contract.methods
+				.playRound(gameId, choiceBytes)
+				.estimateGas({
+					from: this.account,
+				});
+
+			// Add 20% buffer to gas estimate
+			const gasLimit = (BigInt(gasEstimate) * 120n) / 100n;
+
 			const tx = (await this.contract.methods
 				.playRound(gameId, choiceBytes)
 				.send({
 					from: this.account,
-					gas: '300000',
+					gas: gasLimit.toString(),
 				})) as TransactionReceipt;
 
 			const roundPlayedEvent = tx.events?.RoundPlayed;
@@ -161,9 +182,19 @@ class ContractService {
 		if (!this.contract || !this.account)
 			throw new Error('Wallet not connected');
 
+		// Estimate gas first
+		const gasEstimate = await this.contract.methods
+			.cashOut(gameId)
+			.estimateGas({
+				from: this.account,
+			});
+
+		// Add 20% buffer to gas estimate
+		const gasLimit = (BigInt(gasEstimate) * 120n) / 100n;
+
 		const tx = (await this.contract.methods.cashOut(gameId).send({
 			from: this.account,
-			gas: '300000',
+			gas: gasLimit.toString(),
 		})) as TransactionReceipt;
 
 		const cashedOutEvent = tx.events?.CashedOut;
