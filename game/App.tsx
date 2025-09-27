@@ -54,6 +54,9 @@ const AppContent: React.FC = () => {
 	} = useWeb3GameLogic();
 	const [houseLiquidity, setHouseLiquidity] = useState<string | null>(null);
 	const [maxPayout, setMaxPayout] = useState<string | null>(null);
+	const [roundMultipliers, setRoundMultipliers] = useState<
+		Array<{ roundType: number; multiplierBps: number; multiplier: number }> | null
+	>(null);
 	const [isLoadingContractInfo, setIsLoadingContractInfo] = useState(false);
 	const { playSound } = useSounds();
 
@@ -104,12 +107,15 @@ const AppContent: React.FC = () => {
 			try {
 				const liquidity = await contractService.getHouseLiquidity();
 				const maxPay = await contractService.getMaxPayout();
+				const multipliers = await contractService.getRoundMultipliers();
 				setHouseLiquidity(liquidity);
 				setMaxPayout(maxPay);
+				setRoundMultipliers(multipliers);
 			} catch (err) {
 				// Set default values on error
 				setHouseLiquidity('0');
 				setMaxPayout('0');
+				setRoundMultipliers(null);
 			} finally {
 				setIsLoadingContractInfo(false);
 			}
@@ -338,6 +344,23 @@ const AppContent: React.FC = () => {
 									<Text style={styles.contractInfoText}>
 										Max: {maxPayout ?? '0'} XPL
 									</Text>
+									{roundMultipliers && (
+										<>
+											<Text
+												style={[
+													styles.contractInfoText,
+													{ marginTop: 10, fontWeight: 'bold' },
+												]}
+											>
+												Multipliers:
+											</Text>
+											{roundMultipliers.map((mult, idx) => (
+												<Text key={idx} style={styles.contractInfoText}>
+													R{idx + 1}: {mult.multiplier}x
+												</Text>
+											))}
+										</>
+									)}
 								</>
 							)}
 						</View>
