@@ -18,8 +18,9 @@ import { useWeb3GameLogic } from './hooks/useWeb3GameLogic';
 import { MetaMaskProvider, useMetaMask } from './src/contexts/MetaMaskContext';
 import { config } from './src/config';
 import { useSounds, SoundType } from './hooks/useSounds';
-import { Motion } from 'motion/react';
 import { SoundProvider } from 'react-sounds';
+import { AnimatedStatusMessage } from './components/AnimatedStatusMessage';
+import { AnimatedPayout } from './components/AnimatedPayout';
 
 const AppContent: React.FC = () => {
 	const {
@@ -79,11 +80,11 @@ const AppContent: React.FC = () => {
 	}, [gameLost]);
 
 	useEffect(() => {
-		const lastResult = results[results.length - 1];
-		if (lastResult === true && !gameWon) {
+		const completedRounds = results.filter((r) => r !== null).length;
+		if (completedRounds > 0 && results[completedRounds - 1] === true && !gameWon) {
 			playSound(SoundType.WinRound);
 		}
-	}, [results]);
+	}, [results, gameWon]);
 
 	// Fetch house liquidity and max payout when connected
 	useEffect(() => {
@@ -156,40 +157,41 @@ const AppContent: React.FC = () => {
 				{/* Area 1: Title and Bet Input */}
 				<View style={styles.topSection}>
 					<Header />
+
 					<View style={styles.betContainer}>
-						<Text style={styles.betLabel}>Bet Amount (XPL):</Text>
-						<TextInput
-							style={[styles.betInput, !betEditable && styles.betInputDisabled]}
-							value={betValue}
-							onChangeText={setBetValue}
-							placeholder={config.DEFAULT_WAGER}
-							placeholderTextColor="#999"
-							keyboardType="decimal-pad"
-							editable={betEditable}
-						/>
+						<Text style={styles.betLabel}>
+							{hasGameStarted && results.some((r) => r === true)
+								? 'Current Payout (XPL):'
+								: 'Bet Amount (XPL):'}
+						</Text>
+						{hasGameStarted && results.some((r) => r === true) ? (
+							<AnimatedPayout currentPayout={currentPayout} />
+						) : (
+							<TextInput
+								style={[
+									styles.betInput,
+									!betEditable && styles.betInputDisabled,
+								]}
+								value={betValue}
+								onChangeText={setBetValue}
+								placeholder={config.DEFAULT_WAGER}
+								placeholderTextColor="#999"
+								keyboardType="decimal-pad"
+								editable={betEditable}
+							/>
+						)}
 					</View>
 				</View>
 
 				{/* Area 2: Cards */}
 				<View style={styles.middleSection}>
 					{/* Status/Error Container - Always takes same space */}
-					<View
-						style={[
-							error || gameLost
-								? styles.messageContainerError
-								: styles.messageContainerSuccess,
-							!error && !getStatusMessage() && styles.messageContainerHidden,
-						]}
-					>
-						{error ? (
-							<>
-								<Text style={styles.errorTitle}>Error:</Text>
-								<Text style={styles.errorText}>{error}</Text>
-							</>
-						) : (
-							<Text style={styles.statusText}>{getStatusMessage()}</Text>
-						)}
-					</View>
+					<AnimatedStatusMessage
+						error={error}
+						gameLost={gameLost}
+						gameWon={gameWon}
+						statusMessage={getStatusMessage()}
+					/>
 
 					<View style={styles.cardsContainer}>
 						{loading && (
@@ -271,9 +273,7 @@ const AppContent: React.FC = () => {
 								disabled={isCashingOut}
 							>
 								<Text style={styles.cashOutButtonText}>
-									{isCashingOut
-										? 'Cashing out...'
-										: `Cash Out: ${currentPayout} XPL`}
+									{isCashingOut ? 'Cashing out...' : 'Cash Out'}
 								</Text>
 							</Pressable>
 						</View>
@@ -479,58 +479,6 @@ const styles = StyleSheet.create({
 	},
 	betInputDisabled: {
 		opacity: 0.5,
-	},
-	messageContainerError: {
-		backgroundColor: 'rgba(231, 76, 60, 0.15)',
-		borderWidth: 1,
-		borderColor: '#e74c3c',
-		borderRadius: 5,
-		padding: 10,
-		marginBottom: 30,
-		marginTop: 5,
-		maxWidth: 600,
-		alignSelf: 'center',
-		width: '90%',
-		height: 70,
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	messageContainerSuccess: {
-		backgroundColor: 'rgba(46, 204, 113, 0.15)',
-		borderWidth: 1,
-		borderColor: '#2ecc71',
-		borderRadius: 5,
-		padding: 10,
-		marginBottom: 30,
-		marginTop: 5,
-		maxWidth: 600,
-		alignSelf: 'center',
-		width: '90%',
-		height: 70,
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	messageContainerHidden: {
-		opacity: 0,
-		borderColor: 'transparent',
-		backgroundColor: 'transparent',
-	},
-	statusText: {
-		color: '#fff',
-		fontSize: 16,
-		textAlign: 'center',
-	},
-	errorTitle: {
-		color: '#e74c3c',
-		fontSize: 14,
-		fontWeight: 'bold',
-		marginBottom: 5,
-	},
-	errorText: {
-		color: '#e74c3c',
-		fontSize: 12,
-		fontFamily: 'monospace',
-		flexWrap: 'wrap',
 	},
 	hintText: {
 		color: '#95a5a6',
