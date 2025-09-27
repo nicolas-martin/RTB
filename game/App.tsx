@@ -261,7 +261,9 @@ const AppContent: React.FC = () => {
 								disabled={isCashingOut}
 							>
 								<Text style={styles.cashOutButtonText}>
-									{isCashingOut ? 'Cashing out...' : 'Cash Out'}
+									{isCashingOut
+										? 'Cashing out...'
+										: `Cash Out: ${currentPayout} XPL`}
 								</Text>
 							</Pressable>
 						</View>
