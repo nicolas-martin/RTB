@@ -8,6 +8,7 @@ import {
 	Pressable,
 	TextInput,
 } from 'react-native';
+import { FontAwesome6 } from '@react-native-vector-icons/fontawesome6';
 import { contractService } from './src/services/contractService';
 
 import ErrorBoundary from './components/ErrorBoundary';
@@ -60,7 +61,7 @@ const AppContent: React.FC = () => {
 		multiplier: number;
 	}> | null>(null);
 	const [isLoadingContractInfo, setIsLoadingContractInfo] = useState(false);
-	const { playSound } = useSounds();
+	const { playSound, isMuted, toggleMute } = useSounds();
 
 	const currentSelection = useMemo(() => {
 		const selection =
@@ -371,6 +372,12 @@ const AppContent: React.FC = () => {
 					</View>
 				)}
 			</View>
+			{/* Sound Toggle Button - Bottom Left */}
+			<Pressable style={styles.soundToggleButton} onPress={toggleMute}>
+				<Text style={{ fontSize: 24, color: '#fff' }}>
+					{isMuted ? '🔇' : '🔊'}
+				</Text>
+			</Pressable>
 		</View>
 	);
 };
@@ -407,6 +414,18 @@ const styles = StyleSheet.create({
 		width: 200,
 		backgroundColor: '#232343',
 		padding: 10,
+	},
+	soundToggleButton: {
+		position: 'absolute',
+		bottom: 20,
+		left: 20,
+		backgroundColor: '#2c2c54',
+		width: 50,
+		height: 50,
+		borderRadius: 25,
+		alignItems: 'center',
+		justifyContent: 'center',
+		zIndex: 1000,
 	},
 	walletSection: {
 		marginBottom: 20,

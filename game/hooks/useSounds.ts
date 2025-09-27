@@ -1,5 +1,5 @@
 import { useSound } from 'react-sounds';
-import { config } from '../src/config';
+import { useState, useEffect } from 'react';
 
 export enum SoundType {
 	WinRound = 'winRound',
@@ -38,8 +38,17 @@ export const useSounds = () => {
 		volume: sounds[SoundType.CardSelect].volume,
 	});
 
+	const [isMuted, setIsMuted] = useState(() => {
+		const saved = localStorage.getItem('soundsMuted');
+		return saved === 'true';
+	});
+
+	useEffect(() => {
+		localStorage.setItem('soundsMuted', String(isMuted));
+	}, [isMuted]);
+
 	const playSound = (soundType: SoundType) => {
-		if (!config.ENABLE_SOUND) return;
+		if (isMuted) return;
 
 		switch (soundType) {
 			case SoundType.WinRound:
@@ -60,5 +69,7 @@ export const useSounds = () => {
 		}
 	};
 
-	return { playSound };
+	const toggleMute = () => setIsMuted(!isMuted);
+
+	return { playSound, isMuted, toggleMute };
 };

@@ -17,6 +17,7 @@
   "dependencies": {
     "@metamask/sdk": "^0.33.1",
     "@metamask/sdk-react": "^0.33.1",
+    "@react-native-vector-icons/fontawesome6": "^12.2.0",
     "axios": "^0.21.1",
     "ether": "^0.0.9",
     "graphql": "^16.11.0",

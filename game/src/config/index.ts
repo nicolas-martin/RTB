@@ -13,7 +13,6 @@ export const config = {
 
 	// Feature flags
 	ENABLE_ANIMATIONS: true,
-	ENABLE_SOUND: true,
 } as const;
 
 // Type-safe environment check
