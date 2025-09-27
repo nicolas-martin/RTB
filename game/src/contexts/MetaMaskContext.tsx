@@ -146,7 +146,7 @@ export const MetaMaskProvider: React.FC<MetaMaskProviderProps> = ({
 			if (!provider) {
 				// Try one more time with direct ethereum object
 				if (window.ethereum) {
-					provider = window.ethereum;
+					provider = window.ethereum as any;
 				} else {
 					throw new Error(
 						'MetaMask not found. Please install MetaMask extension or open in MetaMask mobile browser.'

@@ -54,9 +54,11 @@ const AppContent: React.FC = () => {
 	} = useWeb3GameLogic();
 	const [houseLiquidity, setHouseLiquidity] = useState<string | null>(null);
 	const [maxPayout, setMaxPayout] = useState<string | null>(null);
-	const [roundMultipliers, setRoundMultipliers] = useState<
-		Array<{ roundType: number; multiplierBps: number; multiplier: number }> | null
-	>(null);
+	const [roundMultipliers, setRoundMultipliers] = useState<Array<{
+		roundType: number;
+		multiplierBps: number;
+		multiplier: number;
+	}> | null>(null);
 	const [isLoadingContractInfo, setIsLoadingContractInfo] = useState(false);
 	const { playSound } = useSounds();
 
@@ -264,7 +266,7 @@ const AppContent: React.FC = () => {
 									isCashingOut && styles.cashOutButtonDisabled,
 								]}
 								onPress={() => {
-									playSound(SoundType.CashOut);
+									// playSound(SoundType.CashOut);
 									cashOut();
 								}}
 								disabled={isCashingOut}

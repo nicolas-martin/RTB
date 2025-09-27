@@ -10,9 +10,9 @@ export enum SoundType {
 }
 
 const sounds: Record<SoundType, { name: string; volume?: number }> = {
-	[SoundType.WinRound]: { name: 'notification/success', volume: 0.3 },
-	[SoundType.CashOut]: { name: 'arcade/level_up', volume: 0.2 },
-	[SoundType.Lose]: { name: 'system/device_disconnect', volume: 0.5 },
+	[SoundType.WinRound]: { name: 'notification/success', volume: 0.1 },
+	[SoundType.CashOut]: { name: 'arcade/level_up', volume: 0.1 },
+	[SoundType.Lose]: { name: 'system/device_disconnect', volume: 0.2 },
 	[SoundType.SelectionButton]: { name: 'ui/keystroke_soft', volume: 0.5 },
 	[SoundType.CardSelect]: { name: 'ui/copy', volume: 0.5 },
 };
