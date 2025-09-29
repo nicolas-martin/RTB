@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react'
 import QuestCard from './components/QuestCard'
-import { createQuestService } from './services/questService'
-import { Quest } from './types/quest'
+import { projectManager } from './services/projectManager'
+import { Quest, ProjectMetadata } from './types/quest'
 import './App.css'
 
-const questService = createQuestService()
-
 function App() {
-	const [quests, setQuests] = useState<Quest[]>([])
+	const [projectQuests, setProjectQuests] = useState<{ project: ProjectMetadata; quests: Quest[] }[]>([])
 	const [loading, setLoading] = useState(true)
 	const [playerId, setPlayerId] = useState('')
 	const [checking, setChecking] = useState(false)
@@ -15,9 +13,7 @@ function App() {
 	useEffect(() => {
 		async function loadQuests() {
 			try {
-				const response = await fetch('/rtb/project.toml')
-				const tomlContent = await response.text()
-				await questService.loadProject(tomlContent)
+				await projectManager.loadAllProjects()
 
 				const params = new URLSearchParams(window.location.search)
 				const walletFromUrl = params.get('wallet')
@@ -25,7 +21,7 @@ function App() {
 					setPlayerId(walletFromUrl)
 					await checkProgress(walletFromUrl)
 				} else {
-					setQuests(questService.getQuestsWithProgress())
+					setProjectQuests(projectManager.getAllQuests())
 				}
 			} catch (error) {
 				console.error('Failed to load quests:', error)
@@ -40,8 +36,8 @@ function App() {
 		if (!wallet.trim()) return
 		setChecking(true)
 		try {
-			const updatedQuests = await questService.checkAllQuests(wallet)
-			setQuests(updatedQuests)
+			const updatedProjectQuests = await projectManager.checkAllProjectsProgress(wallet)
+			setProjectQuests(updatedProjectQuests)
 		} catch (error) {
 			console.error('Failed to check quest progress:', error)
 		} finally {
@@ -75,11 +71,17 @@ function App() {
 					{checking ? 'Checking...' : 'Check Progress'}
 				</button>
 			</div>
-			<div className="quests-grid">
-				{quests.map((quest) => (
-					<QuestCard key={quest.id} quest={quest} />
-				))}
-			</div>
+			{projectQuests.map(({ project, quests }) => (
+				<div key={project.id} className="project-section">
+					<h2>{project.name}</h2>
+					<p>{project.description}</p>
+					<div className="quests-grid">
+						{quests.map((quest) => (
+							<QuestCard key={`${project.id}-${quest.id}`} quest={quest} />
+						))}
+					</div>
+				</div>
+			))}
 		</div>
 	)
 }

@@ -39,11 +39,12 @@ export class QuestService {
 		}
 
 		try {
+			// Build variables object based on what the query expects
+			const variables = this.buildQueryVariables(quest.getQuery(), playerId);
+
 			const queryResult = await this.graphqlService.executeQuery(
 				quest.getQuery(),
-				{
-					playerId,
-				}
+				variables
 			);
 
 			const validation = await quest.validate(queryResult);
@@ -173,6 +174,23 @@ export class QuestService {
 		if (typeof localStorage !== 'undefined') {
 			localStorage.removeItem(`quest_progress_${this.project.id}`);
 		}
+	}
+
+	private buildQueryVariables(query: string, playerId: string): Record<string, any> {
+		const variables: Record<string, any> = {};
+
+		// Extract all variable definitions from the query
+		const variableRegex = /\$(\w+):\s*\w+[!]?/g;
+		let match;
+
+		while ((match = variableRegex.exec(query)) !== null) {
+			const variableName = match[1];
+			// Map all variables to playerId for now
+			// In the future, we can extend this to handle other variable types
+			variables[variableName] = playerId;
+		}
+
+		return variables;
 	}
 }
 

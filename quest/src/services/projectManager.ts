@@ -3,6 +3,7 @@ import { QuestService } from './questService';
 
 export class ProjectManager {
 	private projects: Map<string, QuestService> = new Map();
+	private availableProjects = ['rtb', 'gluex']; // Add more project IDs here
 
 	async loadProject(projectId: string, tomlPath: string): Promise<void> {
 		try {
@@ -16,6 +17,17 @@ export class ProjectManager {
 		} catch (error) {
 			console.error(`Failed to load project ${projectId}:`, error);
 			throw error;
+		}
+	}
+
+	async loadAllProjects(): Promise<void> {
+		for (const projectId of this.availableProjects) {
+			try {
+				await this.loadProject(projectId, `/${projectId}/project.toml`);
+			} catch (error) {
+				console.warn(`Failed to load project ${projectId}:`, error);
+				// Continue loading other projects even if one fails
+			}
 		}
 	}
 
@@ -106,6 +118,29 @@ export class ProjectManager {
 		this.projects.forEach((service) => {
 			service.clearProgress();
 		});
+	}
+
+	async checkAllProjectsProgress(playerId: string): Promise<{ project: ProjectMetadata; quests: Quest[] }[]> {
+		const results: { project: ProjectMetadata; quests: Quest[] }[] = [];
+
+		for (const [projectId, service] of this.projects.entries()) {
+			try {
+				const project = service.getProject();
+				if (project) {
+					const updatedQuests = await service.checkAllQuests(playerId);
+					results.push({ project, quests: updatedQuests });
+				}
+			} catch (error) {
+				console.error(`Failed to check progress for project ${projectId}:`, error);
+				// Still include the project with existing quest data
+				const project = service.getProject();
+				if (project) {
+					results.push({ project, quests: service.getQuestsWithProgress() });
+				}
+			}
+		}
+
+		return results;
 	}
 }
 
