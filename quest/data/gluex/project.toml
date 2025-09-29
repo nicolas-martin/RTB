@@ -32,44 +32,44 @@ graphqlEndpoint = "https://api.goldsky.com/api/public/project_cmfy6mw327h2401xm8
 # operator = ">="
 # value = 1
 
-[[quest]]
-id = "swap_volume_usdt0_20"
-title = "Swap TotalVolume of USDT0 All time ≥ 20"
-description = "Trade 20 or more USDT0 all time"
-reward = 1500
-type = "progress"
-query = """
-query UserVolumeUSDT0($userAddress: ID!) {
-  user(id: $userAddress) {
-    tokenVolumes(where: {token: "0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb"}) {
-      token
-      totalVolume
-    }
-  }
-}
-"""
-
-[[quest.conditions]]
-field = "user.tokenVolumes[0].totalVolume"
-operator = ">="
-value = 720000
-#
 # [[quest]]
-# id = "total_value_traded_100_usdt0"
-# title = "Swap Total amount traded value ≥100 USDT0 in all tokens all time"
-# description = "Trade any token with a value more than 100 USDT0 all time"
-# reward = 10000
-# type = "custom"
+# id = "swap_volume_usdt0_20"
+# title = "Swap TotalVolume of USDT0 All time ≥ 20"
+# description = "Trade 20 or more USDT0 all time"
+# reward = 1500
+# type = "progress"
 # query = """
-# query UserTotalVolume($userAddress: ID!) {
+# query UserVolumeUSDT0($userAddress: ID!) {
 #   user(id: $userAddress) {
-#     tokenVolumes {
+#     tokenVolumes(where: {token: "0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb"}) {
 #       token
 #       totalVolume
 #     }
 #   }
 # }
 # """
+#
+# [[quest.conditions]]
+# field = "user.tokenVolumes[0].totalVolume"
+# operator = ">="
+# value = 20000000
+
+[[quest]]
+id = "total_value_traded_100_usdt0"
+title = "Swap Total amount traded value ≥100 USDT0 in all tokens all time"
+description = "Trade any token with a value more than 100 USDT0 all time"
+reward = 10000
+type = "custom"
+query = """
+query UserTotalVolume($userAddress: ID!) {
+  user(id: $userAddress) {
+    tokenVolumes {
+      token
+      totalVolume
+    }
+  }
+}
+"""
 #
 # [[quest]]
 # id = "volume_10_usdt0_24h"

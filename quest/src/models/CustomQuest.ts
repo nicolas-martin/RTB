@@ -2,7 +2,7 @@ import { BaseQuest, ValidationResult } from './BaseQuest';
 import { loadCustomValidator } from '../validators/customValidators';
 
 export class CustomQuest extends BaseQuest {
-	private validatorCache: ((data: any, params?: Record<string, any>) => boolean) | null = null;
+	private validatorCache: ((data: any, params?: Record<string, any>) => boolean | Promise<boolean>) | null = null;
 	private projectName: string;
 
 	constructor(config: any, projectName: string) {
@@ -21,7 +21,7 @@ export class CustomQuest extends BaseQuest {
 			return { completed: false };
 		}
 
-		const completed = this.validatorCache(queryResult, this.config.validatorParams || {});
+		const completed = await this.validatorCache(queryResult, this.config.validatorParams || {});
 
 		console.log(`[CustomQuest] ${this.config.id}`, {
 			questId: this.config.id,
