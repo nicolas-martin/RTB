@@ -52,7 +52,22 @@ export abstract class BaseQuest {
 	}
 
 	protected getNestedValue(obj: any, path: string): any {
-		return path.split('.').reduce((current, key) => current?.[key], obj);
+		// Handle both dot notation and array indices
+		// Convert "user.tokenVolumes[0].totalVolume" to ["user", "tokenVolumes", "0", "totalVolume"]
+		const keys = path.split(/[.\[\]]+/).filter(key => key !== '');
+
+		return keys.reduce((current, key) => {
+			if (current == null) return undefined;
+
+			// Try to parse as array index
+			const numKey = parseInt(key, 10);
+			if (!isNaN(numKey) && Array.isArray(current)) {
+				return current[numKey];
+			}
+
+			// Regular object property access
+			return current[key];
+		}, obj);
 	}
 
 	protected evaluateCondition(condition: QuestCondition, value: any): boolean {
