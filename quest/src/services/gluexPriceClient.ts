@@ -1,3 +1,5 @@
+import { usePriceStore } from '../stores/priceStore';
+
 export interface TokenPrice {
 	token: string;
 	price: number;
@@ -5,47 +7,67 @@ export interface TokenPrice {
 }
 
 export class GlueXPriceClient {
-	private readonly apiUrl = 'https://router-api.gluex.xyz/price';
-	private readonly apiKey = import.meta.env.VITE_GLUEX_API_KEY;
-	private priceCache: Map<string, { price: number; timestamp: number }> = new Map();
-	private readonly cacheTime = 60000; // 1 minute cache
+	private readonly apiUrl = 'https://exchange-rates.gluex.xyz/';
+	private readonly usdtAddress = '0xdac17f958d2ee523a2206206994597c13d831ec7'; // USDT on Ethereum
 
 	async getTokenPrice(tokenAddress: string): Promise<number> {
+		const store = usePriceStore.getState();
+
 		// Check cache first
-		const cached = this.priceCache.get(tokenAddress.toLowerCase());
-		if (cached && Date.now() - cached.timestamp < this.cacheTime) {
-			return cached.price;
+		const cachedPrice = store.getPriceFromCache(tokenAddress);
+		if (cachedPrice !== null) {
+			return cachedPrice;
 		}
 
 		try {
+			// For USDT/stablecoins, return 1
+			if (tokenAddress.toLowerCase() === '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb') {
+				store.setPriceCache(tokenAddress, 1);
+				return 1;
+			}
+
+			const requestBody = [{
+				domestic_blockchain: "plasma",
+				domestic_token: tokenAddress,
+				foreign_blockchain: "plasma",
+				foreign_token: this.usdtAddress
+			}];
+
 			const response = await fetch(this.apiUrl, {
 				method: 'POST',
 				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${this.apiKey}`
+					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({
-					tokenAddress: tokenAddress
-				})
+				body: JSON.stringify(requestBody)
 			});
 
 			if (!response.ok) {
-				console.error(`Failed to fetch price for ${tokenAddress}: ${response.statusText}`);
+				console.warn(`Failed to fetch price for ${tokenAddress}: ${response.status} ${response.statusText}`);
 				return 0;
 			}
 
 			const data = await response.json();
-			const price = data.price || 0;
 
-			// Cache the result
-			this.priceCache.set(tokenAddress.toLowerCase(), {
-				price,
-				timestamp: Date.now()
-			});
+			// The API returns an array, get the first result
+			if (Array.isArray(data) && data.length > 0) {
+				const price = data[0].price || 0;
 
-			return price;
+				// Cache the result in Zustand store
+				store.setPriceCache(tokenAddress, price);
+
+				console.log(`✅ Fetched price for ${tokenAddress}: ${price}`);
+				return price;
+			} else {
+				console.warn(`No price data returned for ${tokenAddress}`);
+				return 0;
+			}
 		} catch (error) {
-			console.error(`Error fetching price for ${tokenAddress}:`, error);
+			// More specific error handling
+			if (error instanceof TypeError && error.message.includes('fetch')) {
+				console.warn(`🌐 Network error fetching price for ${tokenAddress}. Using fallback price: 0`);
+			} else {
+				console.warn(`⚠️ Error fetching price for ${tokenAddress}:`, error);
+			}
 			return 0;
 		}
 	}
