@@ -12,7 +12,7 @@ const normaliseLogoSrc = (src?: string): string | undefined => {
 		return '/' + src.replace(/^\.\//, '');
 	}
 	if (src.startsWith('Plasma Dashboard_files')) {
-		return '/' + src;
+		return src.replace('Plasma Dashboard_files', '/icons');
 	}
 	return src;
 };

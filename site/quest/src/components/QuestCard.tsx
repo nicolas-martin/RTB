@@ -42,7 +42,6 @@ function QuestCard({ quest }: QuestCardProps) {
 
 	return (
 		<div className={`quest-card ${quest.completed ? 'completed' : ''}`}>
-			<div className="quest-type">{quest.type.toUpperCase()}</div>
 			<h3>{quest.title}</h3>
 			<p>{quest.description}</p>
 			{renderProgress()}
