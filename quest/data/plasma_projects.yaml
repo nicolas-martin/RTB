@@ -1,0 +1,947 @@
+projects:
+  - name: "0x"
+    website: "https://matcha.xyz/tokens/plasma/0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee?sellChain=9745"
+    description: "0x is an open-source, permissionless protocol powering decentralized exchanges by letting developers embed token swaps via efficient APIs that aggregate liquidity across chains."
+    tags:
+      - "DEX"
+    tag_ids:
+      - "tag-dex"
+    logo_alt: "0x logo"
+    logo_src: "./Plasma Dashboard_files/0x.svg"
+  - name: "246 Club"
+    website: "https://www.246club.xyz/"
+    description: "246 Club is a DeFi protocol that unifies fragmented lending markets via lending restaking."
+    tags:
+      - "LENDING"
+    tag_ids:
+      - "tag-lending"
+    logo_alt: "246 Club logo"
+    logo_src: "./Plasma Dashboard_files/246-club.svg"
+  - name: "Aave"
+    website: "https://aave.com/"
+    description: "Aave is the world's largest decentralized liquidity protocol for stablecoin and crypto markets. It provides deep on-chain liquidity with permissionless supply and borrow capabilities at scale."
+    tags:
+      - "LENDING"
+    tag_ids:
+      - "tag-lending"
+    logo_alt: "Aave logo"
+    logo_src: "./Plasma Dashboard_files/aave.svg"
+  - name: "Across"
+    website: "https://across.to/"
+    description: "Across is an intents-based cross-chain bridge enabling fast, low-cost transfers."
+    tags:
+      - "BRIDGE"
+    tag_ids:
+      - "tag-bridge"
+    logo_alt: "Across logo"
+    logo_src: "./Plasma Dashboard_files/across.svg"
+  - name: "Alchemy"
+    website: "https://www.alchemy.com/"
+    description: "Alchemy is a developer platform offering reliable, multi-chain RPC endpoints and APIs to build, monitor, and scale blockchain apps."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Alchemy logo"
+    logo_src: "./Plasma Dashboard_files/alchemy.svg"
+  - name: "Aori"
+    website: "https://aori.io/"
+    description: "Aori is a trust-minimized intent settlement protocol that powers seamless peer-to-peer swaps across blockchains by matching users and solvers for decentralized exchange."
+    tags:
+      - "BRIDGE"
+    tag_ids:
+      - "tag-bridge"
+    logo_alt: "Aori logo"
+    logo_src: "./Plasma Dashboard_files/aori.svg"
+  - name: "Arkham"
+    website: "https://arkm.com/"
+    description: "Arkham is a blockchain analytics platform using AI among other tools to deanonymize on-chain data, providing entity-based insights and a decentralized Intel Exchange for trading crypto intelligence."
+    tags:
+      - "ANALYTICS"
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-analytics"
+      - "tag-infrastructure"
+    logo_alt: "Arkham logo"
+    logo_src: "./Plasma Dashboard_files/arkham.svg"
+  - name: "Artemis"
+    website: "https://www.artemis.xyz/"
+    description: "Artemis is a crypto intelligence platform providing institutional-grade analytics, real-time stablecoin and protocol metrics."
+    tags:
+      - "ANALYTICS"
+    tag_ids:
+      - "tag-analytics"
+    logo_alt: "Artemis logo"
+    logo_src: "./Plasma Dashboard_files/artemis.svg"
+  - name: "Axis"
+    website: "https://www.axis.to/"
+    description: "Yield bearing synthetic asset/CDP backed by multi denomination (BTC, USDT, XAUT) tokenized fund that generates yield from market neutral strategies."
+    tags:
+      - "STABLECOINS"
+      - "RWA"
+    tag_ids:
+      - "tag-stablecoins"
+      - "tag-rwa"
+    logo_alt: "Axis logo"
+    logo_src: "./Plasma Dashboard_files/axis.svg"
+  - name: "Balancer"
+    website: "https://balancer.fi/pools?networks=PLASMA"
+    description: "Balancer is a pioneering AMM powering DeFi's most efficient and programmable liquidity. With advanced features like boosted pools, Balancer unlocks deep capital efficiency, sustainable yield, and flexible trading infrastructure for stablecoins, LSTs, and beyond."
+    tags:
+      - "DEX"
+    tag_ids:
+      - "tag-dex"
+    logo_alt: "Balancer logo"
+    logo_src: "./Plasma Dashboard_files/balancer.svg"
+  - name: "BiLira"
+    website: "https://www.bilira.co/en/home"
+    description: "BiLira is the issuer of TRYB, a Turkish Lira-backed stablecoin. It is also a Turkey-based exchange that enables users to buy, sell and trade crypto."
+    tags:
+      - "STABLECOINS"
+    tag_ids:
+      - "tag-stablecoins"
+    logo_alt: "BiLira logo"
+    logo_src: "./Plasma Dashboard_files/bilira.svg"
+  - name: "Bitget Wallet"
+    website: "https://web3.bitget.com/en"
+    description: "Bitget Wallet is a non-custodial multi-chain wallet offering seamless token management, swaps, a dApp browser, and yield-earning features."
+    tags:
+      - "WALLET"
+    tag_ids:
+      - "tag-wallet"
+    logo_alt: "Bitget Wallet logo"
+    logo_src: "./Plasma Dashboard_files/bitget-wallet.svg"
+  - name: "Bitgo"
+    website: "https://www.bitgo.com/"
+    description: "BitGo is a leading digital asset infrastructure company providing secure, regulated custody, wallets, staking, trading, financing, and settlement for institutional clients."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Bitgo logo"
+    logo_src: "./Plasma Dashboard_files/bitgo.svg"
+  - name: "Blocksense"
+    website: "https://blocksense.network/"
+    description: "Blocksense is a zk-rollup oracle network that enables developers to deploy programmable, permissionless data feeds with secure, ZK-verified consensus and highly cost-efficient batching."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Blocksense logo"
+    logo_src: "./Plasma Dashboard_files/blocksense.svg"
+  - name: "Centrifuge"
+    website: "https://centrifuge.io/"
+    description: "Centrifuge is a decentralized protocol for tokenizing, managing, and distributing real-world assets onchain, empowering asset managers and providing investors access to diversified tokenized funds."
+    tags:
+      - "RWA"
+    tag_ids:
+      - "tag-rwa"
+    logo_alt: "Centrifuge logo"
+    logo_src: "./Plasma Dashboard_files/centrifuge.svg"
+  - name: "Chainalysis"
+    website: "https://www.chainalysis.com/"
+    description: "Chainalysis is a blockchain data and analytics platform providing investigation, compliance, and risk-management tools."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Chainalysis logo"
+    logo_src: "./Plasma Dashboard_files/chainalysis.svg"
+  - name: "Chainlink"
+    website: "https://chain.link/"
+    description: "Chainlink is a decentralized oracle platform that connects smart contracts with real-world data, computation, compliance, and cross-chain interoperability via CCIP."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Chainlink logo"
+    logo_src: "./Plasma Dashboard_files/chainlink.svg"
+  - name: "Checker"
+    website: "https://checker.finance/"
+    description: "Checker provides API infrastructure for global stablecoin liquidity, intelligently routing orders across 50+ providers for best execution via a single integration."
+    tags:
+      - "PAYMENTS"
+    tag_ids:
+      - "tag-payments"
+    logo_alt: "Checker logo"
+    logo_src: "./Plasma Dashboard_files/checker.svg"
+  - name: "Clearpool"
+    website: "https://clearpool.finance/"
+    description: "Clearpool is a decentralized credit marketplace where institutions borrow unsecured liquidity directly from DeFi lenders, blending permissionless pools with a compliant Clearpool Prime platform."
+    tags:
+      - "PAYMENTS"
+    tag_ids:
+      - "tag-payments"
+    logo_alt: "Clearpool logo"
+    logo_src: "./Plasma Dashboard_files/clearpool.svg"
+  - name: "Coala Pay"
+    website: "https://coalapay.org/"
+    description: "Coala Pay is a blockchain-based grant-management platform for humanitarian aid that enables donors to fund vetted local projects using smart contracts."
+    tags:
+      - "PAYMENTS"
+    tag_ids:
+      - "tag-payments"
+    logo_alt: "Coala Pay logo"
+    logo_src: "./Plasma Dashboard_files/coala-pay.svg"
+  - name: "Codex"
+    website: "https://codex.io/"
+    description: "Codex is a blockchain data API offering fast, enriched, real-time data across networks so developers can use reliable, ready-to-use on-chain information."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Codex logo"
+    logo_src: "./Plasma Dashboard_files/codex.svg"
+  - name: "CopperX"
+    website: "https://copperx.io/"
+    description: "CopperX is a developer-first payment gateway and payout API that lets businesses accept and send crypto or fiat with instant settlement."
+    tags:
+      - "PAYMENTS"
+    tag_ids:
+      - "tag-payments"
+    logo_alt: "CopperX logo"
+    logo_src: "./Plasma Dashboard_files/copperx.svg"
+  - name: "Curve"
+    website: "https://www.curve.finance/dex/plasma/pools"
+    description: "Curve is a DEX and AMM specializing in low-slippage stablecoin and tokenized asset swaps across multiple blockchains."
+    tags:
+      - "DEX"
+    tag_ids:
+      - "tag-dex"
+    logo_alt: "Curve logo"
+    logo_src: "./Plasma Dashboard_files/curve.svg"
+  - name: "Daylight"
+    website: "https://godaylight.com/"
+    description: "Daylight is building a decentralized electric grid where you can save money, upgrade your energy systems, and earn valuable rewards."
+    tags:
+      - "YIELD"
+    tag_ids:
+      - "tag-yield"
+    logo_alt: "Daylight logo"
+    logo_src: "./Plasma Dashboard_files/daylight.svg"
+  - name: "Debank"
+    website: "https://debank.com/"
+    description: "DeBank is a dashboard and portfolio tracker that lets users monitor DeFi assets, NFTs, protocols, and wallets across multiple chains, with optional social features and API access."
+    tags:
+      - "ANALYTICS"
+    tag_ids:
+      - "tag-analytics"
+    logo_alt: "Debank logo"
+    logo_src: "./Plasma Dashboard_files/debank.svg"
+  - name: "Debridge"
+    website: "https://debridge.finance/"
+    description: "deBridge is a high-performance cross-chain interoperability protocol enabling near-instant, low-slippage asset and message transfers with deep liquidity, zero-TVL and guaranteed rates."
+    tags:
+      - "BRIDGE"
+    tag_ids:
+      - "tag-bridge"
+    logo_alt: "Debridge logo"
+    logo_src: "./Plasma Dashboard_files/debridge.svg"
+  - name: "Defined"
+    website: "https://defined.io/"
+    description: "Defined.fi is a dashboard for exploring trending and high-volume token pairs."
+    tags:
+      - "ANALYTICS"
+    tag_ids:
+      - "tag-analytics"
+    logo_alt: "Defined logo"
+    logo_src: "./Plasma Dashboard_files/defined.svg"
+  - name: "dRPC"
+    website: "https://drpc.org/"
+    description: "A decentralized RPC provider for scalable, low-latency blockchain access."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "dRPC logo"
+    logo_src: "./Plasma Dashboard_files/drpc.svg"
+  - name: "Dune"
+    website: "https://dune.com/home"
+    description: "Dune is a community-driven crypto analytics platform offering customizable dashboards and SQL-based tools to explore DeFi, NFT, and onchain data across multiple blockchains."
+    tags:
+      - "ANALYTICS"
+    tag_ids:
+      - "tag-analytics"
+    logo_alt: "Dune logo"
+    logo_src: "./Plasma Dashboard_files/dune.svg"
+  - name: "Ebisu"
+    website: "https://ebisu.money/"
+    description: "Ebisu is a DeFi protocol for borrowing stablecoins against Liquid Restaking Tokens."
+    tags:
+      - "YIELD"
+    tag_ids:
+      - "tag-yield"
+    logo_alt: "Ebisu logo"
+    logo_src: "./Plasma Dashboard_files/ebisu.svg"
+  - name: "Elliptic"
+    website: "https://elliptic.co/"
+    description: "Elliptic is a pioneering blockchain analytics and crypto compliance platform."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Elliptic logo"
+    logo_src: "./Plasma Dashboard_files/elliptic.svg"
+  - name: "Ethena"
+    website: "https://ethena.fi/"
+    description: "Ethena is a synthetic dollar protocol that offers USDe, a fully backed, scalable crypto-native stable asset achieved through delta-hedging and liquid stablecoin reserves."
+    tags:
+      - "YIELD"
+    tag_ids:
+      - "tag-yield"
+    logo_alt: "Ethena logo"
+    logo_src: "./Plasma Dashboard_files/ethena.svg"
+  - name: "Etherfi"
+    website: "https://www.ether.fi/"
+    description: "ether.fi is a non-custodial, liquid restaking protocol that issues eETH, a restakable token."
+    tags:
+      - "YIELD"
+    tag_ids:
+      - "tag-yield"
+    logo_alt: "Etherfi logo"
+    logo_src: "./Plasma Dashboard_files/etherfi.svg"
+  - name: "Euler"
+    website: "https://www.euler.finance/"
+    description: "Euler Finance is a non-custodial lending protocol enabling users to lend, borrow, and create custom ERC-20 lending markets with modular, risk-managed architecture."
+    tags:
+      - "DEX"
+    tag_ids:
+      - "tag-dex"
+    logo_alt: "Euler logo"
+    logo_src: "./Plasma Dashboard_files/euler.svg"
+  - name: "EURR"
+    website: "https://www.stablr.com/eurr"
+    description: "EURR is a euro-pegged stablecoin, fully collateralized and blockchain-native, offering low-cost, 24/7 global euro transfers with full transparency and regulatory compliance."
+    tags:
+      - "STABLECOINS"
+    tag_ids:
+      - "tag-stablecoins"
+    logo_alt: "EURR logo"
+    logo_src: "./Plasma Dashboard_files/eurr.svg"
+  - name: "Everclear"
+    website: "https://www.everclear.org/"
+    description: "Everclear is the first cross-chain clearing and settlement protocol, netting bidirectional liquidity flows across blockchains to cut rebalancing costs, complexity, and friction."
+    tags:
+      - "BRIDGE"
+    tag_ids:
+      - "tag-bridge"
+    logo_alt: "Everclear logo"
+    logo_src: "./Plasma Dashboard_files/everclear.svg"
+  - name: "Fireblocks"
+    website: "https://www.fireblocks.com/"
+    description: "Fireblocks is an enterprise-grade custodian providing infrastructure for storing, moving and issuing digital assets."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Fireblocks logo"
+    logo_src: "./Plasma Dashboard_files/fireblocks.svg"
+  - name: "Fluid"
+    website: "https://fluid.io/swap/9745"
+    description: "Fluid is a unified DeFi liquidity layer that powers lending, borrowing, vaulting, and decentralized trading."
+    tags:
+      - "DEX"
+      - "LENDING"
+    tag_ids:
+      - "tag-dex"
+      - "tag-lending"
+    logo_alt: "Fluid logo"
+    logo_src: "./Plasma Dashboard_files/fluid.svg"
+  - name: "Fordefi"
+    website: "https://fordefi.com/"
+    description: "Fordefi is an institutional MPC wallet for secure, policy-controlled DeFi access."
+    tags:
+      - "WALLET"
+    tag_ids:
+      - "tag-wallet"
+    logo_alt: "Fordefi logo"
+    logo_src: "./Plasma Dashboard_files/fordefi.svg"
+  - name: "Gas.zip"
+    website: "https://www.gas.zip/"
+    description: "Gas.zip is a cross-chain gas refueling bridge that lets users seamlessly send native gas tokens to 350+ blockchains in one simple transaction, built on LayerZero."
+    tags:
+      - "BRIDGE"
+    tag_ids:
+      - "tag-bridge"
+    logo_alt: "Gas.zip logo"
+    logo_src: "./Plasma Dashboard_files/gas-zip.svg"
+  - name: "Gearbox"
+    website: "https://gearbox.fi/"
+    description: "Gearbox is a decentralized, composable leverage protocol that uses onchain credit accounts to enable margin trading, farming, and staking across DeFi with up to 10x leverage."
+    tags:
+      - "LENDING"
+    tag_ids:
+      - "tag-lending"
+    logo_alt: "Gearbox logo"
+    logo_src: "./Plasma Dashboard_files/gearbox.svg"
+  - name: "Gelato"
+    website: "https://www.gelato.cloud/"
+    description: "Gelato is a developer-centric automation and infrastructure platform offering smart contract automation, gasless transactions, verifiable randomness, and enterprise Rollup-as-a-Service."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Gelato logo"
+    logo_src: "./Plasma Dashboard_files/gelato.svg"
+  - name: "Glacis"
+    website: "https://glacislabs.com/"
+    description: "Glacis is a cross-chain messaging protocol serving as a router and firewall that aggregates bridges, enabling developers to define secure, redundant, and managed message routing across chains."
+    tags:
+      - "BRIDGE"
+    tag_ids:
+      - "tag-bridge"
+    logo_alt: "Glacis logo"
+    logo_src: "./Plasma Dashboard_files/glacis.svg"
+  - name: "GlueX"
+    website: "https://gluex.xyz/"
+    description: "GlueX is a smart order router and DEX aggregator for efficient multi-chain trading."
+    tags:
+      - "INFRASTRUCTURE"
+      - "DEX"
+    tag_ids:
+      - "tag-infrastructure"
+      - "tag-dex"
+    logo_alt: "GlueX logo"
+    logo_src: "./Plasma Dashboard_files/gluex.svg"
+  - name: "Goldsky"
+    website: "https://goldsky.com/"
+    description: "Goldsky is a data platform that provides real-time blockchain indexing and streaming pipelines, enabling developers to build powerful dApps with instant, decoded onchain data."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Goldsky logo"
+    logo_src: "./Plasma Dashboard_files/goldsky.svg"
+  - name: "Holyheld"
+    website: "https://holyheld.com/"
+    description: "Holyheld is a non-custodial crypto debit-app that allows for seamless saving and spending with stablecoins."
+    tags:
+      - "PAYMENTS"
+    tag_ids:
+      - "tag-payments"
+    logo_alt: "Holyheld logo"
+    logo_src: "./Plasma Dashboard_files/holyheld.svg"
+  - name: "Houdini Swap"
+    website: "https://houdiniswap.com/"
+    description: "Houdini Swap is a non-custodial, cross-chain DEX aggregator offering privacy-focused swaps, sends, and bridges."
+    tags:
+      - "DEX"
+    tag_ids:
+      - "tag-dex"
+    logo_alt: "Houdini Swap logo"
+    logo_src: "./Plasma Dashboard_files/houdini-swap.svg"
+  - name: "Hyperlane"
+    website: "https://nexus.hyperlane.xyz/"
+    description: "Hyperlane is a permissionless interoperability protocol that enables developers to connect any blockchain by embedding cross-chain messaging directly into their applications."
+    tags:
+      - "BRIDGE"
+    tag_ids:
+      - "tag-bridge"
+    logo_alt: "Hyperlane logo"
+    logo_src: "./Plasma Dashboard_files/hyperlane.svg"
+  - name: "Infini"
+    website: "https://www.infini.money/"
+    description: "Infini is a crypto neo-bank that issues global crypto cards with yields powered by delta-neutral strategies."
+    tags:
+      - "PAYMENTS"
+    tag_ids:
+      - "tag-payments"
+    logo_alt: "Infini logo"
+    logo_src: "./Plasma Dashboard_files/infini.svg"
+  - name: "Jumper"
+    website: "https://jumper.exchange/?fromChain=9745"
+    description: "Jumper Exchange is a decentralized platform aggregating liquidity from DEXs and bridges, enabling seamless token swaps and bridging across 20+ blockchains via one interface."
+    tags:
+      - "BRIDGE"
+    tag_ids:
+      - "tag-bridge"
+    logo_alt: "Jumper logo"
+    logo_src: "./Plasma Dashboard_files/jumper.svg"
+  - name: "LayerZero"
+    website: "https://layerzero.network/"
+    description: "LayerZero is an omnichain protocol enabling secure, efficient cross-chain data, asset, and message transfers via smart contracts."
+    tags:
+      - "BRIDGE"
+    tag_ids:
+      - "tag-bridge"
+    logo_alt: "LayerZero logo"
+    logo_src: "./Plasma Dashboard_files/layerzero.svg"
+  - name: "Levl"
+    website: "https://www.levl.ch/"
+    description: "Levl provides APIs for seamless cross-border payments, providing a unified platform for fiat currency and stablecoin payments."
+    tags:
+      - "PAYMENTS"
+    tag_ids:
+      - "tag-payments"
+    logo_alt: "Levl logo"
+    logo_src: "./Plasma Dashboard_files/levl.svg"
+  - name: "Mansa"
+    website: "https://www.mansafinance.co/"
+    description: "Mansa enables instant, efficient cross-border payments using stablecoin-backed liquidity, transforming how money moves in emerging markets."
+    tags:
+      - "STABLECOINS"
+    tag_ids:
+      - "tag-stablecoins"
+    logo_alt: "Mansa logo"
+    logo_src: "./Plasma Dashboard_files/mansa.svg"
+  - name: "Maple"
+    website: "https://maple.finance/"
+    description: "Maple is an institutional-grade DeFi lending platform facilitating over-collateralized loans via on-chain liquidity pools managed by credit professionals."
+    tags:
+      - "LENDING"
+    tag_ids:
+      - "tag-lending"
+    logo_alt: "Maple logo"
+    logo_src: "./Plasma Dashboard_files/maple.svg"
+  - name: "Merkl"
+    website: "https://merkl.xyz/"
+    description: "Merkl is an incentive platform that helps protocols, chains, and wallets design, launch, and manage reward campaigns."
+    tags:
+      - "YIELD"
+    tag_ids:
+      - "tag-yield"
+    logo_alt: "Merkl logo"
+    logo_src: "./Plasma Dashboard_files/merkl.svg"
+  - name: "Metamask"
+    website: "https://metamask.io/"
+    description: "MetaMask is a self-custodial wallet (browser extension and mobile app) enabling users to securely manage crypto, NFTs, and dapp interactions, including swaps, across multiple blockchains."
+    tags:
+      - "WALLET"
+    tag_ids:
+      - "tag-wallet"
+    logo_alt: "Metamask logo"
+    logo_src: "./Plasma Dashboard_files/metamask.svg"
+  - name: "Neutrl"
+    website: "https://www.neutrl.fi/"
+    description: "Neutrl is a DeFi protocol offering NUSD, a synthetic dollar that generates scalable, market-neutral yields through OTC arbitrage and delta-neutral hedging strategies."
+    tags:
+      - "STABLECOINS"
+    tag_ids:
+      - "tag-stablecoins"
+    logo_alt: "Neutrl logo"
+    logo_src: "./Plasma Dashboard_files/neutrl.svg"
+  - name: "Octav"
+    website: "https://octav.fi/"
+    description: "Octav is an onchain treasury management and financial analytics tool used by industry professionals to generate precise insights into DeFi and crypto activities."
+    tags:
+      - "ANALYTICS"
+    tag_ids:
+      - "tag-analytics"
+    logo_alt: "Octav logo"
+    logo_src: "./Plasma Dashboard_files/octav.svg"
+  - name: "Oku.Trade"
+    website: "https://oku.trade/app/plasma"
+    description: "Oku Trade is a non-custodial DeFi meta-aggregator offering market & limit orders, bridge aggregation, and Uniswap v3 development."
+    tags:
+      - "DEX"
+    tag_ids:
+      - "tag-dex"
+    logo_alt: "Oku.Trade logo"
+    logo_src: "./Plasma Dashboard_files/oku.svg"
+  - name: "OKX Wallet"
+    website: "https://web3.okx.com/"
+    description: "OKX Wallet is a multi-chain crypto wallet for securely storing, swapping, and interacting with dapps across blockchains."
+    tags:
+      - "WALLET"
+    tag_ids:
+      - "tag-wallet"
+    logo_alt: "OKX Wallet logo"
+    logo_src: "./Plasma Dashboard_files/okx.svg"
+  - name: "Open Eden"
+    website: "https://openeden.com/"
+    description: "OpenEden is a regulated real-world asset tokenization platform providing on-chain access to tokenized U.S. Treasury bills and yield-bearing stablecoins like USDO."
+    tags:
+      - "RWA"
+    tag_ids:
+      - "tag-rwa"
+    logo_alt: "Open Eden logo"
+    logo_src: "./Plasma Dashboard_files/open-eden.svg"
+  - name: "Orda"
+    website: "https://www.orda.network/"
+    description: "Orda is an API-first orchestration network that turns user intents into real-world transfers seamlessly routing value across chains, stablecoins, and banking rails with zero custody."
+    tags:
+      - "PAYMENTS"
+    tag_ids:
+      - "tag-payments"
+    logo_alt: "Orda logo"
+    logo_src: "./Plasma Dashboard_files/orda.svg"
+  - name: "Ormi"
+    website: "https://ormilabs.com/"
+    description: "Ormi is a unified crypto data platform providing live, historical, and human-readable blockchain data via APIs, SQL engine, and subgraphs."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Ormi logo"
+    logo_src: "./Plasma Dashboard_files/ormi.svg"
+  - name: "P2P.me"
+    website: "https://www.p2p.me/en"
+    description: "P2P.me is a decentralized protocol enabling fast, secure stablecoin-to-fiat swaps via QR payments, using zero-knowledge proofs and a reputation points system."
+    tags:
+      - "PAYMENTS"
+    tag_ids:
+      - "tag-payments"
+    logo_alt: "P2P.me logo"
+    logo_src: "./Plasma Dashboard_files/p2p-me.svg"
+  - name: "Pendle"
+    website: "https://www.pendle.finance/"
+    description: "Pendle is a permissionless DeFi protocol that tokenizes yield-bearing assets into principal (PT) and yield (YT) tokens."
+    tags:
+      - "YIELD"
+    tag_ids:
+      - "tag-yield"
+    logo_alt: "Pendle logo"
+    logo_src: "./Plasma Dashboard_files/pendle.svg"
+  - name: "Privy"
+    website: "https://www.privy.io/"
+    description: "Privy provides wallet infrastructure that supports onboarding, payment rails, key management and more."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Privy logo"
+    logo_src: "./Plasma Dashboard_files/privy.svg"
+  - name: "Protofire"
+    website: "https://protofire.io/"
+    description: "Protofire is a blockchain development firm that builds Web3 infrastructure, smart contracts, and tools for DeFi, DAOs, and dApps across major L1 and L2 networks."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Protofire logo"
+    logo_src: "./Plasma Dashboard_files/protofire.svg"
+  - name: "Quicknode"
+    website: "https://www.quicknode.com/"
+    description: "QuickNode is a blockchain infrastructure platform offering fast, reliable APIs and tools to build and scale Web3 apps across 50+ chains with dedicated support."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Quicknode logo"
+    logo_src: "./Plasma Dashboard_files/quicknode.svg"
+  - name: "Rabby"
+    website: "https://rabby.io/"
+    description: "Rabby is a non-custodial, open-source wallet offering multi-chain portfolio tracking, transaction simulation, risk alerts, and approval management."
+    tags:
+      - "WALLET"
+    tag_ids:
+      - "tag-wallet"
+    logo_alt: "Rabby logo"
+    logo_src: "./Plasma Dashboard_files/rabby.svg"
+  - name: "Rainbow"
+    website: "https://rainbow.me/"
+    description: "Rainbow is a self-custodial wallet available on mobile and desktop with a focus on delivering the best user experience."
+    tags:
+      - "WALLET"
+    tag_ids:
+      - "tag-wallet"
+    logo_alt: "Rainbow logo"
+    logo_src: "./Plasma Dashboard_files/rainbow.svg"
+  - name: "Redstone"
+    website: "https://www.redstone.finance/"
+    description: "RedStone is a modular blockchain oracle providing secure, low-latency price feeds across many chains."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Redstone logo"
+    logo_src: "./Plasma Dashboard_files/redstone.svg"
+  - name: "Relay"
+    website: "https://www.relay.link/bridge"
+    description: "Relay makes moving crosschain as fast, cheap, & simple as online payments. 75+ chains, 5M+ users, $8B+ volume \u2014\u00a01 multichain payment network."
+    tags:
+      - "BRIDGE"
+    tag_ids:
+      - "tag-bridge"
+    logo_alt: "Relay logo"
+    logo_src: "./Plasma Dashboard_files/relay.svg"
+  - name: "Resolv"
+    website: "https://www.resolv.xyz/"
+    description: "Resolv is a decentralized DeFi protocol issuing the USR stablecoin delta-neutral and crypto-native backed by ETH and BTC with an RLP insurance layer to ensure stability and yield."
+    tags:
+      - "YIELD"
+    tag_ids:
+      - "tag-yield"
+    logo_alt: "Resolv logo"
+    logo_src: "./Plasma Dashboard_files/resolv.svg"
+  - name: "Rhino.fi"
+    website: "https://rhino.fi/"
+    description: "Rhino.fi is a fast, self-custodial stablecoin interoperability platform, powering instant cross-chain stablecoin transfers through one API with deep liquidity and minimal slippage."
+    tags:
+      - "STABLECOINS"
+    tag_ids:
+      - "tag-stablecoins"
+    logo_alt: "Rhino.fi logo"
+    logo_src: "./Plasma Dashboard_files/rhino-fi.svg"
+  - name: "Ripe"
+    website: "https://www.ripe.money/"
+    description: "Ripe.Money is a crypto payment platform enabling users to pay with stablecoins via local QR codes (like PayNow or GCash), instantly converting crypto to fiat seamlessly."
+    tags:
+      - "PAYMENTS"
+    tag_ids:
+      - "tag-payments"
+    logo_alt: "Ripe logo"
+    logo_src: "./Plasma Dashboard_files/ripe.svg"
+  - name: "Routescan"
+    website: "https://routescan.io/"
+    description: "Routescan offers a scalable block explorer service for networks, providing real-time data on transactions, blocks, and validators with customizable API integration."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Routescan logo"
+    logo_src: "./Plasma Dashboard_files/routescan.svg"
+  - name: "Safe"
+    website: "https://safe.global/"
+    description: "Gnosis Safe is a multi-signature crypto wallet for secure, shared asset management."
+    tags:
+      - "WALLET"
+    tag_ids:
+      - "tag-wallet"
+    logo_alt: "Safe logo"
+    logo_src: "./Plasma Dashboard_files/safe.svg"
+  - name: "Spearbit"
+    website: "https://spearbit.com/"
+    description: "Spearbit is a security platform that connects independent researchers with projects for smart contract auditing, protocol review, and other security services."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Spearbit logo"
+    logo_src: "./Plasma Dashboard_files/spearbit.svg"
+  - name: "Stablewatch"
+    website: "https://www.stablewatch.io/"
+    description: "Stablewatch is a real-time stablecoin intelligence platform offering analytics, market insights, and research."
+    tags:
+      - "ANALYTICS"
+    tag_ids:
+      - "tag-analytics"
+    logo_alt: "Stablewatch logo"
+    logo_src: "./Plasma Dashboard_files/stablewatch.svg"
+  - name: "Stargate"
+    website: "https://stargate.finance/bridge?srcChain=ethereum&srcToken=0xdAC17F958D2ee523a2206206994597C13D831ec7&dstChain=plasma&dstToken=0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb"
+    description: "Stargate Finance, built on LayerZero, is a cross-chain liquidity protocol enabling seamless, instant native crypto asset transfers across blockchains via unified liquidity pools."
+    tags:
+      - "BRIDGE"
+    tag_ids:
+      - "tag-bridge"
+    logo_alt: "Stargate logo"
+    logo_src: "./Plasma Dashboard_files/stargate.svg"
+  - name: "Strata"
+    website: "https://www.strata.money/"
+    description: "Strata is a risk tranching protocol designed to offer structured yield products on crypto-native yields."
+    tags:
+      - "YIELD"
+    tag_ids:
+      - "tag-yield"
+    logo_alt: "Strata logo"
+    logo_src: "./Plasma Dashboard_files/strata.svg"
+  - name: "Superform"
+    website: "https://www.superform.xyz/"
+    description: "Superform is a decentralized yield marketplace for managing cross-chain yield opportunities via a single interface, using LayerZero and Socket for seamless vault transactions."
+    tags:
+      - "YIELD"
+    tag_ids:
+      - "tag-yield"
+    logo_alt: "Superform logo"
+    logo_src: "./Plasma Dashboard_files/superform.svg"
+  - name: "Superset"
+    website: "https://superset.finance/"
+    description: "Superset unifies stablecoin liquidity across blockchains into a single omnichain pool for the deepest liquidity for swaps."
+    tags:
+      - "STABLECOINS"
+    tag_ids:
+      - "tag-stablecoins"
+    logo_alt: "Superset logo"
+    logo_src: "./Plasma Dashboard_files/superset.svg"
+  - name: "Tenderly"
+    website: "https://tenderly.co/"
+    description: "Tenderly is a full-stack infrastructure provider, including node RPCs, dev environments, monitoring, and simulation tools to streamline dApp development and onchain scaling."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Tenderly logo"
+    logo_src: "./Plasma Dashboard_files/tenderly.svg"
+  - name: "Term Labs"
+    website: "https://app.term.finance/"
+    description: "Term Finance is a non-custodial, auction-based DeFi lending protocol, offering scalable fixed-rate, fixed-term loans via transparent, market-clearing interest rate auctions."
+    tags:
+      - "LENDING"
+    tag_ids:
+      - "tag-lending"
+    logo_alt: "Term Labs logo"
+    logo_src: "./Plasma Dashboard_files/term-labs.svg"
+  - name: "Tether Gold"
+    website: "https://gold.tether.to/"
+    description: "Tether Gold (XAUt) is a stablecoin that provides ownership on a 1:1 basis of one fine troy ounce of gold on a physical bar of gold."
+    tags:
+      - "STABLECOINS"
+      - "RWA"
+    tag_ids:
+      - "tag-stablecoins"
+      - "tag-rwa"
+    logo_alt: "Tether Gold logo"
+    logo_src: "./Plasma Dashboard_files/tether-gold.svg"
+  - name: "Thirdweb"
+    website: "https://thirdweb.com/"
+    description: "thirdweb is an all-in-one development platform offering SDKs, in-app wallets, smart contract tools, backend infrastructure, and AI utilities to build, deploy, and scale decentralized apps."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Thirdweb logo"
+    logo_src: "./Plasma Dashboard_files/thirdweb.svg"
+  - name: "Tokemak"
+    website: "https://app.tokemak.xyz/"
+    description: "Tokemak's autoUSD autopool autonomously optimizes liquidity provider positions across DEXs with one deposit, maximizing yield and minimizing gas costs."
+    tags:
+      - "YIELD"
+    tag_ids:
+      - "tag-yield"
+    logo_alt: "Tokemak logo"
+    logo_src: "./Plasma Dashboard_files/tokemak.svg"
+  - name: "Token Terminal"
+    website: "https://tokenterminal.com/"
+    description: "Token Terminal is a leading onchain data platform that converts blockchain activity into standardized financial metrics."
+    tags:
+      - "ANALYTICS"
+    tag_ids:
+      - "tag-analytics"
+    logo_alt: "Token Terminal logo"
+    logo_src: "./Plasma Dashboard_files/token-terminal.svg"
+  - name: "Trevee"
+    website: "https://rings.money/"
+    description: "Trevee is a protocol offering yield-bearing stablecoin and crypto derivatives."
+    tags:
+      - "YIELD"
+    tag_ids:
+      - "tag-yield"
+    logo_alt: "Trevee logo"
+    logo_src: "./Plasma Dashboard_files/trevee.svg"
+  - name: "Trust Wallet"
+    website: "https://trustwallet.com/"
+    description: "Trust Wallet is a secure, self-custodial multi-chain wallet (mobile app and extension) that lets users manage assets, NFTs, dApps, swaps, staking, and more."
+    tags:
+      - "WALLET"
+    tag_ids:
+      - "tag-wallet"
+    logo_alt: "Trust Wallet logo"
+    logo_src: "./Plasma Dashboard_files/trust-wallet.svg"
+  - name: "Turnkey"
+    website: "https://www.turnkey.com/"
+    description: "Turnkey is a platform providing secure, flexible, and scalable wallet infrastructure for cryptocurrency applications."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Turnkey logo"
+    logo_src: "./Plasma Dashboard_files/turnkey.svg"
+  - name: "Uniswap"
+    website: "https://oku.trade/app/plasma/liquidity/"
+    description: "Uniswap is a decentralized exchange (DEX) that lets users swap tokens and provide liquidity using smart-contract-based liquidity pools."
+    tags:
+      - "DEX"
+    tag_ids:
+      - "tag-dex"
+    logo_alt: "Uniswap logo"
+    logo_src: "./Plasma Dashboard_files/uniswap.svg"
+  - name: "UnitXPL"
+    website: "https://hyperunit.xyz/"
+    description: "Unit is Hyperliquid's native asset tokenization layer that brings spot assets directly into the exchange and ecosystem. It enables seamless flows between native blockchains and Hyperliquid."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "UnitXPL logo"
+    logo_src: "./Plasma Dashboard_files/unitxpl.svg"
+  - name: "Uranium Digital"
+    website: "https://www.uraniumdigital.com/"
+    description: "Uranium Digital is building the first crypto-powered spot trading platform for uranium, enabling instant trading, derivatives, and physical settlement for institutional clients."
+    tags:
+      - "RWA"
+    tag_ids:
+      - "tag-rwa"
+    logo_alt: "Uranium Digital logo"
+    logo_src: "./Plasma Dashboard_files/uranium-digital.svg"
+  - name: "USD.AI"
+    website: "https://usd.ai/"
+    description: "USD.AI offers a yield-bearing synthetic dollar backed by AI infrastructure assets like GPUs and cell towers."
+    tags:
+      - "STABLECOINS"
+    tag_ids:
+      - "tag-stablecoins"
+    logo_alt: "USD.AI logo"
+    logo_src: "./Plasma Dashboard_files/usd-ai.svg"
+  - name: "USD\u20ae0"
+    website: "https://usdt0.to/"
+    description: "USD\u20ae0 is an omnichain version of Tether's USD\u20ae stablecoin, built on LayerZero's OFT standard to enable seamless, 1:1-backed transfers across multiple blockchains without using wrapped tokens or bridges."
+    tags:
+      - "STABLECOINS"
+    tag_ids:
+      - "tag-stablecoins"
+    logo_alt: "USD\u20ae0 logo"
+    logo_src: "./Plasma Dashboard_files/usdt0.svg"
+  - name: "Utila"
+    website: "https://utila.io/"
+    description: "Utila is an institutional-grade custodian and infrastructure provider for digital asset operations."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Utila logo"
+    logo_src: "./Plasma Dashboard_files/utila.svg"
+  - name: "Veda"
+    website: "https://veda.tech/"
+    description: "Veda is a DeFi protocol that tokenizes complex, multi-chain yield strategies, delivering native yield through user-friendly interfaces."
+    tags:
+      - "YIELD"
+    tag_ids:
+      - "tag-yield"
+    logo_alt: "Veda logo"
+    logo_src: "./Plasma Dashboard_files/veda.svg"
+  - name: "WalaPay"
+    website: "https://www.walapay.io/"
+    description: "Walapay is an API-first platform for global money movement that lets businesses collect, hold, and send fiat and stablecoins across currencies and countries."
+    tags:
+      - "PAYMENTS"
+    tag_ids:
+      - "tag-payments"
+    logo_alt: "WalaPay logo"
+    logo_src: "./Plasma Dashboard_files/walapay.svg"
+  - name: "Wildcat"
+    website: "https://app.wildcat.finance/lender"
+    description: "Wildcat is a decentralized protocol enabling highly configurable, undercollateralized borrowing and lending by allowing parties to create and manage private credit markets with custom terms."
+    tags:
+      - "LENDING"
+    tag_ids:
+      - "tag-lending"
+    logo_alt: "Wildcat logo"
+    logo_src: "./Plasma Dashboard_files/wildcat.svg"
+  - name: "Yellow Card"
+    website: "https://yellowcard.io/"
+    description: "Yellow Card is a pan-African fintech platform enabling users to buy, sell, and store cryptocurrencies with local currency across 20 countries, offering fast, secure transactions and a payments API."
+    tags:
+      - "PAYMENTS"
+    tag_ids:
+      - "tag-payments"
+    logo_alt: "Yellow Card logo"
+    logo_src: "./Plasma Dashboard_files/yellow-card.svg"
+  - name: "Zerion"
+    website: "https://zerion.io/"
+    description: "Zerion is a non-custodial crypto wallet with a real-time API, enabling developers to build web3 apps with access to multi-chain wallet portfolios, DeFi positions, NFTs, and transactions."
+    tags:
+      - "INFRASTRUCTURE"
+    tag_ids:
+      - "tag-infrastructure"
+    logo_alt: "Zerion logo"
+    logo_src: "./Plasma Dashboard_files/zerion.svg"
+  - name: "ZKP2P"
+    website: "https://www.zkp2p.xyz/"
+    description: "ZKP2P is a trustless, decentralized application for on-ramping and off-ramping in a peer-to-peer fashion."
+    tags:
+      - "PAYMENTS"
+    tag_ids:
+      - "tag-payments"
+    logo_alt: "ZKP2P logo"
+    logo_src: "./Plasma Dashboard_files/zkp2p.svg"
