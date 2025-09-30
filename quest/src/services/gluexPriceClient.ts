@@ -8,7 +8,7 @@ export interface TokenPrice {
 
 export class GlueXPriceClient {
 	private readonly apiUrl = 'https://exchange-rates.gluex.xyz/';
-	private readonly usdtAddress = '0xdac17f958d2ee523a2206206994597c13d831ec7'; // USDT on Ethereum
+	private readonly usdt0Address = '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb'; // USDT0 on Plume
 
 	async getTokenPrice(tokenAddress: string): Promise<number> {
 		const store = usePriceStore.getState();
@@ -30,7 +30,7 @@ export class GlueXPriceClient {
 				domestic_blockchain: "plasma",
 				domestic_token: tokenAddress,
 				foreign_blockchain: "plasma",
-				foreign_token: this.usdtAddress
+				foreign_token: this.usdt0Address
 			}];
 
 			const response = await fetch(this.apiUrl, {
@@ -55,7 +55,7 @@ export class GlueXPriceClient {
 				// Cache the result in Zustand store
 				store.setPriceCache(tokenAddress, price);
 
-				console.log(`✅ Fetched price for ${tokenAddress}: ${price}`);
+				console.log(`Fetched price for ${tokenAddress}: ${price}`);
 				return price;
 			} else {
 				console.warn(`No price data returned for ${tokenAddress}`);
