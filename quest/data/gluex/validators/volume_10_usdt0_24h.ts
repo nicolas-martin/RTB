@@ -37,7 +37,6 @@ export async function validate(data: any, params?: Record<string, any>): Promise
 				const baseDecimals = baseTokenInfo?.decimals || 6;
 				const usdt0Amount = amount / Math.pow(10, baseDecimals);
 				totalValueInUSD += usdt0Amount; // USDT0 is 1:1 with USD
-				console.log(`USDT0 swap: ${usdt0Amount} USD`);
 			} else {
 				// Other tokens: Get price and convert
 				const priceFromAPI = prices.get(tokenAddress) || 0;
@@ -59,14 +58,8 @@ export async function validate(data: any, params?: Record<string, any>): Promise
 				const valueInUSD = usdt0SmallestUnits / Math.pow(10, baseTokenDecimals);
 
 				totalValueInUSD += valueInUSD;
-				console.log(`Token ${tokenAddress} swap: ${amount} * ${priceFromAPI} / 10^${baseTokenDecimals} = ${valueInUSD} USD`);
 			}
 		}
-
-		console.log('Total 24h swap value in USD:', totalValueInUSD);
-		console.log('Target USD:', targetUSD);
-		console.log('Swaps processed:', data.swaps.length);
-		console.log('Type params:', params?.typeParams);
 
 		// Return the USD value directly (not in decimals)
 		return totalValueInUSD;
