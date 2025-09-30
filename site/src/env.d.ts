@@ -3,6 +3,10 @@
 
 interface ImportMetaEnv {
   readonly VITE_GRAPHQL_ENDPOINT?: string;
+  readonly VITE_API_URL?: string;
+  readonly VITE_API_KEY?: string;
+  readonly PUBLIC_API_URL?: string;
+  readonly PUBLIC_API_KEY?: string;
 }
 
 interface ImportMeta {

@@ -68,8 +68,18 @@ export class FileStorage {
 	private apiKey?: string;
 
 	constructor(apiUrl?: string, apiKey?: string) {
-		this.apiUrl = apiUrl || import.meta.env.VITE_API_URL || 'http://localhost:8080';
-		this.apiKey = apiKey || import.meta.env.VITE_API_KEY;
+		const env = import.meta.env as ImportMetaEnv & {
+			PUBLIC_API_URL?: string;
+			VITE_API_URL?: string;
+			VITE_API_KEY?: string;
+			PUBLIC_API_KEY?: string;
+		};
+
+		const resolvedApiUrl =
+			apiUrl || env.PUBLIC_API_URL || env.VITE_API_URL || 'http://localhost:8080';
+
+		this.apiUrl = resolvedApiUrl;
+		this.apiKey = apiKey || env.PUBLIC_API_KEY || env.VITE_API_KEY;
 	}
 
 	private getHeaders(): HeadersInit {
