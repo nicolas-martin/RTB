@@ -1,4 +1,4 @@
-import { ProjectMetadata, Quest } from '../types/quest';
+import type { ProjectMetadata, Quest } from '../types/quest';
 import { QuestService } from './questService';
 
 export class ProjectManager {

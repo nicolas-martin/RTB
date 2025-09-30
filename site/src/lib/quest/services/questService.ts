@@ -1,10 +1,10 @@
-import { Quest, QuestProgress, ProjectMetadata } from '../types/quest';
+import type { Quest, QuestProgress, ProjectMetadata } from '../types/quest';
 import { questParser } from './questParser';
 import { GraphQLService } from './graphqlClient';
 import { BaseQuest } from '../models';
 import { resolveVariableFunction } from './variableFunctions';
 import { QuestDatabaseService, getQuestDatabaseService } from '../database/questDatabaseService';
-import { QuestCompletion } from '../database/types';
+import type { QuestCompletion } from '../database/types';
 
 export class QuestService {
 	private project: ProjectMetadata | null = null;

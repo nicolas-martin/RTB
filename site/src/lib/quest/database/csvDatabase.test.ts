@@ -4,7 +4,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { CSVDatabase } from './csvDatabase';
-import { QuestCompletion, UserPoints } from './types';
+import type { QuestCompletion, UserPoints } from './types';
 
 // Mock localStorage for Node.js test environment
 const localStorageMock = (() => {

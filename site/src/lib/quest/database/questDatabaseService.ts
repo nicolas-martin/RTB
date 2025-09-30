@@ -4,7 +4,7 @@
  * Provides convenient methods for the quest system
  */
 
-import {
+import type {
 	IQuestDatabase,
 	QuestCompletion,
 	UserPoints,
