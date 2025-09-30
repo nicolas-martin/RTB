@@ -9,7 +9,7 @@ export * from './csvStorage';
 export * from './apiDatabase';
 export * from './questDatabaseService';
 
-import { IQuestDatabase } from './types';
+import type { IQuestDatabase } from './types';
 import { CSVDatabase } from './csvDatabase';
 
 /**

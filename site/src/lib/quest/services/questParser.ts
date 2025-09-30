@@ -1,5 +1,5 @@
 import * as toml from 'toml';
-import { QuestConfig, ProjectMetadata, QuestType } from '../types/quest';
+import type { QuestConfig, ProjectMetadata, QuestType } from '../types/quest';
 import { BaseQuest, ConditionalQuest, ProgressQuest, CustomQuest } from '../models';
 
 export interface ProjectWithQuests {

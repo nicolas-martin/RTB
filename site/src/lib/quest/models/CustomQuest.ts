@@ -1,4 +1,5 @@
-import { BaseQuest, ValidationResult } from './BaseQuest';
+import { BaseQuest } from './BaseQuest';
+import type { ValidationResult } from './BaseQuest';
 import { loadCustomValidator } from '../validators/customValidators';
 
 export class CustomQuest extends BaseQuest {

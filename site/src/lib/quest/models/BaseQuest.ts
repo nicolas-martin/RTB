@@ -1,4 +1,4 @@
-import { QuestConfig, QuestCondition } from '../types/quest';
+import type { QuestConfig, QuestCondition } from '../types/quest';
 
 export type ValidationResult = {
 	completed: boolean;

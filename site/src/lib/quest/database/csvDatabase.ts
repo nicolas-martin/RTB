@@ -3,7 +3,7 @@
  * Implements IQuestDatabase interface using CSV files for storage
  */
 
-import {
+import type {
 	IQuestDatabase,
 	QuestCompletion,
 	UserPoints,

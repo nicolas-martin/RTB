@@ -1,4 +1,5 @@
-import { BaseQuest, ValidationResult } from './BaseQuest';
+import { BaseQuest } from './BaseQuest';
+import type { ValidationResult } from './BaseQuest';
 
 export class ProgressQuest extends BaseQuest {
 	validate(queryResult: any): ValidationResult {
