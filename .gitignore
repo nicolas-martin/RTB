@@ -7,6 +7,7 @@ dist-web/
 .yarn/
 .vite/
 .env
+dist/
 
 # Xcode
 #

@@ -142,6 +142,36 @@ export class ProjectManager {
 
 		return results;
 	}
+
+	async getUserPointsForProject(projectId: string, playerId: string): Promise<number> {
+		const service = this.projects.get(projectId);
+		if (!service) return 0;
+
+		return await service.getUserPoints(playerId);
+	}
+
+	async getAllUserPoints(playerId: string): Promise<Map<string, number>> {
+		const pointsMap = new Map<string, number>();
+
+		for (const [projectId, service] of this.projects.entries()) {
+			try {
+				const points = await service.getUserPoints(playerId);
+				pointsMap.set(projectId, points);
+			} catch (error) {
+				console.error(`Failed to get points for project ${projectId}:`, error);
+				pointsMap.set(projectId, 0);
+			}
+		}
+
+		return pointsMap;
+	}
+
+	async getCompletedQuestsForProject(projectId: string, playerId: string): Promise<string[]> {
+		const service = this.projects.get(projectId);
+		if (!service) return [];
+
+		return await service.getCompletedQuestsFromDb(playerId);
+	}
 }
 
 export const projectManager = new ProjectManager();
