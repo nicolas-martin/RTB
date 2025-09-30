@@ -10,7 +10,7 @@ export * from './apiDatabase';
 export * from './questDatabaseService';
 
 import type { IQuestDatabase } from './types';
-import { CSVDatabase } from './csvDatabase';
+import { LocalStorageDatabase } from './localStorageDatabase';
 
 /**
  * Database factory function
@@ -32,7 +32,7 @@ import { CSVDatabase } from './csvDatabase';
  * ```
  */
 export function createDatabase(): IQuestDatabase {
-	return new CSVDatabase();
+	return new LocalStorageDatabase();
 }
 
 /**
