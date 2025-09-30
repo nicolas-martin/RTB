@@ -1,5 +1,6 @@
 # OSX
 #
+.astro/
 .DS_Store
 ios/
 .yarn/
