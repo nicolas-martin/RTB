@@ -110,10 +110,6 @@ function App() {
 		}
 	}
 
-	if (loading) {
-		return <div className="app">Loading quests...</div>
-	}
-
 	return (
 		<div className="app">
 			<h1>Quests</h1>
@@ -131,7 +127,6 @@ function App() {
 							<span>Connected: {account?.substring(0, 6)}...{account?.substring(account.length - 4)}</span>
 							<button onClick={handleDisconnectWallet}>Disconnect</button>
 						</div>
-						{checking && <p>Checking progress...</p>}
 					</>
 				)}
 			</div>
@@ -139,43 +134,47 @@ function App() {
 				<img src="/Plasma_logo_black_32x32.png" alt="Plasma" className="plasma-icon" />
 				Add Plasma
 			</button>
-			{projectQuests.map(({ project, quests }) => {
-				const projectPoints = userPoints.get(project.id) || 0
-				const completedCount = quests.filter(q => q.completed).length
-				const totalRewards = quests.reduce((sum, q) => sum + q.reward, 0)
+			{loading ? (
+				<div className="loading-message">Loading quests...</div>
+			) : (
+				projectQuests.map(({ project, quests }) => {
+					const projectPoints = userPoints.get(project.id) || 0
+					const completedCount = quests.filter(q => q.completed).length
+					const totalRewards = quests.reduce((sum, q) => sum + q.reward, 0)
 
-				return (
-					<div key={project.id} className="project-section">
-						<div className="project-header">
-							<div>
-								<h2>{project.name}</h2>
-								<p>{project.description}</p>
-							</div>
-							{isConnected && account && (
-								<div className="project-stats">
-									<div className="stat">
-										<span className="stat-label">Completed</span>
-										<span className="stat-value">{completedCount}/{quests.length}</span>
-									</div>
-									<div className="stat">
-										<span className="stat-label">Your Points</span>
-										<span className="stat-value">{projectPoints.toLocaleString()}</span>
-									</div>
-									<div className="stat">
-										<span className="stat-label">Total Available</span>
-										<span className="stat-value">{totalRewards.toLocaleString()}</span>
-									</div>
+					return (
+						<div key={project.id} className="project-section">
+							<div className="project-header">
+								<div>
+									<h2>{project.name}</h2>
+									<p>{project.description}</p>
 								</div>
-							)}
+								{isConnected && account && (
+									<div className="project-stats">
+										<div className="stat">
+											<span className="stat-label">Completed</span>
+											<span className="stat-value">{completedCount}/{quests.length}</span>
+										</div>
+										<div className="stat">
+											<span className="stat-label">Your Points</span>
+											<span className="stat-value">{projectPoints.toLocaleString()}</span>
+										</div>
+										<div className="stat">
+											<span className="stat-label">Total Available</span>
+											<span className="stat-value">{totalRewards.toLocaleString()}</span>
+										</div>
+									</div>
+								)}
+							</div>
+							<div className="quests-grid">
+								{quests.map((quest) => (
+									<QuestCard key={`${project.id}-${quest.id}`} quest={quest} />
+								))}
+							</div>
 						</div>
-						<div className="quests-grid">
-							{quests.map((quest) => (
-								<QuestCard key={`${project.id}-${quest.id}`} quest={quest} />
-							))}
-						</div>
-					</div>
-				)
-			})}
+					)
+				})
+			)}
 		</div>
 	)
 }

@@ -76,18 +76,18 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
 	}, [])
 
 	const connectWallet = async () => {
-		if (!sdkInstance) return
-
 		setIsConnecting(true)
 		setError(null)
 
 		try {
-			const provider = sdkInstance.getProvider()
+			// Use window.ethereum directly for more reliable connection
+			const provider = window.ethereum || sdkInstance?.getProvider()
+
 			if (!provider) {
-				throw new Error('Provider not available')
+				throw new Error('MetaMask is not installed')
 			}
 
-			const accounts = await provider.request<string[]>({
+			const accounts = await provider.request({
 				method: 'eth_requestAccounts',
 			})
 
@@ -108,10 +108,8 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
 
 	const disconnectWallet = async () => {
 		try {
-			if (sdkInstance) {
-				await sdkInstance.terminate()
-				sdkInstance = null // Reset singleton for clean reconnection
-			}
+			// Just clear the account state - don't terminate the SDK
+			// This allows reconnection without page refresh
 			setAccount(null)
 		} catch (err) {
 			console.error('Failed to disconnect:', err)
