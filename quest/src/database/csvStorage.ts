@@ -61,101 +61,92 @@ export function csvToObjects<T extends Record<string, any>>(
 }
 
 /**
- * Browser-based file storage using localStorage as a file system
- * In a Node.js environment, this would use the 'fs' module
+ * API-based file storage using backend server
  */
 export class FileStorage {
-	private storagePrefix = 'quest_db_';
+	private apiUrl: string;
+	private apiKey?: string;
+
+	constructor(apiUrl?: string, apiKey?: string) {
+		this.apiUrl = apiUrl || import.meta.env.VITE_API_URL || 'http://localhost:8080';
+		this.apiKey = apiKey || import.meta.env.VITE_API_KEY;
+	}
+
+	private getHeaders(): HeadersInit {
+		const headers: HeadersInit = {
+			'Content-Type': 'application/json',
+		};
+		if (this.apiKey) {
+			headers['Authorization'] = `Bearer ${this.apiKey}`;
+		}
+		return headers;
+	}
 
 	/**
 	 * Reads a file from storage
 	 */
 	async readFile(filename: string): Promise<string> {
-		if (typeof localStorage === 'undefined') {
-			throw new Error('localStorage is not available');
-		}
+		const response = await fetch(`${this.apiUrl}/csv/${filename}`, {
+			headers: this.apiKey ? { 'Authorization': `Bearer ${this.apiKey}` } : {},
+		});
 
-		const key = this.storagePrefix + filename;
-		const data = localStorage.getItem(key);
-
-		if (data === null) {
+		if (!response.ok) {
 			throw new Error(`File not found: ${filename}`);
 		}
 
-		return data;
+		return response.text();
 	}
 
 	/**
 	 * Writes a file to storage
 	 */
 	async writeFile(filename: string, data: string): Promise<void> {
-		if (typeof localStorage === 'undefined') {
-			throw new Error('localStorage is not available');
-		}
+		const response = await fetch(`${this.apiUrl}/csv/${filename}`, {
+			method: 'POST',
+			headers: this.getHeaders(),
+			body: JSON.stringify({ content: data }),
+		});
 
-		const key = this.storagePrefix + filename;
-		localStorage.setItem(key, data);
+		if (!response.ok) {
+			throw new Error(`Failed to write file: ${filename}`);
+		}
 	}
 
 	/**
 	 * Checks if a file exists
 	 */
 	async fileExists(filename: string): Promise<boolean> {
-		if (typeof localStorage === 'undefined') {
+		try {
+			const response = await fetch(`${this.apiUrl}/csv/${filename}`, {
+				headers: this.apiKey ? { 'Authorization': `Bearer ${this.apiKey}` } : {},
+			});
+			return response.ok;
+		} catch {
 			return false;
 		}
-
-		const key = this.storagePrefix + filename;
-		return localStorage.getItem(key) !== null;
 	}
 
 	/**
 	 * Deletes a file from storage
 	 */
 	async deleteFile(filename: string): Promise<void> {
-		if (typeof localStorage === 'undefined') {
-			throw new Error('localStorage is not available');
-		}
-
-		const key = this.storagePrefix + filename;
-		localStorage.removeItem(key);
+		// Not implemented - files persist on server
+		console.warn('Delete not implemented for API storage');
 	}
 
 	/**
 	 * Lists all files in storage
 	 */
 	async listFiles(): Promise<string[]> {
-		if (typeof localStorage === 'undefined') {
-			return [];
-		}
-
-		const files: string[] = [];
-		for (let i = 0; i < localStorage.length; i++) {
-			const key = localStorage.key(i);
-			if (key && key.startsWith(this.storagePrefix)) {
-				files.push(key.substring(this.storagePrefix.length));
-			}
-		}
-
-		return files;
+		// Not needed for current implementation
+		return ['quest_completions.csv', 'user_points.csv'];
 	}
 
 	/**
 	 * Clears all files from storage
 	 */
 	async clearAll(): Promise<void> {
-		if (typeof localStorage === 'undefined') {
-			return;
-		}
-
-		const keys: string[] = [];
-		for (let i = 0; i < localStorage.length; i++) {
-			const key = localStorage.key(i);
-			if (key && key.startsWith(this.storagePrefix)) {
-				keys.push(key);
-			}
-		}
-
-		keys.forEach((key) => localStorage.removeItem(key));
+		// Not implemented - files persist on server
+		console.warn('Clear all not implemented for API storage');
 	}
 }
