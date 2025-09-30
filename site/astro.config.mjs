@@ -14,8 +14,7 @@ export default defineConfig({
         '@components': '/src/components',
         '@layouts': '/src/layouts',
         '@lib': '/src/lib',
-        '@quest': '/../quest',
-        '@quest-src': '/../quest/src',
+        '@quest-src': '/src/lib/quest',
         '@data': '/src/data'
       }
     }
