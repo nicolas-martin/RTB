@@ -1,14 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { Quest } from '@quest-src/types/quest';
-import type { ProjectMetadata } from '@quest-src/types/quest';
-import { projectManager } from '@quest-src/services/projectManager';
-import { useMetaMask } from '@quest-src/hooks/useMetaMask';
+import { useQuestData } from './QuestDataProvider';
 import './QuestDashboard.css';
-
-interface ProjectWithQuests {
-	project: ProjectMetadata;
-	quests: Quest[];
-}
 
 const gradientByType: Record<string, string> = {
 	conditional: 'linear-gradient(135deg, rgba(93,91,255,0.24), rgba(93,186,255,0.12))',
@@ -17,66 +10,8 @@ const gradientByType: Record<string, string> = {
 };
 
 export default function QuestDashboard() {
-	const [projectQuests, setProjectQuests] = useState<ProjectWithQuests[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [userPoints, setUserPoints] = useState<Map<string, number>>(new Map());
+	const { projectQuests, loading } = useQuestData();
 	const [activeFilter, setActiveFilter] = useState<string>('all');
-
-	const {
-		account,
-		isConnected,
-		isConnecting,
-		error,
-		connectWallet,
-		disconnectWallet
-	} = useMetaMask();
-
-	useEffect(() => {
-		const init = async () => {
-			try {
-				await projectManager.loadAllProjects();
-				const all = projectManager.getAllQuests();
-				setProjectQuests(all);
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		init();
-	}, []);
-
-	useEffect(() => {
-		const runCheck = async () => {
-			if (isConnected && account) {
-				const updated = await projectManager.checkAllProjectsProgress(account);
-				setProjectQuests(updated);
-				const points = await projectManager.getAllUserPoints(account);
-				setUserPoints(points);
-			} else {
-				projectManager.clearAllProgress();
-				setProjectQuests(projectManager.getAllQuests());
-				setUserPoints(new Map());
-			}
-		};
-
-		runCheck();
-	}, [isConnected, account]);
-
-	const totals = useMemo(() => {
-		const totalQuests = projectQuests.reduce((acc, item) => acc + item.quests.length, 0);
-		const completed = projectQuests.reduce(
-			(acc, item) => acc + item.quests.filter((quest) => quest.completed).length,
-			0
-		);
-		const points = Array.from(userPoints.values()).reduce((acc, value) => acc + value, 0);
-
-		return {
-			totalQuests,
-			completed,
-			completionPct: totalQuests ? Math.round((completed / totalQuests) * 100) : 0,
-			points
-		};
-	}, [projectQuests, userPoints]);
 
 	const filters = useMemo(() => {
 		const types = new Set<string>();
@@ -97,46 +32,8 @@ export default function QuestDashboard() {
 			.filter((entry) => entry.quests.length > 0);
 	}, [projectQuests, activeFilter]);
 
-	const handleConnect = async () => {
-		if (isConnected) {
-			await disconnectWallet();
-			return;
-		}
-
-		await connectWallet();
-	};
-
 	return (
 		<div className="quest-screen">
-			<section className="toolbar">
-				<div className="stats-grid">
-					<div className="stat-card">
-						<span className="stat-label">Total Points</span>
-						<span className="stat-value">{totals.points.toLocaleString()}</span>
-						{isConnected && account && (
-							<span className="stat-subtext">Across {userPoints.size} projects</span>
-						)}
-					</div>
-					<div className="stat-card">
-						<span className="stat-label">Completion</span>
-						<span className="stat-value">{totals.completionPct}%</span>
-						<span className="stat-subtext">
-							{totals.completed} / {totals.totalQuests} quests
-						</span>
-					</div>
-					<div className="stat-card">
-						<span className="stat-label">Wallet</span>
-						<button className="wallet-button" onClick={handleConnect} disabled={isConnecting}>
-							{isConnecting ? 'Connecting…' : isConnected ? 'Disconnect' : 'Connect MetaMask'}
-						</button>
-						<span className="stat-subtext wallet">
-							{isConnected && account ? `${account.slice(0, 6)}…${account.slice(-4)}` : 'Not connected'}
-						</span>
-					</div>
-				</div>
-				{error && <p className="error-banner">{error}</p>}
-			</section>
-
 			<section className="filter-row">
 				<div className="filter-group">
 					{filters.map((filter) => (
@@ -191,7 +88,6 @@ export default function QuestDashboard() {
 								return (
 									<div className={['quest-tile', completedClass].join(' ')} key={quest.id} style={{ background: gradient }}>
 										<div className="tile-header">
-											<span className="pill">{quest.type}</span>
 											<span className="reward">🪙 {quest.reward}</span>
 										</div>
 										<h3>{quest.title}</h3>

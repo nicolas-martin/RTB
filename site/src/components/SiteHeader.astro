@@ -20,6 +20,7 @@ const { currentPath = '/' } = Astro.props;
       </a>
     ))}
   </nav>
+  <div id="quest-topbar-extra" class="topbar-extra"></div>
 </header>
 
 <style>
@@ -29,11 +30,12 @@ const { currentPath = '/' } = Astro.props;
     z-index: 40;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 16px;
     padding: 20px var(--page-padding, 32px) 16px;
     backdrop-filter: blur(18px);
     background: rgba(4, 4, 7, 0.75);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-wrap: wrap;
   }
 
   .brand {
@@ -51,6 +53,13 @@ const { currentPath = '/' } = Astro.props;
   nav {
     display: flex;
     gap: 16px;
+  }
+
+  .topbar-extra {
+    margin-left: auto;
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: flex-end;
   }
 
   .nav-link {
@@ -77,10 +86,24 @@ const { currentPath = '/' } = Astro.props;
   @media (max-width: 640px) {
     .topbar {
       padding-inline: 20px;
+      gap: 12px;
     }
 
     .brand span {
       display: none;
+    }
+
+    nav {
+      order: 3;
+      width: 100%;
+      margin-left: 0;
+      justify-content: center;
+    }
+
+    .topbar-extra {
+      order: 4;
+      width: 100%;
+      justify-content: flex-start;
     }
   }
 </style>

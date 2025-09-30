@@ -7,34 +7,5 @@ const currentPath = Astro.url.pathname;
 ---
 <BaseLayout title="Plasma Quests" description="Track your journey across Plasma ecosystem quests.">
   <SiteHeader slot="header" currentPath={currentPath} />
-  <section class="hero">
-    <div>
-      <h1>Complete quests. Earn rewards.</h1>
-      <p>
-        Connect your wallet to sync quest progress across Plasma dApps and follow a guided path
-        through the ecosystem.
-      </p>
-    </div>
-  </section>
   <QuestApp client:load />
 </BaseLayout>
-
-<style>
-  .hero {
-    margin-bottom: 32px;
-  }
-
-  .hero h1 {
-    margin: 0 0 12px;
-    font-size: clamp(32px, 4vw, 44px);
-    letter-spacing: -0.02em;
-  }
-
-  .hero p {
-    margin: 0;
-    max-width: 540px;
-    color: var(--text-muted);
-    font-size: 16px;
-    line-height: 1.6;
-  }
-</style>
