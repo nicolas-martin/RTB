@@ -171,7 +171,7 @@ export default function QuestDashboard() {
 							<div className="project-meta">
 								<div>
 									<span className="meta-label">Available</span>
-									<span className="meta-value">{quests.length}</span>
+									<span className="meta-value">{quests.filter((quest) => !quest.completed).length}</span>
 								</div>
 								<div>
 									<span className="meta-label">Completed</span>

@@ -68,7 +68,7 @@ export class FileStorage {
 	private apiKey?: string;
 
 	constructor(apiUrl?: string, apiKey?: string) {
-		this.apiUrl = apiUrl || import.meta.env.VITE_API_URL || 'http://localhost:8080';
+		this.apiUrl = apiUrl || import.meta.env.VITE_API_URL;
 		this.apiKey = apiKey || import.meta.env.VITE_API_KEY;
 	}
 
