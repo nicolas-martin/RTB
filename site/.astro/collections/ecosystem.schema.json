@@ -1,0 +1,57 @@
+{
+  "$ref": "#/definitions/ecosystem",
+  "definitions": {
+    "ecosystem": {
+      "type": "object",
+      "properties": {
+        "projects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "website": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "tag_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "logo_alt": {
+                "type": "string"
+              },
+              "logo_src": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "$schema": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "projects"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

@@ -1,0 +1,28 @@
+{
+  "name": "plasma-dashboard",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/react": "^3.6.0",
+    "@metamask/sdk": "^0.33.1",
+    "astro": "^4.16.5",
+    "graphql": "^16.11.0",
+    "graphql-request": "^7.2.0",
+    "papaparse": "^5.5.3",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "toml": "^3.0.0",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.17",
+    "@types/react-dom": "^18.3.5",
+    "typescript": "^5.9.2"
+  }
+}

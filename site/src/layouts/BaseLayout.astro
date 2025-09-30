@@ -1,0 +1,52 @@
+---
+import '../styles/global.css';
+const {
+  title = 'Plasma Dashboard',
+  description = 'Explore quests and ecosystem projects in the Plasma network.'
+} = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="page-frame">
+      <slot name="header" />
+      <main>
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>
+
+<style>
+  .page-frame {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  main {
+    flex: 1 1 auto;
+    width: min(1200px, 100%);
+    margin: 0 auto;
+    padding-inline: 20px;
+    padding-block: 24px 64px;
+  }
+
+  @media (min-width: 1024px) {
+    main {
+      padding-inline: 32px;
+    }
+  }
+</style>
