@@ -108,6 +108,7 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
 		try {
 			if (sdkInstance) {
 				await sdkInstance.terminate()
+				sdkInstance = null // Reset singleton for clean reconnection
 			}
 			setAccount(null)
 		} catch (err) {

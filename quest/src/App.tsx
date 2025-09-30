@@ -70,12 +70,39 @@ function App() {
 		const url = new URL(window.location.href)
 		url.searchParams.delete('wallet')
 		window.history.pushState({}, '', url)
-		// Reset to show all quests
+		// Reset to show all quests and clear points
 		setProjectQuests(projectManager.getAllQuests())
+		setUserPoints(new Map())
 	}
 
 	if (loading) {
 		return <div className="app">Loading quests...</div>
+	}
+
+	const handleAddPlasma = async () => {
+		if (!window.ethereum) {
+			alert('MetaMask is not installed!')
+			return
+		}
+
+		try {
+			await window.ethereum.request({
+				method: 'wallet_addEthereumChain',
+				params: [{
+					chainId: '0x2611',
+					chainName: 'Plasma Mainnet',
+					nativeCurrency: {
+						name: 'XPL',
+						symbol: 'XPL',
+						decimals: 18
+					},
+					rpcUrls: ['https://rpc.plasma.to'],
+					blockExplorerUrls: ['https://plasmascan.to/']
+				}]
+			})
+		} catch (error) {
+			console.error('Failed to add Plasma network:', error)
+		}
 	}
 
 	return (
@@ -99,6 +126,9 @@ function App() {
 					</>
 				)}
 			</div>
+			<button className="add-plasma-button" onClick={handleAddPlasma}>
+				🦊 Add Plasma
+			</button>
 			{projectQuests.map(({ project, quests }) => {
 				const projectPoints = userPoints.get(project.id) || 0
 				const completedCount = quests.filter(q => q.completed).length
