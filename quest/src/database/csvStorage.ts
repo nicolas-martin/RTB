@@ -1,7 +1,10 @@
 /**
  * CSV Storage Utility
  * Handles reading and writing CSV files for data persistence
+ * Uses PapaParse for robust CSV parsing
  */
+
+import Papa from 'papaparse';
 
 export interface CSVOptions {
 	headers: string[];
@@ -9,7 +12,7 @@ export interface CSVOptions {
 }
 
 /**
- * Converts an array of objects to CSV string
+ * Converts an array of objects to CSV string using PapaParse
  */
 export function objectsToCSV<T extends Record<string, any>>(
 	objects: T[],
@@ -17,26 +20,21 @@ export function objectsToCSV<T extends Record<string, any>>(
 ): string {
 	const { headers, delimiter = ',' } = options;
 
-	// Create header row
-	const headerRow = headers
-		.map((header) => escapeCSVValue(header))
-		.join(delimiter);
-
-	// Create data rows
-	const dataRows = objects.map((obj) => {
-		return headers
-			.map((header) => {
-				const value = obj[header];
-				return escapeCSVValue(value);
-			})
-			.join(delimiter);
+	// Use PapaParse to generate CSV
+	const csv = Papa.unparse({
+		fields: headers,
+		data: objects.map((obj) => headers.map((h) => obj[h] ?? '')),
+	}, {
+		delimiter,
+		header: true,
+		newline: '\n',
 	});
 
-	return [headerRow, ...dataRows].join('\n');
+	return csv;
 }
 
 /**
- * Converts CSV string to array of objects
+ * Converts CSV string to array of objects using PapaParse
  */
 export function csvToObjects<T extends Record<string, any>>(
 	csv: string,
@@ -44,90 +42,22 @@ export function csvToObjects<T extends Record<string, any>>(
 ): T[] {
 	const { delimiter = ',' } = options || {};
 
-	const lines = csv.split('\n').filter((line) => line.trim());
-	if (lines.length === 0) return [];
+	if (!csv.trim()) return [];
 
-	// Parse headers
-	const headers = parseCSVLine(lines[0], delimiter);
+	// Use PapaParse to parse CSV
+	const result = Papa.parse<T>(csv, {
+		delimiter,
+		header: true,
+		skipEmptyLines: true,
+		transformHeader: (header) => header.trim(),
+		transform: (value) => value === '' ? undefined : value,
+	});
 
-	// Parse data rows
-	const objects: T[] = [];
-	for (let i = 1; i < lines.length; i++) {
-		const values = parseCSVLine(lines[i], delimiter);
-		const obj: any = {};
-
-		headers.forEach((header, index) => {
-			obj[header] = unescapeCSVValue(values[index] || '');
-		});
-
-		objects.push(obj as T);
+	if (result.errors.length > 0) {
+		console.warn('[CSV] Parse errors:', result.errors);
 	}
 
-	return objects;
-}
-
-/**
- * Escapes a value for CSV format
- */
-function escapeCSVValue(value: any): string {
-	if (value === null || value === undefined) {
-		return '';
-	}
-
-	const str = String(value);
-
-	// If value contains comma, newline, or quote, wrap in quotes and escape quotes
-	if (str.includes(',') || str.includes('\n') || str.includes('"')) {
-		return `"${str.replace(/"/g, '""')}"`;
-	}
-
-	return str;
-}
-
-/**
- * Unescapes a CSV value
- */
-function unescapeCSVValue(value: string): string {
-	if (value.startsWith('"') && value.endsWith('"')) {
-		return value.slice(1, -1).replace(/""/g, '"');
-	}
-	return value;
-}
-
-/**
- * Parses a single CSV line into values, handling quoted values
- */
-function parseCSVLine(line: string, delimiter: string): string[] {
-	const values: string[] = [];
-	let current = '';
-	let inQuotes = false;
-
-	for (let i = 0; i < line.length; i++) {
-		const char = line[i];
-		const nextChar = line[i + 1];
-
-		if (char === '"') {
-			if (inQuotes && nextChar === '"') {
-				// Escaped quote
-				current += '"';
-				i++; // Skip next quote
-			} else {
-				// Toggle quote mode
-				inQuotes = !inQuotes;
-			}
-		} else if (char === delimiter && !inQuotes) {
-			// End of value
-			values.push(current);
-			current = '';
-		} else {
-			current += char;
-		}
-	}
-
-	// Add the last value
-	values.push(current);
-
-	return values;
+	return result.data;
 }
 
 /**
