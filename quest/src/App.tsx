@@ -8,7 +8,6 @@ import './App.css'
 function App() {
 	const [projectQuests, setProjectQuests] = useState<{ project: ProjectMetadata; quests: Quest[] }[]>([])
 	const [loading, setLoading] = useState(true)
-	const [checking, setChecking] = useState(false)
 	const [userPoints, setUserPoints] = useState<Map<string, number>>(new Map())
 	const { account, isConnected, isConnecting, error, connectWallet, disconnectWallet } = useMetaMask()
 
@@ -50,7 +49,6 @@ function App() {
 
 	const checkProgress = async (wallet: string) => {
 		if (!wallet.trim()) return
-		setChecking(true)
 		try {
 			const updatedProjectQuests = await projectManager.checkAllProjectsProgress(wallet)
 			setProjectQuests(updatedProjectQuests)
@@ -60,8 +58,6 @@ function App() {
 			setUserPoints(points)
 		} catch (error) {
 			console.error('Failed to check quest progress:', error)
-		} finally {
-			setChecking(false)
 		}
 	}
 

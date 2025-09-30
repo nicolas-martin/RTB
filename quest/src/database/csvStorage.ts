@@ -113,23 +113,9 @@ export class FileStorage {
 	}
 
 	/**
-	 * Checks if a file exists
-	 */
-	async fileExists(filename: string): Promise<boolean> {
-		try {
-			const response = await fetch(`${this.apiUrl}/csv/${filename}`, {
-				headers: this.apiKey ? { 'Authorization': `Bearer ${this.apiKey}` } : {},
-			});
-			return response.ok;
-		} catch {
-			return false;
-		}
-	}
-
-	/**
 	 * Deletes a file from storage
 	 */
-	async deleteFile(filename: string): Promise<void> {
+	async deleteFile(_filename: string): Promise<void> {
 		// Not implemented - files persist on server
 		console.warn('Delete not implemented for API storage');
 	}

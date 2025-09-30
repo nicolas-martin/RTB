@@ -246,11 +246,6 @@ export class CSVDatabase implements IQuestDatabase {
 
 	private async loadCompletions(): Promise<QuestCompletion[]> {
 		try {
-			const exists = await this.fileStorage.fileExists(COMPLETIONS_FILE);
-			if (!exists) {
-				return [];
-			}
-
 			const csv = await this.fileStorage.readFile(COMPLETIONS_FILE);
 			const rawData = csvToObjects<any>(csv);
 
@@ -261,6 +256,9 @@ export class CSVDatabase implements IQuestDatabase {
 				progress: item.progress ? parseFloat(item.progress) : undefined,
 			}));
 		} catch (error) {
+			if (error instanceof Error && error.message.includes('File not found')) {
+				return [];
+			}
 			console.error('Failed to load completions:', error);
 			return [];
 		}
@@ -277,11 +275,6 @@ export class CSVDatabase implements IQuestDatabase {
 
 	private async loadPoints(): Promise<UserPoints[]> {
 		try {
-			const exists = await this.fileStorage.fileExists(POINTS_FILE);
-			if (!exists) {
-				return [];
-			}
-
 			const csv = await this.fileStorage.readFile(POINTS_FILE);
 			const rawData = csvToObjects<any>(csv);
 
@@ -291,6 +284,9 @@ export class CSVDatabase implements IQuestDatabase {
 				totalPoints: parseFloat(item.totalPoints) || 0,
 			}));
 		} catch (error) {
+			if (error instanceof Error && error.message.includes('File not found')) {
+				return [];
+			}
 			console.error('Failed to load points:', error);
 			return [];
 		}

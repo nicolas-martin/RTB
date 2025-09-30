@@ -61,4 +61,8 @@ export class CustomQuest extends BaseQuest {
 
 		return { completed, progress };
 	}
+
+	getTypeParams(): any[] {
+		return [...this.typeParams];
+	}
 }

@@ -1,5 +1,5 @@
 import * as toml from 'toml';
-import { QuestConfig, ProjectMetadata } from '../types/quest';
+import { QuestConfig, ProjectMetadata, QuestType } from '../types/quest';
 import { BaseQuest, ConditionalQuest, ProgressQuest, CustomQuest } from '../models';
 
 export interface ProjectWithQuests {
@@ -107,17 +107,18 @@ export class QuestParser {
 		}
 
 		const { baseType } = this.parseTypeWithParams(questData.type);
-		const validTypes = ['conditional', 'progress', 'custom'];
-		if (!validTypes.includes(baseType)) {
+		const validTypes: QuestType[] = ['conditional', 'progress', 'custom'];
+		if (!validTypes.includes(baseType as QuestType)) {
 			throw new Error(`Invalid quest type: ${baseType}`);
 		}
+		const typedBaseType = baseType as QuestType;
 
 		return {
 			id: questData.id,
 			title: questData.title,
 			description: questData.description,
 			reward: questData.reward,
-			type: baseType,
+			type: typedBaseType,
 			query: questData.query.trim(),
 			startDate: questData.startDate,
 			endDate: questData.endDate,

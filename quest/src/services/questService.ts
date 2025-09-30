@@ -4,6 +4,7 @@ import { GraphQLService } from './graphqlClient';
 import { BaseQuest } from '../models';
 import { resolveVariableFunction } from './variableFunctions';
 import { QuestDatabaseService, getQuestDatabaseService } from '../database/questDatabaseService';
+import { QuestCompletion } from '../database/types';
 
 export class QuestService {
 	private project: ProjectMetadata | null = null;
@@ -24,7 +25,6 @@ export class QuestService {
 			this.project = project;
 			this.quests = quests;
 			this.graphqlService.updateEndpoint(project.graphqlEndpoint);
-			this.loadProgressFromStorage(project.id);
 		} catch (error) {
 			console.error('Failed to load project:', error);
 			throw error;
@@ -35,7 +35,11 @@ export class QuestService {
 		return this.project;
 	}
 
-	async checkQuest(questId: string, playerId: string): Promise<Quest | null> {
+	async checkQuest(
+		questId: string,
+		playerId: string,
+		existingCompletion?: QuestCompletion
+	): Promise<Quest | null> {
 		const quest = this.quests.find((q) => q.getId() === questId);
 		if (!quest) {
 			console.error(`Quest not found: ${questId}`);
@@ -48,22 +52,37 @@ export class QuestService {
 		}
 
 		try {
-			// Check if quest is already completed in database
-			const isCompleted = await this.databaseService.isQuestCompleted(
-				playerId,
-				questId,
-				this.project.id
-			);
+			const projectId = this.project.id;
+			let completionRecord = existingCompletion;
 
-			if (isCompleted) {
+			// If we do not have pre-fetched data, fall back to single quest lookup
+			if (!completionRecord) {
+				const isCompleted = await this.databaseService.isQuestCompleted(
+					playerId,
+					questId,
+					projectId
+				);
+
+				if (isCompleted) {
+					completionRecord = {
+						userAddress: playerId,
+						questId,
+						projectId,
+						completed: true,
+						lastCheckedAt: new Date().toISOString(),
+					};
+				}
+			}
+
+			if (completionRecord?.completed) {
 				console.log(`[QuestService] Quest ${questId} already completed for user ${playerId}`);
 
 				// Return completed quest without running validation
 				const progress: QuestProgress = {
 					questId,
 					completed: true,
-					progress: undefined,
-					lastUpdated: new Date().toISOString(),
+					progress: completionRecord.progress,
+					lastUpdated: completionRecord.lastCheckedAt ?? new Date().toISOString(),
 				};
 
 				this.questProgress.set(questId, progress);
@@ -73,6 +92,16 @@ export class QuestService {
 					completed: true,
 					progress: undefined,
 				};
+			}
+
+			// Seed local progress with any partial data from the database before validation
+			if (completionRecord && completionRecord.progress !== undefined) {
+				this.questProgress.set(questId, {
+					questId,
+					completed: false,
+					progress: completionRecord.progress,
+					lastUpdated: completionRecord.lastCheckedAt ?? new Date().toISOString(),
+				});
 			}
 
 			// Quest not completed, run validation
@@ -93,7 +122,6 @@ export class QuestService {
 			};
 
 			this.questProgress.set(questId, progress);
-			this.saveProgressToStorage();
 
 			// If quest just completed, mark it in database
 			if (validation.completed) {
@@ -118,7 +146,7 @@ export class QuestService {
 		} catch (error) {
 			console.error(`Failed to check quest ${questId}:`, error);
 
-			// On database error, fall back to local storage
+				// On database error, continue with direct validation only
 			if (error instanceof Error && error.message.includes('database')) {
 				console.warn('[QuestService] Database error, falling back to local validation');
 				// Continue with normal validation flow
@@ -135,7 +163,6 @@ export class QuestService {
 					};
 
 					this.questProgress.set(questId, progress);
-					this.saveProgressToStorage();
 
 					return {
 						...quest.getConfig(),
@@ -154,9 +181,28 @@ export class QuestService {
 
 	async checkAllQuests(playerId: string): Promise<Quest[]> {
 		const results: Quest[] = [];
+		let completionMap: Map<string, QuestCompletion> | undefined;
+
+		if (this.project) {
+			try {
+				const completions = await this.databaseService.getUserQuestCompletions(
+					playerId,
+					this.project.id
+				);
+				completionMap = new Map(
+					completions.map((completion) => [completion.questId, completion])
+				);
+			} catch (error) {
+				console.error(
+					`[QuestService] Failed to preload quest completions for project ${this.project.id}:`,
+					error
+				);
+			}
+		}
 
 		for (const quest of this.quests) {
-			const result = await this.checkQuest(quest.getId(), playerId);
+			const completionRecord = completionMap?.get(quest.getId());
+			const result = await this.checkQuest(quest.getId(), playerId, completionRecord);
 			if (result) {
 				results.push(result);
 			}
@@ -215,36 +261,6 @@ export class QuestService {
 		return this.getQuestsWithProgress().filter((quest) => !quest.completed);
 	}
 
-	private loadProgressFromStorage(projectId: string): void {
-		try {
-			if (typeof localStorage !== 'undefined') {
-				const stored = localStorage.getItem(`quest_progress_${projectId}`);
-				if (stored) {
-					const parsed = JSON.parse(stored);
-					this.questProgress = new Map(Object.entries(parsed));
-				}
-			}
-		} catch (error) {
-			console.error('Failed to load quest progress from storage:', error);
-		}
-	}
-
-	private saveProgressToStorage(): void {
-		if (!this.project) return;
-
-		try {
-			if (typeof localStorage !== 'undefined') {
-				const obj = Object.fromEntries(this.questProgress);
-				localStorage.setItem(
-					`quest_progress_${this.project.id}`,
-					JSON.stringify(obj)
-				);
-			}
-		} catch (error) {
-			console.error('Failed to save quest progress to storage:', error);
-		}
-	}
-
 	updateGraphQLEndpoint(endpoint: string): void {
 		this.graphqlService.updateEndpoint(endpoint);
 	}
@@ -253,9 +269,6 @@ export class QuestService {
 		if (!this.project) return;
 
 		this.questProgress.clear();
-		if (typeof localStorage !== 'undefined') {
-			localStorage.removeItem(`quest_progress_${this.project.id}`);
-		}
 	}
 
 	async getUserPoints(playerId: string): Promise<number> {

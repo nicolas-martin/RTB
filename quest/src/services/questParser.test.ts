@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { QuestParser } from './questParser';
+import { CustomQuest } from '../models';
 
 describe('QuestParser type parameter parsing', () => {
 	const parser = new QuestParser();
@@ -23,7 +24,7 @@ query = "query { test }"
 
 		const result = await parser.parseProjectFromFile(tomlContent);
 		expect(result.quests).toHaveLength(1);
-		expect(result.quests[0].config.type).toBe('custom');
+		expect(result.quests[0].getConfig().type).toBe('custom');
 	});
 
 	it('should parse custom type with single parameter', async () => {
@@ -45,9 +46,11 @@ query = "query { test }"
 
 		const result = await parser.parseProjectFromFile(tomlContent);
 		expect(result.quests).toHaveLength(1);
-		expect(result.quests[0].config.type).toBe('custom');
-		// Check that the CustomQuest instance received the parameters
-		expect(result.quests[0]).toHaveProperty('typeParams');
+		expect(result.quests[0].getConfig().type).toBe('custom');
+		expect(result.quests[0]).toBeInstanceOf(CustomQuest);
+		if (result.quests[0] instanceof CustomQuest) {
+			expect(result.quests[0].getTypeParams()).toEqual([100000000]);
+		}
 	});
 
 	it('should parse custom type with multiple parameters', async () => {
@@ -69,6 +72,10 @@ query = "query { test }"
 
 		const result = await parser.parseProjectFromFile(tomlContent);
 		expect(result.quests).toHaveLength(1);
-		expect(result.quests[0].config.type).toBe('custom');
+		expect(result.quests[0].getConfig().type).toBe('custom');
+		expect(result.quests[0]).toBeInstanceOf(CustomQuest);
+		if (result.quests[0] instanceof CustomQuest) {
+			expect(result.quests[0].getTypeParams()).toEqual([100000000, 'daily', true]);
+		}
 	});
 });

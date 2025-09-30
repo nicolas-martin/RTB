@@ -15,23 +15,24 @@ function QuestCard({ quest }: QuestCardProps) {
 			const current = Math.round(quest.progress)
 			let target = 100
 
-			// For progress quests, get target from conditions
 			if (quest.type === 'progress') {
-				target = quest.conditions?.[0]?.value || 100
-				target = typeof target === 'number' ? target : parseFloat(target as string) || 100
-			}
-			// For custom quests, get target from type params (first param is usually the target)
-			else if (quest.type === 'custom') {
-				// For now, assume 100 USD as default target (human-readable value)
-				// TODO: Extract target from quest config when available
-				target = 100
+				const rawTarget = quest.conditions?.[0]?.value
+				if (typeof rawTarget === 'number') {
+					target = rawTarget
+				} else if (typeof rawTarget === 'string') {
+					const parsed = Number(rawTarget)
+					if (!Number.isNaN(parsed)) {
+						target = parsed
+					}
+				}
 			}
 
-			const percentage = (quest.progress / target) * 100
+			const safeTarget = target > 0 ? target : 100
+			const percentage = safeTarget > 0 ? (quest.progress / safeTarget) * 100 : 0
 			return (
 				<div className="progress-bar">
 					<div className="progress-fill" style={{ width: `${Math.min(percentage, 100)}%` }} />
-					<span className="progress-text">{current.toLocaleString()}/{target.toLocaleString()}</span>
+					<span className="progress-text">{current.toLocaleString()}/{safeTarget.toLocaleString()}</span>
 				</div>
 			)
 		}
