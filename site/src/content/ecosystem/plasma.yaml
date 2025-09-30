@@ -403,6 +403,7 @@ projects:
       - "tag-dex"
     logo_alt: "GlueX logo"
     logo_src: "/icons/gluex.svg"
+    quest_slug: "gluex"
   - name: "Goldsky"
     website: "https://goldsky.com/"
     description: "Goldsky is a data platform that provides real-time blockchain indexing and streaming pipelines, enabling developers to build powerful dApps with instant, decoded onchain data."
@@ -673,6 +674,15 @@ projects:
       - "tag-stablecoins"
     logo_alt: "Rhino.fi logo"
     logo_src: "/icons/rhino-fi.svg"
+  - name: "Ride The Bus"
+    website: "https://ridethebus.xyz/"
+    description: "Ride The Bus brings arcade-style wagering to Plasma with multiplayer card runs, live leaderboards, and on-chain quest rewards for streaks."
+    tags:
+      - "GAMING"
+    tag_ids:
+      - "tag-gaming"
+    logo_alt: "Ride The Bus logo"
+    quest_slug: "rtb"
   - name: "Ripe"
     website: "https://www.ripe.money/"
     description: "Ripe.Money is a crypto payment platform enabling users to pay with stablecoins via local QR codes (like PayNow or GCash), instantly converting crypto to fiat seamlessly."

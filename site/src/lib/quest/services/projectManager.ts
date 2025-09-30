@@ -1,9 +1,12 @@
 import type { ProjectMetadata, Quest } from '../types/quest';
 import { QuestService } from './questService';
 
+export const QUEST_PROJECT_IDS = ['rtb', 'gluex'] as const;
+export type QuestProjectId = (typeof QUEST_PROJECT_IDS)[number];
+
 export class ProjectManager {
 	private projects: Map<string, QuestService> = new Map();
-	private availableProjects = ['rtb', 'gluex']; // Add more project IDs here
+	private availableProjects: QuestProjectId[] = [...QUEST_PROJECT_IDS]; // Add more project IDs here
 
 	async loadProject(projectId: string, tomlPath: string): Promise<void> {
 		try {

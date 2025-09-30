@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import QuestApp from '../../components/QuestApp';
+import { QUEST_PROJECT_IDS } from '@quest-src/services/projectManager';
+import { getEntry } from 'astro:content';
+
+export function getStaticPaths() {
+  return QUEST_PROJECT_IDS.map((project) => ({ params: { project } }));
+}
+
+const { project } = Astro.params;
+const entry = await getEntry('ecosystem', 'plasma');
+const projectInfo = entry.data.projects.find((item) => item.quest_slug === project);
+
+if (!projectInfo) {
+  return Astro.redirect('/');
+}
+
+const title = `${projectInfo.name} Quests`;
+const description = projectInfo.description ?? 'Explore quests from this Plasma project.';
+---
+<BaseLayout title={title} description={description}>
+  <SiteHeader slot="header" currentPath="/" />
+  <QuestApp client:load projectId={project} />
+</BaseLayout>

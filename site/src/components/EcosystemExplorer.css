@@ -139,10 +139,41 @@
   letter-spacing: -0.015em;
 }
 
-.heading a {
+.heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.heading-actions a {
   color: rgba(93, 187, 255, 0.9);
   font-size: 13px;
   text-decoration: none;
+}
+
+.quest-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(93, 91, 255, 0.22);
+  color: var(--text-primary) !important;
+  border: 1px solid rgba(93, 91, 255, 0.45);
+  font-weight: 500;
+}
+
+.quest-pill:hover {
+  background: rgba(93, 91, 255, 0.35);
+}
+
+.quest-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffd166;
+  box-shadow: 0 0 10px rgba(255, 209, 102, 0.6);
 }
 
 .tag-row {

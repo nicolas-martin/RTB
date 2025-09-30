@@ -3,6 +3,7 @@ import './QuestTopBarStats.css';
 
 export default function QuestTopBarStats() {
 	const {
+		projectQuests,
 		totals,
 		userPoints,
 		account,
@@ -12,17 +13,20 @@ export default function QuestTopBarStats() {
 		error,
 	} = useQuestData();
 
-	const projectCount = userPoints.size;
+	const pointProjects = userPoints.size;
+	const projectCount = pointProjects > 0 ? pointProjects : projectQuests.length;
 	const formattedAccount =
 		isConnected && account ? `${account.slice(0, 6)}…${account.slice(-4)}` : 'Not connected';
+	const projectCountLabel = projectCount === 1 ? '1 project' : `${projectCount} projects`;
+	const hasProjectCount = projectCount > 0;
 
 	return (
 		<div className="topbar-stats" role="presentation">
 			<div className="topbar-item">
 				<span className="topbar-label">Points</span>
 				<span className="topbar-value">{totals.points.toLocaleString()}</span>
-				{isConnected && (
-					<span className="topbar-meta">• {projectCount} projects</span>
+				{hasProjectCount && (
+					<span className="topbar-meta">• {projectCountLabel}</span>
 				)}
 			</div>
 			<div className="topbar-item">

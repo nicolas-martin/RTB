@@ -90,11 +90,22 @@ export default function EcosystemExplorer({ projects }: Props) {
 										</div>
 										<div className="heading">
 											<h3>{project.name}</h3>
-											{project.website && (
-												<a href={project.website} target="_blank" rel="noopener noreferrer">
-													Visit site
-												</a>
-											)}
+											<div className="heading-actions">
+												{project.website && (
+													<a href={project.website} target="_blank" rel="noopener noreferrer">
+														Visit site
+													</a>
+												)}
+												{project.quest_slug && (
+													<a
+														href={`/quest/${project.quest_slug}`}
+														className="quest-pill"
+													>
+														<span className="quest-indicator" aria-hidden="true"></span>
+														View quests
+													</a>
+												)}
+											</div>
 										</div>
 									</header>
 									{project.tags && project.tags.length > 0 && (

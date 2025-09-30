@@ -8,7 +8,7 @@ import {
 	type ReactNode,
 } from 'react';
 import type { Quest, ProjectMetadata } from '@quest-src/types/quest';
-import { projectManager } from '@quest-src/services/projectManager';
+import { projectManager, type QuestProjectId } from '@quest-src/services/projectManager';
 import { useMetaMask } from '@quest-src/hooks/useMetaMask';
 
 export interface ProjectWithQuests {
@@ -37,10 +37,41 @@ interface QuestDataContextValue {
 
 const QuestDataContext = createContext<QuestDataContextValue | null>(null);
 
-export function QuestDataProvider({ children }: { children: ReactNode }) {
+interface QuestDataProviderProps {
+	children: ReactNode;
+	projectIds?: QuestProjectId[];
+}
+
+export function QuestDataProvider({ children, projectIds }: QuestDataProviderProps) {
 	const [projectQuests, setProjectQuests] = useState<ProjectWithQuests[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [userPoints, setUserPoints] = useState<Map<string, number>>(new Map());
+
+	const projectFilter = useMemo(() => {
+		if (!projectIds || projectIds.length === 0) return null;
+		return new Set(projectIds.map((id) => id.toLowerCase()));
+	}, [projectIds]);
+
+	const filterProjects = useCallback(
+		(items: ProjectWithQuests[]): ProjectWithQuests[] => {
+			if (!projectFilter) return items;
+			return items.filter((entry) => projectFilter.has(entry.project.id.toLowerCase()));
+		},
+		[projectFilter]
+	);
+
+	const filterPoints = useCallback(
+		(points: Map<string, number>): Map<string, number> => {
+			const filtered = new Map<string, number>();
+			points.forEach((value, key) => {
+				if (!projectFilter || projectFilter.has(key.toLowerCase())) {
+					filtered.set(key, value ?? 0);
+				}
+			});
+			return filtered;
+		},
+		[projectFilter]
+	);
 
 	const {
 		account,
@@ -57,32 +88,32 @@ export function QuestDataProvider({ children }: { children: ReactNode }) {
 			try {
 				await projectManager.loadAllProjects();
 				const all = projectManager.getAllQuests();
-				setProjectQuests(all);
+				setProjectQuests(filterProjects(all));
 			} finally {
 				setLoading(false);
 			}
 		};
 
 		init();
-	}, []);
+	}, [filterProjects]);
 
 	// Refresh quest status and points when wallet state changes
 	useEffect(() => {
 		const runCheck = async () => {
 			if (isConnected && account) {
 				const updated = await projectManager.checkAllProjectsProgress(account);
-				setProjectQuests(updated);
+				setProjectQuests(filterProjects(updated));
 				const points = await projectManager.getAllUserPoints(account);
-				setUserPoints(points);
+				setUserPoints(filterPoints(points));
 			} else {
 				projectManager.clearAllProgress();
-				setProjectQuests(projectManager.getAllQuests());
-				setUserPoints(new Map());
+				setProjectQuests(filterProjects(projectManager.getAllQuests()));
+				setUserPoints(filterPoints(new Map()));
 			}
 		};
 
 		runCheck();
-	}, [isConnected, account]);
+	}, [isConnected, account, filterProjects, filterPoints]);
 
 	const totals = useMemo<QuestTotals>(() => {
 		const totalQuests = projectQuests.reduce((acc, item) => acc + item.quests.length, 0);

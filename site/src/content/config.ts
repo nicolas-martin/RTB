@@ -11,7 +11,8 @@ const ecosystem = defineCollection({
         tags: z.array(z.string()).optional(),
         tag_ids: z.array(z.string()).optional(),
         logo_alt: z.string().optional(),
-        logo_src: z.string().optional()
+        logo_src: z.string().optional(),
+        quest_slug: z.string().optional()
       })
     )
   })
