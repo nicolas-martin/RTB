@@ -13,28 +13,22 @@ export default function QuestTopBarStats() {
 		error,
 	} = useQuestData();
 
-	const pointProjects = userPoints.size;
-	const projectCount = pointProjects > 0 ? pointProjects : projectQuests.length;
+	// const pointProjects = userPoints.size;
+	// const projectCount = pointProjects > 0 ? pointProjects : projectQuests.length;
 	const formattedAccount =
 		isConnected && account ? `${account.slice(0, 6)}…${account.slice(-4)}` : 'Not connected';
-	const projectCountLabel = projectCount === 1 ? '1 project' : `${projectCount} projects`;
-	const hasProjectCount = projectCount > 0;
+	// const projectCountLabel = projectCount === 1 ? '1 project' : `${projectCount} projects`;
+	// const hasProjectCount = projectCount > 0;
 
 	return (
 		<div className="topbar-stats" role="presentation">
 			<div className="topbar-item">
 				<span className="topbar-label">Points</span>
 				<span className="topbar-value">{totals.points.toLocaleString()}</span>
-				{hasProjectCount && (
-					<span className="topbar-meta">• {projectCountLabel}</span>
-				)}
 			</div>
 			<div className="topbar-item">
 				<span className="topbar-label">Completion</span>
-				<span className="topbar-value">{totals.completionPct}%</span>
-				<span className="topbar-meta">
-					• {totals.completed}/{totals.totalQuests}
-				</span>
+				<span className="topbar-meta">{totals.completed}/{totals.totalQuests} </span>
 			</div>
 			<div className="topbar-item topbar-wallet">
 				<button
