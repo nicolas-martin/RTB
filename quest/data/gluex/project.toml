@@ -54,43 +54,43 @@ graphqlEndpoint = "https://api.goldsky.com/api/public/project_cmfy6mw327h2401xm8
 # operator = ">="
 # value = 20000000
 
-[[quest]]
-id = "total_value_traded_100_usdt0"
-title = "Swap Total amount traded value ≥100 USDT0 in all tokens all time"
-description = "Trade any token with a value more than 100 USDT0 all time"
-reward = 10000
-type = "custom(100000000)"
-query = """
-query UserTotalVolume($userAddress: ID!) {
-  user(id: $userAddress) {
-    tokenVolumes {
-      token
-      totalVolume
-    }
-  }
-}
-"""
-#
 # [[quest]]
-# id = "volume_10_usdt0_24h"
-# title = "Total Volume traded ≥ 10 USDT0 in value in the last 24 hours"
-# description = "Trade any token with a value of at least 10 USDT0 in the last 24 hours"
-# reward = 2000
-# type = "custom"
+# id = "total_value_traded_100_usdt0"
+# title = "Swap Total amount traded value ≥100 USDT0 in all tokens all time"
+# description = "Trade any token with a value more than 100 USDT0 all time"
+# reward = 10000
+# type = "custom(100)"
 # query = """
-# query UserSwaps24h($userAddress: ID!, $timestamp24hAgo: String!) {
-#   swaps(
-#     where: {
-#       userAddress: $userAddress,
-#       timestamp_gt: $timestamp24hAgo
+# query UserTotalVolume($userAddress: ID!) {
+#   user(id: $userAddress) {
+#     tokenVolumes {
+#       token
+#       totalVolume
 #     }
-#   ) {
-#     timestamp
-#     inputAmount
-#     inputToken
 #   }
 # }
 # """
+
+[[quest]]
+id = "volume_10_usdt0_24h"
+title = "Total Volume traded ≥ 10 USDT0 in value in the last 24 hours"
+description = "Trade any token with a value of at least 10 USDT0 in the last 24 hours"
+reward = 2000
+type = "custom"
+query = """
+query UserSwaps24h($userAddress: ID!, $timestamp24hAgo: String!) {
+  swaps(
+    where: {
+      userAddress: $userAddress,
+      timestamp_gt: $timestamp24hAgo
+    }
+  ) {
+    timestamp
+    inputAmount
+    inputToken
+  }
+}
+"""
 #
 # [[quest.validatorParams]]
 # usdt0Address = "0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb"

@@ -26,6 +26,7 @@ export interface QuestConfig {
 	endDate?: string;
 	conditions?: QuestCondition[];
 	validatorParams?: Record<string, any>;
+	variables?: Record<string, string>;
 }
 
 

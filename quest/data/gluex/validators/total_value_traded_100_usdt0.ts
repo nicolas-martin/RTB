@@ -7,7 +7,7 @@ export async function validate(data: any, params?: Record<string, any>): Promise
 	}
 
 	// Get configuration from params or use defaults
-	const target = params?.typeParams?.[0] || 100000000; // Target from type params or default 100 USDT0 in 6 decimals
+	const targetUSD = params?.typeParams?.[0] || 100; // Target in whole USD (e.g., 100 means $100)
 	const baseTokenAddress = params?.baseToken || '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb'; // USDT0
 
 	try {
@@ -68,11 +68,12 @@ export async function validate(data: any, params?: Record<string, any>): Promise
 		const totalValueInUsdt0Decimals = totalValueInUSD * Math.pow(10, baseDecimals);
 
 		console.log('Total value in USD:', totalValueInUSD);
-		console.log('Total value in USDT0 decimals:', totalValueInUsdt0Decimals, 'Target:', target);
+		console.log('Target USD:', targetUSD);
 		console.log('Token volumes processed:', data.user.tokenVolumes.length);
 		console.log('Type params:', params?.typeParams);
 
-		return totalValueInUsdt0Decimals;
+		// Return the USD value directly (not in decimals)
+		return totalValueInUSD;
 	} catch (error) {
 		console.error('Error calculating total value:', error);
 		return 0;
