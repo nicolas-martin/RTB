@@ -76,7 +76,7 @@ id = "volume_10_usdt0_24h"
 title = "Total Volume traded ≥ 10 USDT0 in value in the last 24 hours"
 description = "Trade any token with a value of at least 10 USDT0 in the last 24 hours"
 reward = 2000
-type = "custom"
+type = "custom(10)"
 query = """
 query UserSwaps24h($userAddress: ID!, $timestamp24hAgo: String!) {
   swaps(
@@ -91,6 +91,9 @@ query UserSwaps24h($userAddress: ID!, $timestamp24hAgo: String!) {
   }
 }
 """
+
+[[quest.variables]]
+timestamp24hAgo = "getTimestamp24hAgo"
 #
 # [[quest.validatorParams]]
 # usdt0Address = "0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb"

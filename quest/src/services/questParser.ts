@@ -123,6 +123,7 @@ export class QuestParser {
 			endDate: questData.endDate,
 			conditions: questData.conditions,
 			validatorParams: questData.validatorParams,
+			variables: questData.variables,
 		};
 	}
 }

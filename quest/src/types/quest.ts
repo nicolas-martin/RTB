@@ -15,6 +15,10 @@ export interface QuestCondition {
 }
 
 
+export interface QuestVariable {
+	[key: string]: string;
+}
+
 export interface QuestConfig {
 	id: string;
 	title: string;
@@ -26,7 +30,7 @@ export interface QuestConfig {
 	endDate?: string;
 	conditions?: QuestCondition[];
 	validatorParams?: Record<string, any>;
-	variables?: Record<string, string>;
+	variables?: QuestVariable[];
 }
 
 

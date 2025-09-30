@@ -2,6 +2,7 @@ import { Quest, QuestProgress, ProjectMetadata } from '../types/quest';
 import { questParser } from './questParser';
 import { GraphQLService } from './graphqlClient';
 import { BaseQuest } from '../models';
+import { resolveVariableFunction } from './variableFunctions';
 
 export class QuestService {
 	private project: ProjectMetadata | null = null;
@@ -40,7 +41,7 @@ export class QuestService {
 
 		try {
 			// Build variables object based on what the query expects
-			const variables = this.buildQueryVariables(quest.getQuery(), playerId);
+			const variables = this.buildQueryVariables(quest.getQuery(), playerId, quest.getConfig());
 
 			const queryResult = await this.graphqlService.executeQuery(
 				quest.getQuery(),
@@ -176,7 +177,7 @@ export class QuestService {
 		}
 	}
 
-	private buildQueryVariables(query: string, playerId: string): Record<string, any> {
+	private buildQueryVariables(query: string, playerId: string, questConfig: any): Record<string, any> {
 		const variables: Record<string, any> = {};
 
 		// Extract all variable definitions from the query
@@ -188,6 +189,21 @@ export class QuestService {
 			// Map all variables to playerId for now
 			// In the future, we can extend this to handle other variable types
 			variables[variableName] = playerId;
+		}
+
+		// Process quest-specific variables from the variables section
+		if (questConfig.variables && Array.isArray(questConfig.variables)) {
+			for (const variableObj of questConfig.variables) {
+				for (const [varName, varValue] of Object.entries(variableObj)) {
+					// If it looks like a function name (starts with lowercase letter), resolve it
+					if (typeof varValue === 'string' && /^[a-z][a-zA-Z0-9]*$/.test(varValue)) {
+						variables[varName] = await resolveVariableFunction(varValue, this.project?.id || '');
+					} else {
+						// Static value
+						variables[varName] = varValue;
+					}
+				}
+			}
 		}
 
 		return variables;
