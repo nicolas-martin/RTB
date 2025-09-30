@@ -32,12 +32,14 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
 			})
 		}
 
-		// Check if already connected
+		// Check if already connected - use window.ethereum directly for instant detection
 		const checkConnection = async () => {
 			try {
-				const provider = sdkInstance?.getProvider()
+				// Try window.ethereum first (instant for browser extension)
+				const provider = window.ethereum || sdkInstance?.getProvider()
+
 				if (provider) {
-					const accounts = await provider.request<string[]>({
+					const accounts = await provider.request({
 						method: 'eth_accounts'
 					})
 					if (accounts && accounts.length > 0) {

@@ -33,13 +33,18 @@ function App() {
 		loadQuests()
 	}, [])
 
-	// Auto-check progress when wallet connects
+	// Auto-check progress when wallet connects, or reset when disconnected
 	useEffect(() => {
 		if (isConnected && account) {
 			const url = new URL(window.location.href)
 			url.searchParams.set('wallet', account)
 			window.history.pushState({}, '', url)
 			checkProgress(account)
+		} else if (!isConnected && !account) {
+			// Clear all cached progress and reset to fresh quests
+			projectManager.clearAllProgress()
+			setProjectQuests(projectManager.getAllQuests())
+			setUserPoints(new Map())
 		}
 	}, [isConnected, account])
 
@@ -70,7 +75,8 @@ function App() {
 		const url = new URL(window.location.href)
 		url.searchParams.delete('wallet')
 		window.history.pushState({}, '', url)
-		// Reset to show all quests and clear points
+		// Clear all cached progress and reset to fresh quests
+		projectManager.clearAllProgress()
 		setProjectQuests(projectManager.getAllQuests())
 		setUserPoints(new Map())
 	}

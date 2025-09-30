@@ -1,7 +1,7 @@
 [project]
 id = "rtb"
 name = "Ride The Bus"
-description = "Card game on Plume testnet"
+description = "Card game on Plasma testnet"
 graphqlEndpoint = "https://api.goldsky.com/api/public/project_cmfy6mw327h2401xm82q555dj/subgraphs/rtb/2.0.3/gn"
 
 [[quest]]

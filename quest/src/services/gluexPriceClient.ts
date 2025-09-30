@@ -8,7 +8,7 @@ export interface TokenPrice {
 
 export class GlueXPriceClient {
 	private readonly apiUrl = 'https://exchange-rates.gluex.xyz/';
-	private readonly usdt0Address = '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb'; // USDT0 on Plume
+	private readonly usdt0Address = '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb'; // USDT0 on Plasma
 
 	async getTokenPrice(tokenAddress: string): Promise<number> {
 		const store = usePriceStore.getState();
