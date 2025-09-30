@@ -57,13 +57,17 @@ func (s *Server) getCSV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	filename := strings.TrimPrefix(r.URL.Path, "/csv/")
+	log.Printf("[GET] /csv/%s from %s", filename, r.RemoteAddr)
+
 	if !s.authenticate(r) {
+		log.Printf("[GET] /csv/%s - UNAUTHORIZED", filename)
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	filename := strings.TrimPrefix(r.URL.Path, "/csv/")
 	if filename == "" {
+		log.Printf("[GET] /csv/ - BAD REQUEST: filename required")
 		http.Error(w, "filename required", http.StatusBadRequest)
 		return
 	}
@@ -83,17 +87,21 @@ func (s *Server) getCSV(w http.ResponseWriter, r *http.Request) {
 			case "user_points.csv":
 				emptyCSV = "userAddress,projectId,points\n"
 			default:
+				log.Printf("[GET] /csv/%s - NOT FOUND: unknown file", filename)
 				http.Error(w, "unknown file", http.StatusNotFound)
 				return
 			}
+			log.Printf("[GET] /csv/%s - OK: empty file, returning headers", filename)
 			w.Header().Set("Content-Type", "text/csv")
 			w.Write([]byte(emptyCSV))
 			return
 		}
+		log.Printf("[GET] /csv/%s - ERROR: %v", filename, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	log.Printf("[GET] /csv/%s - OK: %d bytes", filename, len(data))
 	w.Header().Set("Content-Type", "text/csv")
 	w.Write(data)
 }
@@ -107,19 +115,24 @@ func (s *Server) saveCSV(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	filename := strings.TrimPrefix(r.URL.Path, "/csv/")
+	log.Printf("[POST] /csv/%s from %s", filename, r.RemoteAddr)
+
 	if !s.authenticate(r) {
+		log.Printf("[POST] /csv/%s - UNAUTHORIZED", filename)
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 
-	filename := strings.TrimPrefix(r.URL.Path, "/csv/")
 	if filename == "" {
+		log.Printf("[POST] /csv/ - BAD REQUEST: filename required")
 		http.Error(w, "filename required", http.StatusBadRequest)
 		return
 	}
 
 	// Only allow specific filenames for security
 	if filename != "quest_completions.csv" && filename != "user_points.csv" {
+		log.Printf("[POST] /csv/%s - BAD REQUEST: invalid filename", filename)
 		http.Error(w, "invalid filename", http.StatusBadRequest)
 		return
 	}
@@ -129,6 +142,7 @@ func (s *Server) saveCSV(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		log.Printf("[POST] /csv/%s - BAD REQUEST: invalid json - %v", filename, err)
 		http.Error(w, "invalid json", http.StatusBadRequest)
 		return
 	}
@@ -138,10 +152,12 @@ func (s *Server) saveCSV(w http.ResponseWriter, r *http.Request) {
 
 	filePath := filepath.Join(s.dataDir, filename)
 	if err := os.WriteFile(filePath, []byte(body.Content), 0644); err != nil {
+		log.Printf("[POST] /csv/%s - ERROR: %v", filename, err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	log.Printf("[POST] /csv/%s - OK: %d bytes written", filename, len(body.Content))
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
