@@ -1,13 +1,13 @@
 import { gluexPriceClient } from '../../../src/services/gluexPriceClient';
 import { usePriceStore } from '../../../src/stores/priceStore';
 
-export async function validate(data: any, params?: Record<string, any>): Promise<boolean> {
+export async function validate(data: any, params?: Record<string, any>): Promise<number> {
 	if (!data.user?.tokenVolumes || !Array.isArray(data.user.tokenVolumes)) {
-		return false;
+		return 0;
 	}
 
 	// Get configuration from params or use defaults
-	const minValueUsdt0 = params?.minValueUsdt0 || 100000000; // 100 USDT0 in 6 decimals
+	const target = params?.typeParams?.[0] || 100000000; // Target from type params or default 100 USDT0 in 6 decimals
 	const baseTokenAddress = params?.baseToken || '0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb'; // USDT0
 
 	try {
@@ -32,17 +32,20 @@ export async function validate(data: any, params?: Record<string, any>): Promise
 
 			if (tokenAddress === baseTokenAddress.toLowerCase()) {
 				// USDT0: Direct volume in 6 decimals, convert to USD
-				const usdt0Amount = volume / Math.pow(10, 6);
+				const baseTokenInfo = store.getTokenInfo(baseTokenAddress);
+				const baseDecimals = baseTokenInfo?.decimals || 6;
+				const usdt0Amount = volume / Math.pow(10, baseDecimals);
 				totalValueInUSD += usdt0Amount; // USDT0 is 1:1 with USD
 				console.log(`USDT0: ${usdt0Amount} USD`);
 			} else {
 				// Other tokens: Get price and convert
 				const priceFromAPI = prices.get(tokenAddress) || 0;
 
-				// Get token info for decimal handling
+				// Get token info for decimal handling from price store
 				const tokenInfo = store.getTokenInfo(tokenAddress);
+				const baseTokenInfo = store.getTokenInfo(baseTokenAddress);
 				const tokenDecimals = tokenInfo?.decimals || 18;
-				const baseTokenDecimals = 6; // USDT0 decimals
+				const baseTokenDecimals = baseTokenInfo?.decimals || 6;
 
 				// API returns: USDT0_smallest_units / token_smallest_units
 				// We have: token volume in smallest units
@@ -51,24 +54,27 @@ export async function validate(data: any, params?: Record<string, any>): Promise
 				// Step 1: Convert token volume to USDT0 smallest units using price
 				const usdt0SmallestUnits = volume * priceFromAPI;
 
-				// Step 2: Convert USDT0 smallest units to USD (divide by 10^6)
+				// Step 2: Convert USDT0 smallest units to USD (divide by base token decimals)
 				const valueInUSD = usdt0SmallestUnits / Math.pow(10, baseTokenDecimals);
 
 				totalValueInUSD += valueInUSD;
-				console.log(`Token ${tokenAddress}: ${volume} * ${priceFromAPI} / 10^6 = ${valueInUSD} USD`);
+				console.log(`Token ${tokenAddress}: ${volume} * ${priceFromAPI} / 10^${baseTokenDecimals} = ${valueInUSD} USD`);
 			}
 		}
 
-		// Convert total USD to USDT0 decimals for comparison with minValueUsdt0
-		const totalValueInUsdt0Decimals = totalValueInUSD * Math.pow(10, 6);
+		// Convert total USD to USDT0 decimals using the actual base token decimals
+		const baseTokenInfo = store.getTokenInfo(baseTokenAddress);
+		const baseDecimals = baseTokenInfo?.decimals || 6;
+		const totalValueInUsdt0Decimals = totalValueInUSD * Math.pow(10, baseDecimals);
 
 		console.log('Total value in USD:', totalValueInUSD);
-		console.log('Total value in USDT0 decimals:', totalValueInUsdt0Decimals, 'Required:', minValueUsdt0);
+		console.log('Total value in USDT0 decimals:', totalValueInUsdt0Decimals, 'Target:', target);
 		console.log('Token volumes processed:', data.user.tokenVolumes.length);
+		console.log('Type params:', params?.typeParams);
 
-		return totalValueInUsdt0Decimals >= minValueUsdt0;
+		return totalValueInUsdt0Decimals;
 	} catch (error) {
 		console.error('Error calculating total value:', error);
-		return false;
+		return 0;
 	}
 }

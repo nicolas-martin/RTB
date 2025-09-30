@@ -59,7 +59,7 @@ id = "total_value_traded_100_usdt0"
 title = "Swap Total amount traded value ≥100 USDT0 in all tokens all time"
 description = "Trade any token with a value more than 100 USDT0 all time"
 reward = 10000
-type = "custom"
+type = "custom(100000000)"
 query = """
 query UserTotalVolume($userAddress: ID!) {
   user(id: $userAddress) {

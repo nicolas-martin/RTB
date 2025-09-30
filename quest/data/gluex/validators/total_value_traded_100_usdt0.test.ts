@@ -21,25 +21,25 @@ describe('total_value_traded_100_usdt0 validator', () => {
 		const result = await validate(testData);
 		console.log('Validation result:', result);
 
-		// This should return true if ETH price * 7.4 + 7.2 USDT0 >= 100 USDT0
-		// We expect this to be true given current ETH prices
-		expect(typeof result).toBe('boolean');
+		// Should return a number (progress)
+		expect(typeof result).toBe('number');
+		expect(result).toBeGreaterThan(0);
 	});
 
-	it('should return false when no token volumes exist', async () => {
+	it('should return 0 when no token volumes exist', async () => {
 		const testData = {
 			user: {
 				tokenVolumes: []
 			}
 		};
 		const result = await validate(testData);
-		expect(result).toBe(false);
+		expect(result).toBe(0);
 	});
 
-	it('should return false when user data is missing', async () => {
+	it('should return 0 when user data is missing', async () => {
 		const testData = {};
 		const result = await validate(testData);
-		expect(result).toBe(false);
+		expect(result).toBe(0);
 	});
 
 	it('should handle only USDT0 volume', async () => {
@@ -55,6 +55,6 @@ describe('total_value_traded_100_usdt0 validator', () => {
 		};
 
 		const result = await validate(testData);
-		expect(result).toBe(true); // 150 >= 100
+		expect(result).toBe(150000000); // 150 USDT0 in decimals
 	});
 });

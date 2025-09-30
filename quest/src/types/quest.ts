@@ -28,6 +28,7 @@ export interface QuestConfig {
 	validatorParams?: Record<string, any>;
 }
 
+
 export interface Quest extends QuestConfig {
 	completed: boolean;
 	progress?: number;

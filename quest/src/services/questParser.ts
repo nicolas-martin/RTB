@@ -34,16 +34,17 @@ export class QuestParser {
 
 	private createQuestInstance(questData: any, projectId: string): BaseQuest {
 		const config = this.validateAndMapQuest(questData);
+		const { baseType, params } = this.parseTypeWithParams(questData.type);
 
-		switch (config.type) {
+		switch (baseType) {
 			case 'conditional':
 				return new ConditionalQuest(config);
 			case 'progress':
 				return new ProgressQuest(config);
 			case 'custom':
-				return new CustomQuest(config, projectId);
+				return new CustomQuest(config, projectId, params);
 			default:
-				throw new Error(`Unknown quest type: ${config.type}`);
+				throw new Error(`Unknown quest type: ${baseType}`);
 		}
 	}
 
@@ -63,6 +64,33 @@ export class QuestParser {
 		};
 	}
 
+	private parseTypeWithParams(typeString: string): { baseType: string; params: any[] } {
+		const match = typeString.match(/^(\w+)(?:\((.*)\))?$/);
+		if (!match) {
+			throw new Error(`Invalid type format: ${typeString}`);
+		}
+
+		const baseType = match[1];
+		const paramsString = match[2];
+
+		if (!paramsString) {
+			return { baseType, params: [] };
+		}
+
+		// Parse comma-separated parameters, handling numbers and strings
+		const params = paramsString.split(',').map(param => {
+			const trimmed = param.trim();
+			// Try to parse as number
+			if (!isNaN(Number(trimmed))) {
+				return Number(trimmed);
+			}
+			// Return as string (remove quotes if present)
+			return trimmed.replace(/^["']|["']$/g, '');
+		});
+
+		return { baseType, params };
+	}
+
 	private validateAndMapQuest(questData: any): QuestConfig {
 		const required = [
 			'id',
@@ -78,9 +106,10 @@ export class QuestParser {
 			}
 		}
 
+		const { baseType } = this.parseTypeWithParams(questData.type);
 		const validTypes = ['conditional', 'progress', 'custom'];
-		if (!validTypes.includes(questData.type)) {
-			throw new Error(`Invalid quest type: ${questData.type}`);
+		if (!validTypes.includes(baseType)) {
+			throw new Error(`Invalid quest type: ${baseType}`);
 		}
 
 		return {
@@ -88,7 +117,7 @@ export class QuestParser {
 			title: questData.title,
 			description: questData.description,
 			reward: questData.reward,
-			type: questData.type,
+			type: baseType,
 			query: questData.query.trim(),
 			startDate: questData.startDate,
 			endDate: questData.endDate,
