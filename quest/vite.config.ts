@@ -8,5 +8,15 @@ export default defineConfig({
 		alias: {
 			'@data': '/data'
 		}
+	},
+	server: {
+		proxy: {
+			'/api/goldsky': {
+				target: 'https://api.goldsky.com',
+				changeOrigin: true,
+				rewrite: (path) => path.replace(/^\/api\/goldsky/, ''),
+				secure: false
+			}
+		}
 	}
 })
