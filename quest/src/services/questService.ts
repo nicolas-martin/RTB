@@ -41,7 +41,7 @@ export class QuestService {
 
 		try {
 			// Build variables object based on what the query expects
-			const variables = this.buildQueryVariables(quest.getQuery(), playerId, quest.getConfig());
+			const variables = await this.buildQueryVariables(quest.getQuery(), playerId, quest.getConfig());
 
 			const queryResult = await this.graphqlService.executeQuery(
 				quest.getQuery(),
@@ -177,7 +177,7 @@ export class QuestService {
 		}
 	}
 
-	private buildQueryVariables(query: string, playerId: string, questConfig: any): Record<string, any> {
+	private async buildQueryVariables(query: string, playerId: string, questConfig: any): Promise<Record<string, any>> {
 		const variables: Record<string, any> = {};
 
 		// Extract all variable definitions from the query
