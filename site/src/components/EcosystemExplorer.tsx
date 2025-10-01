@@ -77,9 +77,13 @@ export default function EcosystemExplorer({ projects }: Props) {
 				) : (
 					<div className="project-grid">
 						{filteredProjects.map((project) => {
+							const cardClassNames = ['project-card'];
+							if (project.quest_slug) {
+								cardClassNames.push('has-quest');
+							}
 							const logoSrc = normaliseLogoSrc(project.logo_src);
 							return (
-								<article className="project-card" key={project.name}>
+								<article className={cardClassNames.join(' ')} key={project.name}>
 									<header>
 										<div className="logo-wrap">
 											{logoSrc ? (
@@ -88,26 +92,24 @@ export default function EcosystemExplorer({ projects }: Props) {
 												<div className="logo-placeholder">{project.name[0]}</div>
 											)}
 										</div>
-										<div className="heading">
-											<h3>{project.name}</h3>
-											<div className="heading-actions">
-												{project.website && (
-													<a href={project.website} target="_blank" rel="noopener noreferrer">
-														Visit site
-													</a>
-												)}
-												{project.quest_slug && (
-													<a
-														href={`/quest/${project.quest_slug}`}
-														className="quest-pill"
-													>
-														<span className="quest-indicator" aria-hidden="true"></span>
-														View quests
-													</a>
-												)}
+											<div className="heading">
+												<div className="title-row">
+													<h3>{project.name}</h3>
+													{project.quest_slug && (
+														<span className="quest-badge" role="img" aria-label="Quests available">
+															!
+														</span>
+													)}
+												</div>
+												<div className="heading-actions">
+													{project.website && (
+														<a href={project.website} target="_blank" rel="noopener noreferrer">
+															Visit site
+														</a>
+													)}
+												</div>
 											</div>
-										</div>
-									</header>
+										</header>
 									{project.tags && project.tags.length > 0 && (
 										<div className="tag-row">
 											{project.tags.map((tag) => (
@@ -118,6 +120,14 @@ export default function EcosystemExplorer({ projects }: Props) {
 										</div>
 									)}
 									{project.description && <p className="description">{project.description}</p>}
+									{project.quest_slug && (
+										<div className="quest-footer">
+											<a href={`/quest/${project.quest_slug}`} className="quest-pill">
+												<span className="quest-indicator" aria-hidden="true"></span>
+												View quests
+											</a>
+										</div>
+									)}
 								</article>
 							);
 						})}
