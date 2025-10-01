@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { EcosystemProject } from 'astro:content';
+import { withBasePath } from '@lib/basePath';
 import './EcosystemExplorer.css';
 
 type Props = {
@@ -8,13 +9,14 @@ type Props = {
 
 const normaliseLogoSrc = (src?: string): string | undefined => {
 	if (!src) return undefined;
+	if (/^https?:\/\//.test(src)) return src;
 	if (src.startsWith('./')) {
-		return '/' + src.replace(/^\.\//, '');
+		return withBasePath(src.replace(/^\.\//, '/'));
 	}
 	if (src.startsWith('Plasma Dashboard_files')) {
-		return src.replace('Plasma Dashboard_files', '/icons');
+		return withBasePath(src.replace('Plasma Dashboard_files', '/icons'));
 	}
-	return src;
+	return withBasePath(src);
 };
 
 export default function EcosystemExplorer({ projects }: Props) {
@@ -120,9 +122,9 @@ export default function EcosystemExplorer({ projects }: Props) {
 										</div>
 									)}
 									{project.description && <p className="description">{project.description}</p>}
-									{project.quest_slug && (
-										<div className="quest-footer">
-											<a href={`/quest/${project.quest_slug}`} className="quest-pill">
+										{project.quest_slug && (
+											<div className="quest-footer">
+												<a href={withBasePath(`/quest/${project.quest_slug}`)} className="quest-pill">
 												<span className="quest-indicator" aria-hidden="true"></span>
 												View quests
 											</a>

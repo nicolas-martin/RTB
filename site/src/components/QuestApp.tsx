@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import QuestDashboard from './QuestDashboard';
-import { useQuestData } from './QuestDataProvider';
 import { QUEST_PROJECT_IDS, type QuestProjectId } from '@quest-src/services/projectManager';
 import './QuestApp.css';
 import QuestProvider from './QuestProvider';
+import { withBasePath } from '@lib/basePath';
 
 interface QuestAppProps {
 	projectId?: string;
@@ -18,7 +18,7 @@ function QuestHero({ projectId }: { projectId?: QuestProjectId }) {
 		<section className="hero">
 			<div>
 				{projectId && (
-					<a className="hero-link" href="/">
+					<a className="hero-link" href={withBasePath('/')}>
 						← All quests
 					</a>
 				)}

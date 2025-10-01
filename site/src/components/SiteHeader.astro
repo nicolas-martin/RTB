@@ -1,20 +1,28 @@
 ---
+import { stripTrailingSlash, withBasePath } from '@lib/basePath';
+
 const navItems = [
-  { href: '/', label: 'Quests' },
-  { href: '/ecosystem', label: 'Ecosystem' }
+	{ href: withBasePath('/'), label: 'Quests' },
+	{ href: withBasePath('/ecosystem/'), label: 'Ecosystem' }
 ];
 const { currentPath = '/' } = Astro.props;
+const normalizePath = (value) => {
+	if (!value) return '/';
+	return stripTrailingSlash(value) || '/';
+};
+
+const isActive = (href) => normalizePath(currentPath) === normalizePath(href);
 ---
 <header class="topbar">
-  <div class="brand">
-    <img src="/Plasma_logo_black_32x32.png" alt="Plasma" width="28" height="28" />
+	<div class="brand">
+		<img src={withBasePath('/Plasma_logo_black_32x32.png')} alt="Plasma" width="28" height="28" />
     <span>Plasma Dashboard</span>
   </div>
   <nav>
     {navItems.map((item) => (
       <a
         href={item.href}
-        class={['nav-link', currentPath === item.href ? 'active' : ''].join(' ')}
+        class={['nav-link', isActive(item.href) ? 'active' : ''].join(' ')}
       >
         {item.label}
       </a>

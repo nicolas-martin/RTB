@@ -4,6 +4,7 @@ import { projectManager } from './services/projectManager'
 import { Quest, ProjectMetadata } from './types/quest'
 import { useMetaMask } from './hooks/useMetaMask'
 import './App.css'
+import { withBasePath } from '@lib/basePath'
 
 function App() {
 	const [projectQuests, setProjectQuests] = useState<{ project: ProjectMetadata; quests: Quest[] }[]>([])
@@ -127,7 +128,7 @@ function App() {
 				)}
 			</div>
 			<button className="add-plasma-button" onClick={handleAddPlasma}>
-				<img src="/Plasma_logo_black_32x32.png" alt="Plasma" className="plasma-icon" />
+				<img src={withBasePath('/Plasma_logo_black_32x32.png')} alt="Plasma" className="plasma-icon" />
 				Add Plasma
 			</button>
 			{loading ? (

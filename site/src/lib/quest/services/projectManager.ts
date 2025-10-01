@@ -1,5 +1,6 @@
 import type { ProjectMetadata, Quest } from '../types/quest';
 import { QuestService } from './questService';
+import { withBasePath } from '@lib/basePath';
 
 export const QUEST_PROJECT_IDS = ['rtb', 'gluex'] as const;
 export type QuestProjectId = (typeof QUEST_PROJECT_IDS)[number];
@@ -26,7 +27,7 @@ export class ProjectManager {
 	async loadAllProjects(): Promise<void> {
 		for (const projectId of this.availableProjects) {
 			try {
-				await this.loadProject(projectId, `/${projectId}/project.toml`);
+				await this.loadProject(projectId, withBasePath(`/${projectId}/project.toml`));
 			} catch (error) {
 				console.warn(`Failed to load project ${projectId}:`, error);
 				// Continue loading other projects even if one fails
