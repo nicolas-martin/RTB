@@ -1,12 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useMemo } from 'react';
 import QuestDashboard from './QuestDashboard';
-import { MetaMaskProvider } from '@quest-src/hooks/useMetaMask';
-import { QuestDataProvider } from './QuestDataProvider';
-import QuestTopBarStats from './QuestTopBarStats';
 import { useQuestData } from './QuestDataProvider';
 import { QUEST_PROJECT_IDS, type QuestProjectId } from '@quest-src/services/projectManager';
 import './QuestApp.css';
+import QuestProvider from './QuestProvider';
 
 interface QuestAppProps {
 	projectId?: string;
@@ -30,13 +27,8 @@ function QuestHero({ projectId }: { projectId?: QuestProjectId }) {
 	);
 }
 
+
 export default function QuestApp({ projectId }: QuestAppProps) {
-	const [headerContainer, setHeaderContainer] = useState<HTMLElement | null>(null);
-
-	useEffect(() => {
-		setHeaderContainer(document.getElementById('quest-topbar-extra'));
-	}, []);
-
 	const normalizedProjectId = useMemo<QuestProjectId | undefined>(() => {
 		if (!projectId) return undefined;
 		const lower = projectId.toLowerCase();
@@ -44,14 +36,11 @@ export default function QuestApp({ projectId }: QuestAppProps) {
 	}, [projectId]);
 
 	return (
-		<MetaMaskProvider>
-			<QuestDataProvider projectIds={normalizedProjectId ? [normalizedProjectId] : undefined}>
-				{headerContainer && createPortal(<QuestTopBarStats />, headerContainer)}
-				<div className="quest-page">
+		<QuestProvider projectIds={normalizedProjectId ? [normalizedProjectId] : undefined}>
+			<div className="quest-page">
 					<QuestHero projectId={normalizedProjectId} />
 					<QuestDashboard />
 				</div>
-			</QuestDataProvider>
-		</MetaMaskProvider>
+		</QuestProvider>
 	);
 }

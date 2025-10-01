@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import EcosystemExplorer from '../components/EcosystemExplorer';
+import QuestProvider from '../components/QuestProvider';
 import { getEntry } from 'astro:content';
 
 const currentPath = Astro.url.pathname;
@@ -10,6 +11,7 @@ const projects = entry.data.projects;
 ---
 <BaseLayout title="Plasma Ecosystem" description="Discover builders and dApps across the Plasma network.">
   <SiteHeader slot="header" currentPath={currentPath} />
+  <QuestProvider client:load />
   <section class="hero">
     <div>
       <h1>Explore the Plasma ecosystem</h1>

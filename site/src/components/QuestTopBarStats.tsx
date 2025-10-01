@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { useQuestData } from './QuestDataProvider';
 import './QuestTopBarStats.css';
 
@@ -13,12 +14,44 @@ export default function QuestTopBarStats() {
 		error,
 	} = useQuestData();
 
-	// const pointProjects = userPoints.size;
-	// const projectCount = pointProjects > 0 ? pointProjects : projectQuests.length;
-	const formattedAccount =
-		isConnected && account ? `${account.slice(0, 6)}…${account.slice(-4)}` : 'Not connected';
-	// const projectCountLabel = projectCount === 1 ? '1 project' : `${projectCount} projects`;
-	// const hasProjectCount = projectCount > 0;
+	const formattedAccount = isConnected && account ? `${account.slice(0, 6)}…${account.slice(-4)}` : '';
+	const [menuOpen, setMenuOpen] = useState(false);
+	const menuRef = useRef<HTMLDivElement | null>(null);
+	const buttonRef = useRef<HTMLButtonElement | null>(null);
+
+	useEffect(() => {
+		if (!menuOpen) return;
+		const handleClickOutside = (event: MouseEvent) => {
+			const target = event.target as Node;
+			if (menuRef.current?.contains(target) || buttonRef.current?.contains(target)) {
+				return;
+			}
+			setMenuOpen(false);
+		};
+
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => document.removeEventListener('mousedown', handleClickOutside);
+	}, [menuOpen]);
+
+	useEffect(() => {
+		if (!isConnected) {
+			setMenuOpen(false);
+		}
+	}, [isConnected]);
+
+	const handleWalletButton = async () => {
+		if (isConnecting) return;
+		if (!isConnected) {
+			await handleConnect();
+			return;
+		}
+		setMenuOpen((open) => !open);
+	};
+
+	const handleDisconnect = async () => {
+		await handleConnect();
+		setMenuOpen(false);
+	};
 
 	return (
 		<div className="topbar-stats" role="presentation">
@@ -28,19 +61,30 @@ export default function QuestTopBarStats() {
 			</div>
 			<div className="topbar-item">
 				<span className="topbar-label">Completion</span>
-				<span className="topbar-meta">{totals.completed}/{totals.totalQuests} </span>
+				<span className="topbar-meta">{totals.completed}/{totals.totalQuests}</span>
 			</div>
-			<div className="topbar-item topbar-wallet">
+			<div className="topbar-wallet-shell" ref={menuRef}>
 				<button
 					className="topbar-wallet-button"
-					onClick={handleConnect}
+					onClick={handleWalletButton}
 					disabled={isConnecting}
+					ref={buttonRef}
 				>
-					{isConnecting ? 'Connecting…' : isConnected ? 'Disconnect' : 'Connect Wallet'}
+					{isConnecting
+						? 'Connecting…'
+						: isConnected
+							? formattedAccount || 'Wallet'
+							: 'Connect Wallet'}
 				</button>
-				<span className="topbar-meta wallet">{formattedAccount}</span>
-				{error && <span className="topbar-error">{error}</span>}
+				{menuOpen && (
+					<div className="topbar-wallet-menu">
+						<button type="button" onClick={handleDisconnect}>
+							Disconnect
+						</button>
+					</div>
+				)}
 			</div>
+			{error && <span className="topbar-error">{error}</span>}
 		</div>
 	);
 }
