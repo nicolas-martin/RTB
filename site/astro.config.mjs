@@ -2,6 +2,8 @@ import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 
 export default defineConfig({
+  site: 'https://kaijuswap.com',
+  base: '/june',
   integrations: [react()],
   srcDir: 'src',
   server: {
