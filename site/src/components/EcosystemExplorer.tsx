@@ -94,24 +94,24 @@ export default function EcosystemExplorer({ projects }: Props) {
 												<div className="logo-placeholder">{project.name[0]}</div>
 											)}
 										</div>
-											<div className="heading">
-												<div className="title-row">
-													<h3>{project.name}</h3>
-													{project.quest_slug && (
-														<span className="quest-badge" role="img" aria-label="Quests available">
-															!
-														</span>
-													)}
-												</div>
-												<div className="heading-actions">
-													{project.website && (
-														<a href={project.website} target="_blank" rel="noopener noreferrer">
-															Visit site
-														</a>
-													)}
-												</div>
+										<div className="heading">
+											<div className="title-row">
+												<h3>{project.name}</h3>
+												{project.quest_slug && (
+													<span className="quest-badge" role="img" aria-label="Quests available">
+														!
+													</span>
+												)}
 											</div>
-										</header>
+											<div className="heading-actions">
+												{project.website && (
+													<a href={project.website} target="_blank" rel="noopener noreferrer">
+														Visit site
+													</a>
+												)}
+											</div>
+										</div>
+									</header>
 									{project.tags && project.tags.length > 0 && (
 										<div className="tag-row">
 											{project.tags.map((tag) => (
@@ -122,9 +122,9 @@ export default function EcosystemExplorer({ projects }: Props) {
 										</div>
 									)}
 									{project.description && <p className="description">{project.description}</p>}
-										{project.quest_slug && (
-											<div className="quest-footer">
-												<a href={withBasePath(`/quest/${project.quest_slug}`)} className="quest-pill">
+									{project.quest_slug && (
+										<div className="quest-footer">
+											<a href={withBasePath(`/quest/${project.quest_slug}`)} className="quest-pill">
 												<span className="quest-indicator" aria-hidden="true"></span>
 												View quests
 											</a>
