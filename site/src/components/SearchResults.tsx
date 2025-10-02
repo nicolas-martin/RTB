@@ -7,6 +7,12 @@ interface SearchResultsProps {
 	searchTerm: string;
 	projects: EcosystemProject['projects'];
 	onBack: () => void;
+	onTouchStart?: (event: React.TouchEvent) => void;
+	onTouchEnd?: (event: React.TouchEvent) => void;
+	onMouseDown?: (event: React.MouseEvent) => void;
+	onMouseUp?: (event: React.MouseEvent) => void;
+	onMouseLeave?: () => void;
+	onWheel?: (event: React.WheelEvent) => void;
 }
 
 const normaliseLogoSrc = (src?: string): string | undefined => {
@@ -21,7 +27,7 @@ const normaliseLogoSrc = (src?: string): string | undefined => {
 	return withBasePath(src);
 };
 
-export default function SearchResults({ searchTerm, projects, onBack }: SearchResultsProps) {
+export default function SearchResults({ searchTerm, projects, onBack, onTouchStart, onTouchEnd, onMouseDown, onMouseUp, onMouseLeave, onWheel }: SearchResultsProps) {
 	const filteredProjects = useMemo(() => {
 		if (!searchTerm.trim()) return projects;
 		
@@ -38,7 +44,15 @@ export default function SearchResults({ searchTerm, projects, onBack }: SearchRe
 	}, [projects, searchTerm]);
 
 	return (
-		<div className="search-results">
+		<div 
+			className="search-results" 
+			onTouchStart={onTouchStart} 
+			onTouchEnd={onTouchEnd}
+			onMouseDown={onMouseDown}
+			onMouseUp={onMouseUp}
+			onMouseLeave={onMouseLeave}
+			onWheel={onWheel}
+		>
 			<div className="search-results-header">
 				<button className="back-button" onClick={onBack} aria-label="Go back">
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none">

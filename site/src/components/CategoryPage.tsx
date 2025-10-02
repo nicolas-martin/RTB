@@ -7,6 +7,12 @@ interface CategoryPageProps {
 	category: string;
 	projects: EcosystemProject['projects'];
 	onBack: () => void;
+	onTouchStart?: (event: React.TouchEvent) => void;
+	onTouchEnd?: (event: React.TouchEvent) => void;
+	onMouseDown?: (event: React.MouseEvent) => void;
+	onMouseUp?: (event: React.MouseEvent) => void;
+	onMouseLeave?: () => void;
+	onWheel?: (event: React.WheelEvent) => void;
 }
 
 const normaliseLogoSrc = (src?: string): string | undefined => {
@@ -21,7 +27,7 @@ const normaliseLogoSrc = (src?: string): string | undefined => {
 	return withBasePath(src);
 };
 
-export default function CategoryPage({ category, projects, onBack }: CategoryPageProps) {
+export default function CategoryPage({ category, projects, onBack, onTouchStart, onTouchEnd, onMouseDown, onMouseUp, onMouseLeave, onWheel }: CategoryPageProps) {
 	const filteredProjects = useMemo(() => {
 		if (category === 'All') {
 			return projects;
@@ -32,7 +38,15 @@ export default function CategoryPage({ category, projects, onBack }: CategoryPag
 	}, [projects, category]);
 
 	return (
-		<div className="category-page">
+		<div 
+			className="category-page" 
+			onTouchStart={onTouchStart} 
+			onTouchEnd={onTouchEnd}
+			onMouseDown={onMouseDown}
+			onMouseUp={onMouseUp}
+			onMouseLeave={onMouseLeave}
+			onWheel={onWheel}
+		>
                     <div className="category-page-header">
                         <button className="back-button" onClick={onBack} aria-label="Go back">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">

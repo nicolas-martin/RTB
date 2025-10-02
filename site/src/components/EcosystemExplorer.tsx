@@ -28,6 +28,11 @@ export default function EcosystemExplorer({ projects }: Props) {
 	const [currentView, setCurrentView] = useState<'main' | 'category' | 'search'>('main');
 	const [selectedCategory, setSelectedCategory] = useState<string>('');
 	const [mainPageScrollPosition, setMainPageScrollPosition] = useState(0);
+	const [touchStartX, setTouchStartX] = useState<number | null>(null);
+	const [mouseStartX, setMouseStartX] = useState<number | null>(null);
+	const [isMouseDown, setIsMouseDown] = useState(false);
+	const [wheelStartX, setWheelStartX] = useState<number | null>(null);
+	const [isWheelGesture, setIsWheelGesture] = useState(false);
 	const searchInputRef = useRef<HTMLInputElement>(null);
 
 	// Handle keyboard shortcuts
@@ -72,6 +77,95 @@ export default function EcosystemExplorer({ projects }: Props) {
 			window.scrollTo(0, 0);
 		}
 	}, [currentView, mainPageScrollPosition]);
+
+	// Handle swipe gesture for going back
+	const handleTouchStart = (event: React.TouchEvent) => {
+		if (currentView === 'category' || currentView === 'search') {
+			setTouchStartX(event.touches[0].clientX);
+		}
+	};
+
+	const handleTouchEnd = (event: React.TouchEvent) => {
+		if (touchStartX === null || (currentView !== 'category' && currentView !== 'search')) {
+			return;
+		}
+
+		const touchEndX = event.changedTouches[0].clientX;
+		const swipeDistance = touchEndX - touchStartX;
+		const minSwipeDistance = 100; // Minimum distance for a valid swipe
+
+		// Check if it's a right-to-left swipe with sufficient distance
+		if (swipeDistance < -minSwipeDistance) {
+			// Go back to main page
+			if (currentView === 'search') {
+				setSearch('');
+				setCurrentView('main');
+			} else if (currentView === 'category') {
+				setCurrentView('main');
+			}
+		}
+
+		setTouchStartX(null);
+	};
+
+	// Handle mouse gesture for going back
+	const handleMouseDown = (event: React.MouseEvent) => {
+		if (currentView === 'category' || currentView === 'search') {
+			setMouseStartX(event.clientX);
+			setIsMouseDown(true);
+		}
+	};
+
+	const handleMouseUp = (event: React.MouseEvent) => {
+		if (!isMouseDown || mouseStartX === null || (currentView !== 'category' && currentView !== 'search')) {
+			setIsMouseDown(false);
+			setMouseStartX(null);
+			return;
+		}
+
+		const mouseEndX = event.clientX;
+		const swipeDistance = mouseEndX - mouseStartX;
+		const minSwipeDistance = 100; // Minimum distance for a valid swipe
+
+		// Check if it's a right-to-left swipe with sufficient distance
+		if (swipeDistance < -minSwipeDistance) {
+			// Go back to main page
+			if (currentView === 'search') {
+				setSearch('');
+				setCurrentView('main');
+			} else if (currentView === 'category') {
+				setCurrentView('main');
+			}
+		}
+
+		setIsMouseDown(false);
+		setMouseStartX(null);
+	};
+
+	const handleMouseLeave = () => {
+		setIsMouseDown(false);
+		setMouseStartX(null);
+	};
+
+	// Handle trackpad wheel gesture for going back
+	const handleWheel = (event: React.WheelEvent) => {
+		// Check if this is a horizontal wheel event (trackpad gesture)
+		if (Math.abs(event.deltaX) > Math.abs(event.deltaY) && Math.abs(event.deltaX) > 0) {
+			if (currentView === 'category' || currentView === 'search') {
+				// Check if it's a right-to-left swipe (negative deltaX)
+				if (event.deltaX < 0 && Math.abs(event.deltaX) > 50) {
+					event.preventDefault();
+					// Go back to main page
+					if (currentView === 'search') {
+						setSearch('');
+						setCurrentView('main');
+					} else if (currentView === 'category') {
+						setCurrentView('main');
+					}
+				}
+			}
+		}
+	};
 
 	// Filter projects based on search term
 	const filteredProjects = useMemo(() => {
@@ -124,7 +218,15 @@ export default function EcosystemExplorer({ projects }: Props) {
 
 	if (currentView === 'category') {
 		return (
-			<div className="ecosystem">
+			<div 
+				className="ecosystem" 
+				onTouchStart={handleTouchStart} 
+				onTouchEnd={handleTouchEnd}
+				onMouseDown={handleMouseDown}
+				onMouseUp={handleMouseUp}
+				onMouseLeave={handleMouseLeave}
+				onWheel={handleWheel}
+			>
 				<aside className="filters">
 					<input
 						ref={searchInputRef}
@@ -153,6 +255,12 @@ export default function EcosystemExplorer({ projects }: Props) {
 					category={selectedCategory}
 					projects={projects}
 					onBack={() => setCurrentView('main')}
+					onTouchStart={handleTouchStart}
+					onTouchEnd={handleTouchEnd}
+					onMouseDown={handleMouseDown}
+					onMouseUp={handleMouseUp}
+					onMouseLeave={handleMouseLeave}
+					onWheel={handleWheel}
 				/>
 			</div>
 		);
@@ -160,7 +268,15 @@ export default function EcosystemExplorer({ projects }: Props) {
 
 	if (currentView === 'search') {
 		return (
-			<div className="ecosystem">
+			<div 
+				className="ecosystem" 
+				onTouchStart={handleTouchStart} 
+				onTouchEnd={handleTouchEnd}
+				onMouseDown={handleMouseDown}
+				onMouseUp={handleMouseUp}
+				onMouseLeave={handleMouseLeave}
+				onWheel={handleWheel}
+			>
 				<aside className="filters">
 					<input
 						ref={searchInputRef}
@@ -197,6 +313,12 @@ export default function EcosystemExplorer({ projects }: Props) {
 						setSearch('');
 						setCurrentView('main');
 					}}
+					onTouchStart={handleTouchStart}
+					onTouchEnd={handleTouchEnd}
+					onMouseDown={handleMouseDown}
+					onMouseUp={handleMouseUp}
+					onMouseLeave={handleMouseLeave}
+					onWheel={handleWheel}
 				/>
 			</div>
 		);
