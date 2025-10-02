@@ -1,6 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import type { EcosystemProject } from 'astro:content';
 import { withBasePath } from '@lib/basePath';
+import PromotionalBanner from './PromotionalBanner';
+import CategorySection from './CategorySection';
+import CategoryPage from './CategoryPage';
 import './EcosystemExplorer.css';
 
 type Props = {
@@ -20,8 +23,23 @@ const normaliseLogoSrc = (src?: string): string | undefined => {
 };
 
 export default function EcosystemExplorer({ projects }: Props) {
-	const [activeTag, setActiveTag] = useState<string>('All');
 	const [search, setSearch] = useState('');
+	const [currentView, setCurrentView] = useState<'main' | 'category'>('main');
+	const [selectedCategory, setSelectedCategory] = useState<string>('');
+	const searchInputRef = useRef<HTMLInputElement>(null);
+
+	// Handle Ctrl+K / Cmd+K keyboard shortcut
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+				event.preventDefault();
+				searchInputRef.current?.focus();
+			}
+		};
+
+		document.addEventListener('keydown', handleKeyDown);
+		return () => document.removeEventListener('keydown', handleKeyDown);
+	}, []);
 
 	const tags = useMemo(() => {
 		const tagSet = new Set<string>();
@@ -31,29 +49,37 @@ export default function EcosystemExplorer({ projects }: Props) {
 		return ['All', ...Array.from(tagSet).sort((a, b) => a.localeCompare(b))];
 	}, [projects]);
 
-	const filteredProjects = useMemo(() => {
-		const loweredSearch = search.toLowerCase();
-		return projects.filter((project) => {
-			const matchesTag =
-				activeTag === 'All' || (project.tags ?? []).some((tag) => tag === activeTag);
-			if (!matchesTag) return false;
 
-			if (!loweredSearch) return true;
-
-			const haystack = [project.name, project.description ?? '', ...(project.tags ?? [])]
-				.join(' ')
-				.toLowerCase();
-
-			return haystack.includes(loweredSearch);
+	// Group projects by category
+	const projectsByCategory = useMemo(() => {
+		const grouped: Record<string, typeof projects> = {};
+		
+		projects.forEach((project) => {
+			if (project.tags && project.tags.length > 0) {
+				project.tags.forEach((tag) => {
+					if (!grouped[tag]) {
+						grouped[tag] = [];
+					}
+					grouped[tag].push(project);
+				});
+			} else {
+				// Projects without tags go to "Other"
+				if (!grouped['Other']) {
+					grouped['Other'] = [];
+				}
+				grouped['Other'].push(project);
+			}
 		});
-	}, [projects, activeTag, search]);
+		
+		return grouped;
+	}, [projects]);
 
-	return (
-		<div className="ecosystem">
-			<aside className="filters">
-				<div className="filters-card">
-					<h2>Filter Projects</h2>
+	if (currentView === 'category') {
+		return (
+			<div className="ecosystem">
+				<aside className="filters">
 					<input
+						ref={searchInputRef}
 						type="search"
 						placeholder="Search projects"
 						value={search}
@@ -64,77 +90,65 @@ export default function EcosystemExplorer({ projects }: Props) {
 							<button
 								key={tag}
 								type="button"
-								className={['tag-chip', activeTag === tag ? 'active' : ''].join(' ')}
-								onClick={() => setActiveTag(tag)}
+								className={['tag-chip', selectedCategory === tag ? 'active' : ''].join(' ')}
+							onClick={() => {
+								setSelectedCategory(tag);
+								setCurrentView('category');
+							}}
 							>
 								{tag}
 							</button>
 						))}
 					</div>
+				</aside>
+				<CategoryPage
+					category={selectedCategory}
+					projects={projects}
+					onBack={() => setCurrentView('main')}
+				/>
+			</div>
+		);
+	}
+
+	return (
+		<div className="ecosystem">
+			<PromotionalBanner />
+			<aside className="filters">
+				<input
+					ref={searchInputRef}
+					type="search"
+					placeholder="Search projects"
+					value={search}
+					onChange={(event) => setSearch(event.target.value)}
+				/>
+				<div className="tag-list">
+					{tags.map((tag) => (
+						<button
+							key={tag}
+							type="button"
+							className={['tag-chip', selectedCategory === tag ? 'active' : ''].join(' ')}
+							onClick={() => {
+								setSelectedCategory(tag);
+								setCurrentView('category');
+							}}
+						>
+							{tag}
+						</button>
+					))}
 				</div>
 			</aside>
 			<section className="projects">
-				{filteredProjects.length === 0 ? (
-					<div className="empty">No projects match the current filter.</div>
-				) : (
-					<div className="project-grid">
-						{filteredProjects.map((project) => {
-							const cardClassNames = ['project-card'];
-							if (project.quest_slug) {
-								cardClassNames.push('has-quest');
-							}
-							const logoSrc = normaliseLogoSrc(project.logo_src);
-							return (
-								<article className={cardClassNames.join(' ')} key={project.name}>
-									<header>
-										<div className="logo-wrap">
-											{logoSrc ? (
-												<img src={logoSrc} alt={project.logo_alt ?? project.name} loading="lazy" />
-											) : (
-												<div className="logo-placeholder">{project.name[0]}</div>
-											)}
-										</div>
-										<div className="heading">
-											<div className="title-row">
-												<h3>{project.name}</h3>
-												{project.quest_slug && (
-													<span className="quest-badge" role="img" aria-label="Quests available">
-														!
-													</span>
-												)}
-											</div>
-											<div className="heading-actions">
-												{project.website && (
-													<a href={project.website} target="_blank" rel="noopener noreferrer">
-														Visit site
-													</a>
-												)}
-											</div>
-										</div>
-									</header>
-									{project.tags && project.tags.length > 0 && (
-										<div className="tag-row">
-											{project.tags.map((tag) => (
-												<span className="badge" key={tag}>
-													{tag}
-												</span>
-											))}
-										</div>
-									)}
-									{project.description && <p className="description">{project.description}</p>}
-									{project.quest_slug && (
-										<div className="quest-footer">
-											<a href={withBasePath(`/quest/${project.quest_slug}`)} className="quest-pill">
-												<span className="quest-indicator" aria-hidden="true"></span>
-												View quests
-											</a>
-										</div>
-									)}
-								</article>
-							);
-						})}
-					</div>
-				)}
+				{Object.entries(projectsByCategory).map(([category, categoryProjects]) => (
+					<CategorySection
+						key={category}
+						category={category}
+						projects={categoryProjects}
+						onSeeAll={(category) => {
+							setSelectedCategory(category);
+							setCurrentView('category');
+						}}
+					/>
+				))}
 			</section>
 		</div>
 	);

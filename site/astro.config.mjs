@@ -3,7 +3,7 @@ import react from '@astrojs/react';
 
 export default defineConfig({
   site: 'https://kaijuswap.com',
-  base: '/june',
+  base: '.',
   integrations: [react()],
   srcDir: 'src',
   server: {

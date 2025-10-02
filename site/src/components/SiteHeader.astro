@@ -15,8 +15,8 @@ const isActive = (href) => normalizePath(currentPath) === normalizePath(href);
 ---
 <header class="topbar">
 	<div class="brand">
-		<img src={withBasePath('/Plasma_logo_black_32x32.png')} alt="Plasma" width="28" height="28" />
-    <span>Plasma Dashboard</span>
+		<span style="font-size: 28px;">☀️</span>
+    <span>June</span>
   </div>
   <nav>
     {navItems.map((item) => (
@@ -40,8 +40,7 @@ const isActive = (href) => normalizePath(currentPath) === normalizePath(href);
     align-items: center;
     gap: 16px;
     padding: 20px var(--page-padding, 32px) 16px;
-    backdrop-filter: blur(18px);
-    background: rgba(4, 4, 7, 0.75);
+    background: #2a2a2a;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     flex-wrap: wrap;
   }

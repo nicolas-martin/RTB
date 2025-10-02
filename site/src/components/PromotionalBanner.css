@@ -1,0 +1,251 @@
+/* Perspective wrapper and ambient shadow */
+.promo-wrap {
+  position: relative;
+  width: 100%;
+  perspective: 1200px;
+  padding: 0;
+  margin: 0;
+}
+
+.promo-ambient-shadow {
+  pointer-events: none;
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%) translateY(calc(100% + 1.5rem));
+  height: 48px;
+  width: 76%;
+  background: rgba(0, 0, 0, 0.5);
+  filter: blur(28px);
+  border-radius: 2rem;
+  z-index: 0;
+}
+
+.promotional-banner {
+  position: absolute;
+  left: 280px;
+  right: 0;
+  top: 20px;
+  height: min(42vh, 520px);
+  min-height: 220px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+/* Background image and overlays */
+.banner-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bg-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.bg-image.cover { object-fit: cover; object-position: center; }
+.bg-image.contain { object-fit: contain; object-position: left; padding: 32px; }
+
+.bg-overlay-top {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.3), rgba(0,0,0,0.1), transparent);
+}
+.bg-overlay-right {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(0,0,0,0.45), rgba(0,0,0,0.15), transparent);
+}
+
+/* Copy block */
+.banner-copy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: end;
+  padding: 0 40px 24px 40px;
+  z-index: 1;
+}
+
+.copy-inner { width: 92%; max-width: 52rem; animation: copyIn .45s ease both; }
+
+@keyframes copyIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.banner-text {
+  text-align: center;
+  color: white;
+  max-width: 600px;
+}
+
+.banner-title {
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+
+.banner-description {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 24px 0;
+  line-height: 1.4;
+  max-width: 500px;
+}
+
+.banner-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #000;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.cta-button:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.05);
+}
+
+
+.chev {
+  position: absolute;
+  top: 30%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.85);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.chev:hover { color: #fff; transform: translateY(-50%) scale(1.05); }
+
+.chev-left {
+  left: 16px;
+}
+
+.chev-right {
+  right: 16px;
+}
+
+.banner-indicators {
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.indicator.active {
+  background: rgba(255, 255, 255, 0.9);
+  transform: scale(1.2);
+}
+
+.indicator:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+/* Mobile Responsive */
+@media (max-width: 960px) {
+  .promotional-banner {
+    left: 0;
+    right: 0;
+    top: 20px;
+    height: 200px;
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+
+  .banner-copy { padding: 0 24px 20px 24px; }
+
+  .banner-title {
+    font-size: 32px;
+  }
+
+
+  .banner-description {
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+
+  .cta-button {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+
+  .chev { top: 26%; }
+}
+
+@media (max-width: 640px) {
+  .promotional-banner {
+    top: 20px;
+    height: 140px;
+  }
+
+  .banner-content {
+    padding: 0 50px;
+  }
+
+  .banner-title {
+    font-size: 24px;
+  }
+
+  .banner-description {
+    font-size: 14px;
+  }
+
+  .banner-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
