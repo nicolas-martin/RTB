@@ -32,6 +32,18 @@
   color: var(--text-primary);
   outline: none;
   font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.filters input[type='search']:focus {
+  border-color: #5d5bff;
+  background: rgba(93, 91, 255, 0.1);
+  box-shadow: 0 0 0 2px rgba(93, 91, 255, 0.2);
+}
+
+.filters input[type='search']:not(:placeholder-shown) {
+  border-color: #5d5bff;
+  background: rgba(93, 91, 255, 0.08);
 }
 
 .filters input[type='search']::placeholder {
