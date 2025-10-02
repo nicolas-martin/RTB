@@ -72,6 +72,8 @@ export default function EcosystemExplorer({ projects }: Props) {
 		if (currentView === 'main') {
 			// Restore scroll position when returning to main page
 			window.scrollTo(0, mainPageScrollPosition);
+			// Clear selected category when returning to main page
+			setSelectedCategory('');
 		} else if (currentView === 'category' || currentView === 'search') {
 			// Scroll to top when entering category or search page
 			window.scrollTo(0, 0);

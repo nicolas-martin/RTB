@@ -1,17 +1,22 @@
 ---
-import { stripTrailingSlash, withBasePath } from '@lib/basePath';
 
 const navItems = [
-	{ href: withBasePath('/'), label: 'Quests' },
-	{ href: withBasePath('/ecosystem/'), label: 'Ecosystem' }
+	{ href: '/', label: 'Quests' },
+	{ href: '/ecosystem/', label: 'Ecosystem' }
 ];
 const { currentPath = '/' } = Astro.props;
-const normalizePath = (value) => {
-	if (!value) return '/';
-	return stripTrailingSlash(value) || '/';
+const isActive = (href) => {
+	const current = currentPath;
+	const target = href;
+	
+	// If the target is the root path ('/'), it should only be active if the current path is exactly '/'
+	if (target === '/') {
+		return current === '/';
+	}
+	
+	// For any other target path, check if the current path starts with the target path
+	return current.startsWith(target);
 };
-
-const isActive = (href) => normalizePath(currentPath) === normalizePath(href);
 ---
 <header class="topbar">
 	<div class="brand">
@@ -79,15 +84,17 @@ const isActive = (href) => normalizePath(currentPath) === normalizePath(href);
     transition: all 0.2s ease;
   }
 
-  .nav-link:hover {
+  .nav-link:hover:not(.active) {
     color: var(--text-primary);
     background: rgba(255, 255, 255, 0.08);
   }
 
   .nav-link.active {
-    color: var(--text-primary);
-    background: var(--accent-soft);
-    box-shadow: 0 0 0 1px rgba(93, 91, 255, 0.28);
+    color: var(--text-primary) !important;
+    text-decoration: underline !important;
+    text-decoration-color: #5d5bff !important;
+    text-decoration-thickness: 1px !important;
+    text-underline-offset: 4px !important;
   }
 
   @media (max-width: 640px) {
