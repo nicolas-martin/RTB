@@ -4,6 +4,7 @@ import { withBasePath } from '@lib/basePath';
 import PromotionalBanner from './PromotionalBanner';
 import CategorySection from './CategorySection';
 import CategoryPage from './CategoryPage';
+import SearchResults from './SearchResults';
 import './EcosystemExplorer.css';
 
 type Props = {
@@ -24,22 +25,53 @@ const normaliseLogoSrc = (src?: string): string | undefined => {
 
 export default function EcosystemExplorer({ projects }: Props) {
 	const [search, setSearch] = useState('');
-	const [currentView, setCurrentView] = useState<'main' | 'category'>('main');
+	const [currentView, setCurrentView] = useState<'main' | 'category' | 'search'>('main');
 	const [selectedCategory, setSelectedCategory] = useState<string>('');
 	const searchInputRef = useRef<HTMLInputElement>(null);
 
-	// Handle Ctrl+K / Cmd+K keyboard shortcut
+	// Handle keyboard shortcuts
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
 			if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
 				event.preventDefault();
 				searchInputRef.current?.focus();
+			} else if (event.key === 'Escape' && currentView === 'search') {
+				event.preventDefault();
+				setSearch('');
+				setCurrentView('main');
 			}
 		};
 
 		document.addEventListener('keydown', handleKeyDown);
 		return () => document.removeEventListener('keydown', handleKeyDown);
-	}, []);
+	}, [currentView]);
+
+	// Navigate to search results when typing
+	useEffect(() => {
+		if (search.trim()) {
+			setCurrentView('search');
+			// Maintain focus on search input after view change
+			setTimeout(() => {
+				searchInputRef.current?.focus();
+			}, 0);
+		}
+	}, [search]);
+
+	// Filter projects based on search term
+	const filteredProjects = useMemo(() => {
+		if (!search.trim()) return projects;
+		
+		const searchTerm = search.toLowerCase();
+		return projects.filter((project) => {
+			const searchableText = [
+				project.name,
+				project.description ?? '',
+				...(project.tags ?? [])
+			].join(' ').toLowerCase();
+			
+			return searchableText.includes(searchTerm);
+		});
+	}, [projects, search]);
 
 	const tags = useMemo(() => {
 		const tagSet = new Set<string>();
@@ -105,6 +137,46 @@ export default function EcosystemExplorer({ projects }: Props) {
 					category={selectedCategory}
 					projects={projects}
 					onBack={() => setCurrentView('main')}
+				/>
+			</div>
+		);
+	}
+
+	if (currentView === 'search') {
+		return (
+			<div className="ecosystem">
+				<aside className="filters">
+					<input
+						ref={searchInputRef}
+						type="search"
+						placeholder="Search projects"
+						value={search}
+						onChange={(event) => setSearch(event.target.value)}
+					/>
+					<div className="tag-list">
+						{tags.map((tag) => (
+							<button
+								key={tag}
+								type="button"
+								className={['tag-chip', selectedCategory === tag ? 'active' : ''].join(' ')}
+								onClick={() => {
+									setSearch('');
+									setSelectedCategory(tag);
+									setCurrentView('category');
+								}}
+							>
+								{tag}
+							</button>
+						))}
+					</div>
+				</aside>
+				<SearchResults
+					searchTerm={search}
+					projects={projects}
+					onBack={() => {
+						setSearch('');
+						setCurrentView('main');
+					}}
 				/>
 			</div>
 		);
