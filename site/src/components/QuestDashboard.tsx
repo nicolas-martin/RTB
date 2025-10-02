@@ -75,15 +75,19 @@ function QuestProjectGrid({
 		return <div className="empty-card">Quest-enabled apps will appear here soon.</div>;
 	}
 
-	return (
-		<div className="overview-grid">
-			{projects.map(({ project, quests }) => {
-				const completed = quests.filter((quest) => quest.completed).length;
-				const total = quests.length;
-				const points = userPoints.get(project.id) ?? 0;
+		const baseUrl = import.meta.env.BASE_URL ?? '/';
+		const normalizedBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
 
-				return (
-					<a className="overview-card" key={project.id} href={`/quest/${project.id}`}>
+		return (
+			<div className="overview-grid">
+				{projects.map(({ project, quests }) => {
+					const completed = quests.filter((quest) => quest.completed).length;
+					const total = quests.length;
+					const points = userPoints.get(project.id) ?? 0;
+					const projectHref = `${normalizedBase}quest/${project.id}`;
+
+					return (
+						<a className="overview-card" key={project.id} href={projectHref}>
 						<div className="overview-card-header">
 							<QuestProgressDonut completed={completed} total={total} size={120} />
 							<div className="overview-card-info">
