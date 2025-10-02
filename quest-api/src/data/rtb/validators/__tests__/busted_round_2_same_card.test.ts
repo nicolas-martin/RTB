@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validate } from './busted_round_2_same_card';
+import { validate } from '../busted_round_2_same_card.js';
 
 describe('busted_round_2_same_card validator', () => {
 	it('should return true when round 0 and round 1 have same rank', () => {

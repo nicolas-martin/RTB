@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { ProgressQuest } from '../../../src/models/ProgressQuest';
-import { QuestConfig } from '../../../src/types/quest';
+import { ProgressQuest } from '@/models/ProgressQuest.js';
+import { QuestConfig } from '@/types/quest.js';
 
 describe('swap_volume_usdt0_20 quest', () => {
 	const questConfig: QuestConfig = {

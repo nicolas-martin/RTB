@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { ConditionalQuest } from '../../../src/models/ConditionalQuest';
-import { QuestConfig } from '../../../src/types/quest';
+import { ConditionalQuest } from '@/models/ConditionalQuest.js';
+import { QuestConfig } from '@/types/quest.js';
 
 describe('swap_1_usdt0_to_xpl quest', () => {
 	const questConfig: QuestConfig = {
