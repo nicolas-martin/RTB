@@ -44,14 +44,14 @@ export function QuestDataProvider({ children, projectIds }: QuestDataProviderPro
 	const [loading, setLoading] = useState<boolean>(true);
 
 	const projectFilter = useMemo(() => {
-		if (!projectIds || projectIds.length === 0) return null;
-		return new Set(projectIds.map((id) => id.toLowerCase()));
+		// Temporarily disable filtering to debug
+		return null;
 	}, [projectIds]);
 
 	const filterProjects = useCallback(
 		(items: ProjectWithQuests[]): ProjectWithQuests[] => {
-			if (!projectFilter) return items;
-			return items.filter((entry) => projectFilter.has(entry.project.id.toLowerCase()));
+			// Temporarily disable filtering to debug
+			return items;
 		},
 		[projectFilter]
 	);

@@ -22,5 +22,5 @@ const description = projectInfo.description ?? 'Explore quests from this Plasma 
 ---
 <BaseLayout title={title} description={description}>
   <SiteHeader slot="header" currentPath="/" />
-  <QuestApp client:load projectId={project} />
+  <QuestApp client:load projectId={project} projectInfo={projectInfo} />
 </BaseLayout>

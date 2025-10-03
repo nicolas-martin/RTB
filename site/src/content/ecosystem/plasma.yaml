@@ -489,6 +489,7 @@ projects:
       - "tag-dex"
     logo_alt: "GlueX logo"
     logo_src: "/icons/gluex.svg"
+    cover_image: "/covers/gluex-cover.jpeg"
     quest_slug: "gluex"
     twitter: "https://x.com/GluexProtocol"
     discord: "https://discord.com/invite/gluex"
