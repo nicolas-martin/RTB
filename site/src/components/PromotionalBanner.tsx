@@ -9,24 +9,13 @@ interface FeaturedApp {
     ctaText: string;
     ctaUrl: string;
     backgroundImage?: string; // full-bleed image
-    coverStyle?: 'cover' | 'contain';
     backgroundColor?: string;
+    coverImage?: string; // cover image for banner
 }
 
 const featuredApps: FeaturedApp[] = [
 	{
 		id: '1',
-		title: 'RIDE THE BUS',
-		subtitle: 'Gaming • Card Game',
-		description: 'Experience arcade-style wagering with multiplayer card runs and on-chain rewards.',
-		ctaText: 'Play Now',
-		ctaUrl: 'https://ridethebus.xyz/',
-        backgroundColor: '#0b1320',
-        backgroundImage: '/icons/rabby.svg',
-        coverStyle: 'contain'
-	},
-	{
-		id: '2',
 		title: 'AAVE',
 		subtitle: 'DeFi • Lending',
 		description: 'The world\'s largest decentralized liquidity protocol for crypto markets.',
@@ -34,18 +23,40 @@ const featuredApps: FeaturedApp[] = [
 		ctaUrl: 'https://aave.com/',
         backgroundColor: '#1a1430',
         backgroundImage: '/icons/aave.svg',
-        coverStyle: 'contain'
+        coverImage: '/covers/aave_cover.jpeg'
+	},
+	{
+		id: '2',
+		title: 'DAYLIGHT',
+		subtitle: 'DeFi • Portfolio',
+		description: 'Comprehensive DeFi portfolio management and analytics platform.',
+		ctaText: 'Explore',
+		ctaUrl: 'https://daylight.xyz/',
+        backgroundColor: '#0f2b23',
+        backgroundImage: '/icons/daylight.svg',
+        coverImage: '/covers/daylight_cover.jpeg'
 	},
 	{
 		id: '3',
-		title: 'OKU TRADE',
-		subtitle: 'DeFi • Trading',
-		description: 'Advanced trading interface for decentralized exchanges with real-time analytics.',
-		ctaText: 'Start Trading',
-		ctaUrl: 'https://oku.trade/',
-        backgroundColor: '#0f2b23',
-        backgroundImage: '/icons/oku.svg',
-        coverStyle: 'contain'
+		title: 'CURVE',
+		subtitle: 'DeFi • DEX',
+		description: 'Leading decentralized exchange for stablecoin and token swaps with low slippage.',
+		ctaText: 'Trade Now',
+		ctaUrl: 'https://curve.fi/',
+        backgroundColor: '#0b1320',
+        backgroundImage: '/icons/curve.svg',
+        coverImage: '/covers/curve_cover.jpeg'
+	},
+	{
+		id: '4',
+		title: 'METAMASK',
+		subtitle: 'Wallet • Infrastructure',
+		description: 'The most trusted and widely used crypto wallet for Web3 applications.',
+		ctaText: 'Get Started',
+		ctaUrl: 'https://metamask.io/',
+        backgroundColor: '#1a1a2e',
+        backgroundImage: '/icons/metamask.svg',
+        coverImage: '/covers/metamask_cover.jpeg'
 	}
 ];
 
@@ -83,8 +94,7 @@ export default function PromotionalBanner() {
 	};
 
     const currentApp = featuredApps[currentIndex];
-    const art = currentApp.backgroundImage;
-    const isContain = currentApp.coverStyle === 'contain' || (art ? art.endsWith('.svg') : false);
+    const art = currentApp.coverImage || currentApp.backgroundImage;
 
     return (
         <div className="promo-wrap">
@@ -98,7 +108,7 @@ export default function PromotionalBanner() {
                         <img
                             src={art}
                             alt=""
-                            className={isContain ? 'bg-image contain' : 'bg-image cover'}
+                            className="bg-image cover"
                             loading="eager"
                         />
                     )}

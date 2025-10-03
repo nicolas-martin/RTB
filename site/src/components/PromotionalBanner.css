@@ -28,6 +28,7 @@
   top: 20px;
   height: min(42vh, 520px);
   min-height: 220px;
+  max-width: 1200px;
   border-radius: 16px;
   overflow: hidden;
   background: #000;
@@ -52,7 +53,6 @@
 }
 
 .bg-image.cover { object-fit: cover; object-position: center; }
-.bg-image.contain { object-fit: contain; object-position: left; padding: 32px; }
 
 .bg-overlay-top {
   position: absolute;
@@ -112,7 +112,7 @@
 .banner-actions {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 16px;
 }
 
