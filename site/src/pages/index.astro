@@ -5,7 +5,7 @@ import QuestApp from '../components/QuestApp';
 
 const currentPath = Astro.url.pathname;
 ---
-<BaseLayout title="Plasma Quests" description="Track your journey across Plasma ecosystem quests.">
+<BaseLayout title="June Quests" description="Track your journey across Plasma ecosystem quests.">
   <SiteHeader slot="header" currentPath={currentPath} />
   <QuestApp client:load />
 </BaseLayout>

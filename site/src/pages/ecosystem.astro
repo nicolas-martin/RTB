@@ -9,7 +9,7 @@ const currentPath = Astro.url.pathname;
 const entry = await getEntry('ecosystem', 'plasma');
 const projects = entry.data.projects;
 ---
-<BaseLayout title="Plasma Ecosystem" description="Discover builders and dApps across the Plasma network.">
+<BaseLayout title="June" description="Discover builders and dApps across the Plasma network.">
   <SiteHeader slot="header" currentPath={currentPath} />
   <QuestProvider client:load />
   <EcosystemExplorer projects={projects} client:load />

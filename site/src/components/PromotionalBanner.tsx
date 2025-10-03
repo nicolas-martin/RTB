@@ -27,14 +27,14 @@ const featuredApps: FeaturedApp[] = [
 	},
 	{
 		id: '2',
-		title: 'DAYLIGHT',
-		subtitle: 'DeFi • Portfolio',
-		description: 'Comprehensive DeFi portfolio management and analytics platform.',
-		ctaText: 'Explore',
-		ctaUrl: 'https://daylight.xyz/',
-        backgroundColor: '#0f2b23',
-        backgroundImage: '/icons/daylight.svg',
-        coverImage: '/covers/daylight_cover.jpeg'
+		title: 'STARGATE',
+		subtitle: 'DeFi • Bridge',
+		description: 'Omnichain liquidity transport protocol for seamless cross-chain transfers.',
+		ctaText: 'Bridge Now',
+		ctaUrl: 'https://stargate.finance/',
+        backgroundColor: '#1a1a2e',
+        backgroundImage: '/icons/stargate.svg',
+        coverImage: '/covers/stargate_cover.jpeg'
 	},
 	{
 		id: '3',
@@ -49,6 +49,17 @@ const featuredApps: FeaturedApp[] = [
 	},
 	{
 		id: '4',
+		title: 'VEDA',
+		subtitle: 'DeFi • Analytics',
+		description: 'Advanced analytics and insights for decentralized finance protocols.',
+		ctaText: 'Explore',
+		ctaUrl: 'https://veda.xyz/',
+        backgroundColor: '#0f2b23',
+        backgroundImage: '/icons/veda.svg',
+        coverImage: '/covers/veda_cover.jpeg'
+	},
+	{
+		id: '5',
 		title: 'METAMASK',
 		subtitle: 'Wallet • Infrastructure',
 		description: 'The most trusted and widely used crypto wallet for Web3 applications.',
