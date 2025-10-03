@@ -180,18 +180,18 @@
   height: 8px;
   border-radius: 50%;
   border: none;
-  background: rgba(255, 255, 255, 0.4);
+  background: #52525b;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .indicator.active {
-  background: rgba(255, 255, 255, 0.9);
-  transform: scale(1.2);
+  background: #ffffff;
+  transform: none;
 }
 
 .indicator:hover {
-  background: rgba(255, 255, 255, 0.7);
+  background: #a1a1aa;
 }
 
 /* Mobile Responsive */
