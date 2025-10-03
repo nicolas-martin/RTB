@@ -176,6 +176,12 @@ export default function QuestDashboard() {
 
 	return (
 		<div className="quest-screen">
+			<div className="quest-screen-header">
+				<h1 className="quest-screen-title">
+					Active Campaigns
+					<span className="quest-screen-counter">({projectQuests.length})</span>
+				</h1>
+			</div>
 			{isSingleProject && activeProject ? (
 				<ProjectQuestList project={activeProject} loading={loading} points={activePoints} />
 			) : (

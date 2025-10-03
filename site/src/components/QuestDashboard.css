@@ -4,6 +4,27 @@
   gap: 32px;
 }
 
+.quest-screen-header {
+  margin-top: 24px;
+  margin-bottom: 8px;
+}
+
+.quest-screen-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quest-screen-counter {
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
 .loading-card,
 .empty-card {
   padding: 32px;
