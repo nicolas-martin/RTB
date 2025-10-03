@@ -23,12 +23,12 @@
 
 .promotional-banner {
   position: absolute;
-  left: 280px;
+  left: 300px;
   right: 0;
   top: 20px;
   height: min(42vh, 520px);
   min-height: 220px;
-  max-width: 1200px;
+  max-width: 1080px;
   border-radius: 16px;
   overflow: hidden;
   background: #000;
