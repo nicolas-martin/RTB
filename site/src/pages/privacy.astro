@@ -1,0 +1,173 @@
+---
+const site = {
+  name: "Orken",
+};
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy Policy — {site.name}</title>
+    <meta name="description" content="Privacy Policy for Orken Protocol - How we collect, use, and protect your personal data" />
+    <style>
+      :root{
+        --bg:#0b0b0d;--panel:#0f0f13;--ink:#e9ecf6;--dim:#b7bccb;--muted:#9399a7;
+        --ring:#20212b;--brand:#8ab0ff;--mint:#7bffd1;--radius:18px;
+        --shadow:0 12px 32px rgba(0,0,0,.35);--glow:0 0 80px rgba(138,176,255,.12),0 0 140px rgba(123,255,209,.06);
+      }
+      *{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,Inter,Segoe UI,Roboto,Arial}
+      a{color:inherit;text-decoration:none}
+      .container{max-width:800px;margin:0 auto;padding:24px}
+
+      /* NAV */
+      .nav{position:sticky;top:0;z-index:40;backdrop-filter:blur(10px) saturate(1.1);background:linear-gradient(to bottom,rgba(11,11,13,.8),rgba(11,11,13,.35));border-bottom:1px solid var(--ring)}
+      .nav-in{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+      .brand{display:flex;align-items:center;gap:12px;font-weight:700}
+      .sun{width:10px;height:10px;border-radius:50%;background:radial-gradient(60% 60% at 50% 50%,#ff9a62 0%,#ff6b35 40%,#ff4500 100%);box-shadow:0 0 18px rgba(255,154,98,.55)}
+      .btn{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:999px;border:1px solid var(--ring);background:#111115;transition:.18s;color:inherit;text-decoration:none;cursor:pointer;font:inherit}
+      .btn:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+      .btn-primary{background:linear-gradient(120deg,rgba(138,176,255,.16),rgba(123,255,209,.12));border-color:rgba(138,176,255,.35)}
+
+      /* CONTENT */
+      .content{margin:40px 0}
+      .back-btn{margin-bottom:24px}
+      h1{font-size:clamp(28px,4vw,36px);font-weight:800;margin:0 0 8px;color:var(--ink)}
+      .effective-date{color:var(--muted);font-size:14px;margin-bottom:32px}
+      h2{font-size:20px;font-weight:700;margin:32px 0 12px;color:var(--ink)}
+      h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--ink)}
+      p{line-height:1.6;margin:0 0 16px;color:var(--dim)}
+      ul,ol{margin:0 0 16px;padding-left:24px;color:var(--dim)}
+      li{margin:0 0 8px;line-height:1.6}
+      .contact{margin-top:40px;padding:20px;background:var(--panel);border:1px solid var(--ring);border-radius:var(--radius)}
+      .contact h3{margin-top:0}
+
+      /* FOOTER */
+      .footer{margin:80px 0 28px;border-top:1px solid var(--ring);padding-top:32px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+      .footer-left{display:flex;align-items:center;gap:20px}
+      .footer-right{display:flex;align-items:center;gap:20px}
+      .social-links{display:flex;gap:12px}
+      .social-icon{width:20px;height:20px;opacity:0.7;transition:opacity 0.2s}
+      .social-icon:hover{opacity:1}
+      .footer-links{display:flex;gap:16px;flex-wrap:wrap}
+      .footer-links a{color:var(--muted);font-size:14px;transition:color 0.2s}
+      .footer-links a:hover{color:var(--ink)}
+    </style>
+  </head>
+  <body>
+    <!-- NAV -->
+    <div class="nav">
+      <div class="container nav-in">
+        <div class="brand"><span class="sun" aria-hidden="true"></span>{site.name}</div>
+        <div style="display:flex;gap:10px">
+          <a class="btn btn-primary" href="/marketing">← Back</a>
+        </div>
+      </div>
+    </div>
+
+    <main class="container">
+      <div class="content">
+        <h1>Privacy Policy</h1>
+        <p class="effective-date">Effective date: 2025-08-01<br>Controller: Orken Protocol</p>
+
+        <h2>1. What We Do</h2>
+        <p>Orken is a discovery/community platform for apps and builders in the Plasma ecosystem. We process limited personal data to operate the Platform, improve features, combat abuse, and (where permitted) run communications.</p>
+
+        <h2>2. Data We Collect</h2>
+        
+        <h3>You provide:</h3>
+        <p>Profile/handle, email (if you opt in), feedback/ratings/comments, support messages.</p>
+
+        <h3>Automatic:</h3>
+        <p>Device/OS/browser data, IP address, general location (city/region), pages/events, referral source, cookie/consent state, fraud signals.</p>
+
+        <h3>Web3:</h3>
+        <p>Wallet address(es) you connect, chain/network metadata, and on-chain transaction references you choose to surface for verification.</p>
+
+        <h3>Third-party sources:</h3>
+        <p>Analytics, anti-abuse, or identity partners (where lawful).</p>
+
+        <h2>3. How We Use Data (Purposes & Legal Bases)</h2>
+        
+        <h3>Operate the Platform (contract/legitimate interests):</h3>
+        <p>Routing, listings, quests, profiles, fraud prevention, security.</p>
+
+        <h3>Improve and personalize (legitimate interests/consent):</h3>
+        <p>Debug, A/B tests, recommendation signals.</p>
+
+        <h3>Communications (consent/legitimate interests):</h3>
+        <p>Service emails; marketing only if you opt in (unsubscribe anytime).</p>
+
+        <h3>Compliance (legal obligation/legitimate interests):</h3>
+        <p>Sanctions/KYC where required; respond to lawful requests.</p>
+
+        <h2>4. Cookies & Similar Tech</h2>
+        <p>We use necessary cookies and, with consent (where required), analytics and performance cookies. See our Cookie Policy for details and to manage preferences.</p>
+
+        <h2>5. Sharing</h2>
+        
+        <ul>
+          <li>Vendors/Processors (hosting, analytics, email, anti-abuse) under contracts.</li>
+          <li>Legal & safety (if required by law or to protect rights).</li>
+          <li>Business transfers (merger, acquisition).</li>
+        </ul>
+        
+        <p>We do not sell personal information in the conventional sense. In jurisdictions with a broad "sell/share" definition (e.g., CPRA), we provide a "Do Not Sell or Share My Personal Information" mechanism.</p>
+
+        <h2>6. International Transfers</h2>
+        <p>We may process data globally. Where applicable, we use approved safeguards (e.g., EU SCCs). Contact us for copies of relevant transfer mechanisms.</p>
+
+        <h2>7. Data Retention</h2>
+        <p>We keep data only as long as necessary for the purposes above, then delete or anonymize it, subject to legal retention obligations.</p>
+
+        <h2>8. Your Rights</h2>
+        <p>Depending on your region (e.g., EU/UK/EEA, California, Canada), you may have rights to access, correct, delete, restrict, object, port, or withdraw consent.</p>
+        <p><strong>Requests:</strong> privacy@orken.to. We may require verification. You can also manage cookies via the Cookie Policy and unsubscribe from emails via links provided.</p>
+
+        <h2>9. Children</h2>
+        <p>The Platform is not directed to children under 18. Do not use the Platform if you do not meet the minimum age.</p>
+
+        <h2>10. Security</h2>
+        <p>We use reasonable technical and organizational measures; no system is perfectly secure. Reach out to us on our socials.</p>
+
+        <h2>11. Do Not Sell/Share (CPRA)</h2>
+        <p>Residents of California may opt out of "sale"/"sharing" (as defined by CPRA) via [link to /do-not-sell] or the Cookie Policy.</p>
+
+        <h2>12. Changes</h2>
+        <p>We may update this policy; material changes will be highlighted with a new effective date.</p>
+
+        <div class="contact">
+          <h3>Contact</h3>
+          <p>For questions about this Privacy Policy, please contact us at: <a href="mailto:privacy@orken.to">privacy@orken.to</a></p>
+        </div>
+      </div>
+      
+      <!-- FOOTER -->
+      <footer class="footer">
+        <div class="footer-left">
+          <span>© {new Date().getFullYear()} {site.name}. Built for the Orken ecosystem.</span>
+        </div>
+        <div class="footer-right">
+          <div class="social-links">
+            <a href="#" aria-label="Discord">
+              <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+              </svg>
+            </a>
+            <a href="#" aria-label="X (Twitter)">
+              <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.244 2.25h3.308l-7.227 8.26l8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+            </a>
+          </div>
+          <div class="footer-links">
+            <a href="/about">About</a>
+            <a href="/terms">Terms</a>
+            <a href="/privacy">Privacy</a>
+            <a href="/cookies">Cookies</a>
+          </div>
+        </div>
+      </footer>
+    </main>
+  </body>
+</html>
