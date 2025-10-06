@@ -85,8 +85,8 @@ export function QuestDataProvider({ children, projectIds }: QuestDataProviderPro
 
 	// Refresh quest status and points when wallet state changes
 	useEffect(() => {
-		refreshForAccount(isConnected && account ? account : null);
-	}, [isConnected, account, refreshForAccount]);
+		refreshForAccount(isConnected && account ? account : null, projectIds);
+	}, [isConnected, account, projectIds, refreshForAccount]);
 
 	useEffect(() => {
 		setProjectQuests(filterProjects(storeProjectQuests));

@@ -1,18 +1,37 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuestData } from './QuestDataProvider';
+import { useQuestProgressStore } from '@quest-src/stores/questProgressStore';
 import './QuestTopBarStats.css';
 
 export default function QuestTopBarStats() {
 	const {
-		projectQuests,
-		totals,
-		userPoints,
 		account,
 		isConnected,
 		isConnecting,
 		handleConnect,
 		error,
 	} = useQuestData();
+
+	// Get global stats from store (not filtered by project)
+	const globalProjectQuests = useQuestProgressStore((state) => state.globalProjectQuests);
+	const globalUserPoints = useQuestProgressStore((state) => state.globalUserPoints);
+
+	// Calculate global totals
+	const globalTotals = useMemo(() => {
+		const totalQuests = globalProjectQuests.reduce((acc, item) => acc + item.quests.length, 0);
+		const completed = globalProjectQuests.reduce(
+			(acc, item) => acc + item.quests.filter((quest) => quest.completed).length,
+			0
+		);
+		const points = Array.from(globalUserPoints.values()).reduce((acc, value) => acc + value, 0);
+
+		return {
+			totalQuests,
+			completed,
+			completionPct: totalQuests ? Math.round((completed / totalQuests) * 100) : 0,
+			points,
+		};
+	}, [globalProjectQuests, globalUserPoints]);
 
 	const formattedAccount = isConnected && account ? `${account.slice(0, 6)}…${account.slice(-4)}` : '';
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -57,11 +76,11 @@ export default function QuestTopBarStats() {
 		<div className="topbar-stats" role="presentation">
 			<div className="topbar-item">
 				<span className="topbar-label">Points</span>
-				<span className="topbar-value">{totals.points.toLocaleString()}</span>
+				<span className="topbar-value">{globalTotals.points.toLocaleString()}</span>
 			</div>
 			<div className="topbar-item">
 				<span className="topbar-label">Completion</span>
-				<span className="topbar-meta">{totals.completed}/{totals.totalQuests}</span>
+				<span className="topbar-meta">{globalTotals.completed}/{globalTotals.totalQuests}</span>
 			</div>
 			<div className="topbar-wallet-shell" ref={menuRef}>
 				<button
