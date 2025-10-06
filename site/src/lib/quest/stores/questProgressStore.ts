@@ -11,6 +11,7 @@ interface QuestProgressState {
 	error?: string | null;
 	initialize: () => Promise<void>;
 	refreshForAccount: (account: string | null) => Promise<void>;
+	manualRefresh: () => Promise<void>;
 	reset: () => void;
 }
 
@@ -57,14 +58,26 @@ export const useQuestProgressStore = create<QuestProgressState>((set, get) => ({
 
 		try {
 			if (account) {
-				const updated = await projectManager.checkAllProjectsProgress(account);
+				console.log('[QuestProgressStore] Loading cached progress first...');
+				// Load cached progress first (fast) - shows immediately
+				const cached = await projectManager.loadCachedProgressForAllProjects(account);
 				const points = await projectManager.getAllUserPoints(account);
 				set({
-					projectQuests: updated,
+					projectQuests: cached,
 					userPoints: new Map(points),
 					lastAccount: account,
 					loading: false,
 				});
+
+				// Then automatically refresh from GraphQL for uncompleted quests (slower but accurate)
+				console.log('[QuestProgressStore] Triggering automatic GraphQL refresh...');
+				const updated = await projectManager.checkAllProjectsProgress(account);
+				const updatedPoints = await projectManager.getAllUserPoints(account);
+				set({
+					projectQuests: updated,
+					userPoints: new Map(updatedPoints),
+				});
+				console.log('[QuestProgressStore] Automatic refresh complete');
 			} else {
 				projectManager.clearAllProgress();
 				set({
@@ -74,6 +87,32 @@ export const useQuestProgressStore = create<QuestProgressState>((set, get) => ({
 					loading: false,
 				});
 			}
+		} catch (error) {
+			console.error('[QuestProgressStore] Failed to load quest progress', error);
+			set({
+				error: error instanceof Error ? error.message : String(error),
+				loading: false,
+			});
+		}
+	},
+	manualRefresh: async () => {
+		const { lastAccount } = get();
+		if (!lastAccount) {
+			console.warn('[QuestProgressStore] Cannot refresh without an account');
+			return;
+		}
+
+		set({ loading: true, error: undefined });
+
+		try {
+			// Refresh from GraphQL (slower but accurate)
+			const updated = await projectManager.checkAllProjectsProgress(lastAccount);
+			const points = await projectManager.getAllUserPoints(lastAccount);
+			set({
+				projectQuests: updated,
+				userPoints: new Map(points),
+				loading: false,
+			});
 		} catch (error) {
 			console.error('[QuestProgressStore] Failed to refresh quests', error);
 			set({
