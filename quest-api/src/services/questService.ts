@@ -3,6 +3,7 @@ import { questParser } from './questParser.js';
 import { GraphQLService } from './graphqlClient.js';
 import { BaseQuest } from '../models/index.js';
 import { resolveVariableFunction } from './variableFunctions.js';
+import { questDatabase } from '../database/questDatabase.js';
 
 export class QuestService {
 	private project: ProjectMetadata | null = null;
@@ -33,7 +34,7 @@ export class QuestService {
 
 	async checkQuest(
 		questId: string,
-		playerId: string
+		walletAddress: string
 	): Promise<Quest | null> {
 		const quest = this.quests.find((q) => q.getId() === questId);
 		if (!quest) {
@@ -48,7 +49,7 @@ export class QuestService {
 
 		try {
 			// Build query variables
-			const variables = await this.buildQueryVariables(quest.getQuery(), playerId, quest.getConfig());
+			const variables = await this.buildQueryVariables(quest.getQuery(), walletAddress, quest.getConfig());
 
 			const queryResult = await this.graphqlService.executeQuery(
 				quest.getQuery(),
@@ -66,8 +67,42 @@ export class QuestService {
 
 			this.questProgress.set(questId, progress);
 
+			// Check existing progress before updating
+			const existingProgress = await questDatabase.getQuestProgress(
+				walletAddress,
+				questId,
+				this.project.id
+			);
+
+			// Persist to database
+			const now = new Date().toISOString();
+			const questConfig = quest.getConfig();
+			const pointsEarned = validation.completed ? questConfig.reward : 0;
+
+			await questDatabase.upsertQuestProgress({
+				wallet_address: walletAddress,
+				project_id: this.project.id,
+				quest_id: questId,
+				completed: validation.completed,
+				progress: validation.progress ?? null,
+				points_earned: pointsEarned,
+				completed_at: validation.completed ? now : null,
+				last_checked_at: now,
+			});
+
+			// If newly completed, create points transaction
+			if (validation.completed && (!existingProgress || !existingProgress.completed)) {
+				await questDatabase.createPointsTransaction({
+					wallet_address: walletAddress,
+					project_id: this.project.id,
+					transaction_type: 'earned',
+					amount: pointsEarned,
+					quest_id: questId,
+				});
+			}
+
 			return {
-				...quest.getConfig(),
+				...questConfig,
 				completed: validation.completed,
 				progress: validation.progress,
 			};
@@ -77,11 +112,11 @@ export class QuestService {
 		}
 	}
 
-	async checkAllQuests(playerId: string): Promise<Quest[]> {
+	async checkAllQuests(walletAddress: string): Promise<Quest[]> {
 		const results: Quest[] = [];
 
 		for (const quest of this.quests) {
-			const result = await this.checkQuest(quest.getId(), playerId);
+			const result = await this.checkQuest(quest.getId(), walletAddress);
 			if (result) {
 				results.push(result);
 			}
@@ -101,6 +136,34 @@ export class QuestService {
 				...quest.getConfig(),
 				completed: progress?.completed ?? false,
 				progress: progress?.progress,
+			};
+		});
+	}
+
+	/**
+	 * Load cached quest progress from database
+	 */
+	async loadCachedProgress(walletAddress: string): Promise<Quest[]> {
+		if (!this.project) {
+			throw new Error('Project not loaded');
+		}
+
+		const cachedProgress = await questDatabase.getUserQuestProgress(
+			walletAddress,
+			this.project.id
+		);
+
+		// Build a map of cached progress
+		const progressMap = new Map(
+			cachedProgress.map((p) => [p.quest_id, p])
+		);
+
+		return this.quests.map((quest) => {
+			const cached = progressMap.get(quest.getId());
+			return {
+				...quest.getConfig(),
+				completed: cached?.completed ?? false,
+				progress: cached?.progress ?? undefined,
 			};
 		});
 	}
