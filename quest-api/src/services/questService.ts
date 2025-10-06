@@ -36,27 +36,36 @@ export class QuestService {
 		questId: string,
 		walletAddress: string
 	): Promise<Quest | null> {
+		console.log(`[QuestService] Checking quest: ${questId} for wallet: ${walletAddress}`);
+
 		const quest = this.quests.find((q) => q.getId() === questId);
 		if (!quest) {
-			console.error(`Quest not found: ${questId}`);
+			console.error(`[QuestService] Quest not found: ${questId}`);
 			return null;
 		}
 
 		if (!this.project) {
-			console.error('Project not loaded');
+			console.error('[QuestService] Project not loaded');
 			return null;
 		}
 
 		try {
 			// Build query variables
+			console.log(`[QuestService] Building query variables for ${questId}`);
 			const variables = await this.buildQueryVariables(quest.getQuery(), walletAddress, quest.getConfig());
+			console.log(`[QuestService] Variables:`, JSON.stringify(variables));
 
+			console.log(`[QuestService] Executing GraphQL query for ${questId}`);
 			const queryResult = await this.graphqlService.executeQuery(
 				quest.getQuery(),
 				variables
 			);
 
+			console.log(`[QuestService] GraphQL result for ${questId}:`, JSON.stringify(queryResult, null, 2));
+
+			console.log(`[QuestService] Validating quest ${questId}`);
 			const validation = await quest.validate(queryResult);
+			console.log(`[QuestService] Validation result for ${questId}:`, JSON.stringify(validation));
 
 			const progress: QuestProgress = {
 				questId,
@@ -113,10 +122,41 @@ export class QuestService {
 	}
 
 	async checkAllQuests(walletAddress: string): Promise<Quest[]> {
+		if (!this.project) {
+			console.error('[QuestService] Project not loaded');
+			return [];
+		}
+
+		// Get existing progress from database
+		const existingProgress = await questDatabase.getUserQuestProgress(
+			walletAddress,
+			this.project.id
+		);
+		const completedQuestIds = new Set(
+			existingProgress.filter(p => p.completed).map(p => p.quest_id)
+		);
+
+		console.log(`[QuestService] Found ${completedQuestIds.size} already completed quests, checking ${this.quests.length - completedQuestIds.size} uncompleted quests`);
+
 		const results: Quest[] = [];
 
 		for (const quest of this.quests) {
-			const result = await this.checkQuest(quest.getId(), walletAddress);
+			const questId = quest.getId();
+
+			// Skip GraphQL check if already completed
+			if (completedQuestIds.has(questId)) {
+				console.log(`[QuestService] Skipping ${questId} (already completed)`);
+				const cached = existingProgress.find(p => p.quest_id === questId);
+				results.push({
+					...quest.getConfig(),
+					completed: true,
+					progress: cached?.progress ?? undefined,
+				});
+				continue;
+			}
+
+			// Check uncompleted quests via GraphQL
+			const result = await this.checkQuest(questId, walletAddress);
 			if (result) {
 				results.push(result);
 			}

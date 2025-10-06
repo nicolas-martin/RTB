@@ -1,33 +1,33 @@
 import type { ProjectMetadata, Quest } from '../types/quest';
-import { QuestService } from './questService';
-import { withBasePath } from '@lib/basePath';
+import { questApiClient, type PointsSummary } from './questApiClient';
 
 export const QUEST_PROJECT_IDS = ['rtb', 'gluex'] as const;
 export type QuestProjectId = (typeof QUEST_PROJECT_IDS)[number];
 
 export class ProjectManager {
-	private projects: Map<string, QuestService> = new Map();
-	private availableProjects: QuestProjectId[] = [...QUEST_PROJECT_IDS]; // Add more project IDs here
+	private projectQuests: Map<string, Quest[]> = new Map();
+	private availableProjects: QuestProjectId[] = [...QUEST_PROJECT_IDS];
 
-	async loadProject(projectId: string, tomlPath: string): Promise<void> {
+	async loadProject(projectId: string): Promise<void> {
 		try {
-			const response = await fetch(tomlPath);
-			const tomlContent = await response.text();
+			console.log(`[ProjectManager] Loading project from API: ${projectId}`);
 
-			const questService = new QuestService();
-			await questService.loadProject(tomlContent);
+			// Load quest metadata from API instead of TOML file
+			const quests = await questApiClient.getQuests(projectId);
+			console.log(`[ProjectManager] Loaded ${quests.length} quests for ${projectId}`);
 
-			this.projects.set(projectId, questService);
+			this.projectQuests.set(projectId, quests);
 		} catch (error) {
-			console.error(`Failed to load project ${projectId}:`, error);
+			console.error(`[ProjectManager] Failed to load project ${projectId}:`, error);
 			throw error;
 		}
 	}
 
 	async loadAllProjects(): Promise<void> {
+		console.log(`[ProjectManager] Loading all projects: ${this.availableProjects.join(', ')}`);
 		for (const projectId of this.availableProjects) {
 			try {
-				await this.loadProject(projectId, withBasePath(`/${projectId}/project.toml`));
+				await this.loadProject(projectId);
 			} catch (error) {
 				console.warn(`Failed to load project ${projectId}:`, error);
 				// Continue loading other projects even if one fails
@@ -36,110 +36,135 @@ export class ProjectManager {
 	}
 
 	getProject(projectId: string): ProjectMetadata | null {
-		const service = this.projects.get(projectId);
-		return service?.getProject() ?? null;
+		// Return basic project metadata
+		if (this.projectQuests.has(projectId)) {
+			return {
+				id: projectId,
+				name: projectId.toUpperCase(),
+				description: `${projectId} project`,
+				graphqlEndpoint: '' // Not needed on frontend anymore
+			};
+		}
+		return null;
 	}
 
 	getAllProjects(): ProjectMetadata[] {
-		const projects: ProjectMetadata[] = [];
-		this.projects.forEach((service) => {
-			const project = service.getProject();
-			if (project) {
-				projects.push(project);
-			}
-		});
-		return projects;
-	}
-
-	getQuestService(projectId: string): QuestService | null {
-		return this.projects.get(projectId) ?? null;
-	}
-
-	async checkQuestsForProject(
-		projectId: string,
-		playerId: string
-	): Promise<Quest[]> {
-		const service = this.projects.get(projectId);
-		if (!service) {
-			console.error(`Project ${projectId} not found`);
-			return [];
-		}
-
-		return await service.checkAllQuests(playerId);
+		return Array.from(this.projectQuests.keys()).map(id => ({
+			id,
+			name: id.toUpperCase(),
+			description: `${id} project`,
+			graphqlEndpoint: ''
+		}));
 	}
 
 	getQuestsForProject(projectId: string): Quest[] {
-		const service = this.projects.get(projectId);
-		return service?.getQuestsWithProgress() ?? [];
-	}
-
-	getActiveQuestsForProject(projectId: string): Quest[] {
-		const service = this.projects.get(projectId);
-		return service?.getActiveQuests() ?? [];
+		return this.projectQuests.get(projectId) ?? [];
 	}
 
 	getAllQuests(): { project: ProjectMetadata; quests: Quest[] }[] {
-		const result: { project: ProjectMetadata; quests: Quest[] }[] = [];
-
-		this.projects.forEach((service) => {
-			const project = service.getProject();
-			if (project) {
-				result.push({
-					project,
-					quests: service.getQuestsWithProgress(),
-				});
-			}
-		});
-
-		return result;
-	}
-
-	getAllActiveQuests(): { project: ProjectMetadata; quests: Quest[] }[] {
-		const result: { project: ProjectMetadata; quests: Quest[] }[] = [];
-
-		this.projects.forEach((service) => {
-			const project = service.getProject();
-			if (project) {
-				const activeQuests = service.getActiveQuests();
-				if (activeQuests.length > 0) {
-					result.push({
-						project,
-						quests: activeQuests,
-					});
-				}
-			}
-		});
-
-		return result;
-	}
-
-	clearProjectProgress(projectId: string): void {
-		const service = this.projects.get(projectId);
-		service?.clearProgress();
-	}
-
-	clearAllProgress(): void {
-		this.projects.forEach((service) => {
-			service.clearProgress();
-		});
-	}
-
-	async checkAllProjectsProgress(playerId: string): Promise<{ project: ProjectMetadata; quests: Quest[] }[]> {
 		const results: { project: ProjectMetadata; quests: Quest[] }[] = [];
 
-		for (const [projectId, service] of this.projects.entries()) {
+		for (const [projectId, quests] of this.projectQuests.entries()) {
+			results.push({
+				project: this.getProject(projectId)!,
+				quests
+			});
+		}
+
+		return results;
+	}
+
+	/**
+	 * Load cached progress from API (fast, uses Supabase cache)
+	 */
+	async loadCachedProgressForAllProjects(
+		walletAddress: string
+	): Promise<{ project: ProjectMetadata; quests: Quest[] }[]> {
+		console.log(`[ProjectManager] Loading cached progress for wallet: ${walletAddress}`);
+		const results: { project: ProjectMetadata; quests: Quest[] }[] = [];
+
+		for (const [projectId, questMetadata] of this.projectQuests.entries()) {
 			try {
-				const project = service.getProject();
-				if (project) {
-					const updatedQuests = await service.checkAllQuests(playerId);
-					results.push({ project, quests: updatedQuests });
-				}
+				console.log(`[ProjectManager] Fetching cached progress for ${projectId}`);
+				const progressData = await questApiClient.getCachedProgress(walletAddress, projectId);
+				console.log(`[ProjectManager] Got ${progressData.length} progress records for ${projectId}`);
+
+				const progressMap = new Map(progressData.map(p => [p.quest_id, p]));
+
+				// Merge quest metadata with progress data
+				const quests = questMetadata.map(quest => {
+					const progress = progressMap.get(quest.id);
+					return {
+						...quest,
+						completed: progress?.completed ?? false,
+						progress: progress?.progress ?? undefined
+					};
+				});
+
+				const project = this.getProject(projectId)!;
+				results.push({ project, quests });
 			} catch (error) {
-				console.error(`Failed to check progress for project ${projectId}:`, error);
-				// Still include the project with existing quest data
-				const project = service.getProject();
-				if (project) {
-					results.push({ project, quests: service.getQuestsWithProgress() });
+				console.error(`[ProjectManager] Failed to load cached progress for ${projectId}:`, error);
+				// Fall back to quests without progress
+				const project = this.getProject(projectId)!;
+				const quests = questMetadata.map(q => ({ ...q, completed: false }));
+				results.push({ project, quests });
+			}
+		}
+
+		return results;
+	}
+
+	/**
+	 * Refresh progress from GraphQL (slower, checks blockchain)
+	 */
+	async checkAllProjectsProgress(walletAddress: string): Promise<{ project: ProjectMetadata; quests: Quest[] }[]> {
+		console.log(`[ProjectManager] Refreshing progress from GraphQL for wallet: ${walletAddress}`);
+		const results: { project: ProjectMetadata; quests: Quest[] }[] = [];
+
+		for (const [projectId, questMetadata] of this.projectQuests.entries()) {
+			try {
+				console.log(`[ProjectManager] Refreshing progress for ${projectId}`);
+				const progressData = await questApiClient.refreshProgress(walletAddress, projectId);
+				console.log(`[ProjectManager] Got refreshed ${progressData.length} progress records for ${projectId}`);
+
+				const progressMap = new Map(progressData.map(p => [p.quest_id, p]));
+
+				// Merge quest metadata with progress data
+				const quests = questMetadata.map(quest => {
+					const progress = progressMap.get(quest.id);
+					return {
+						...quest,
+						completed: progress?.completed ?? false,
+						progress: progress?.progress ?? undefined
+					};
+				});
+
+				const project = this.getProject(projectId)!;
+				results.push({ project, quests });
+			} catch (error) {
+				console.error(`[ProjectManager] Failed to refresh progress for ${projectId}:`, error);
+				// Try to fall back to cached data
+				try {
+					const progressData = await questApiClient.getCachedProgress(walletAddress, projectId);
+					const progressMap = new Map(progressData.map(p => [p.quest_id, p]));
+
+					const quests = questMetadata.map(quest => {
+						const progress = progressMap.get(quest.id);
+						return {
+							...quest,
+							completed: progress?.completed ?? false,
+							progress: progress?.progress ?? undefined
+						};
+					});
+
+					const project = this.getProject(projectId)!;
+					results.push({ project, quests });
+				} catch {
+					// Last resort: quests without progress
+					const project = this.getProject(projectId)!;
+					const quests = questMetadata.map(q => ({ ...q, completed: false }));
+					results.push({ project, quests });
 				}
 			}
 		}
@@ -147,20 +172,27 @@ export class ProjectManager {
 		return results;
 	}
 
-	async getUserPointsForProject(projectId: string, playerId: string): Promise<number> {
-		const service = this.projects.get(projectId);
-		if (!service) return 0;
-
-		return await service.getUserPoints(playerId);
+	async getUserPointsForProject(projectId: string, walletAddress: string): Promise<number> {
+		try {
+			console.log(`[ProjectManager] Getting points for ${projectId}, wallet: ${walletAddress}`);
+			const summaries = await questApiClient.getPointsSummary(walletAddress, projectId);
+			return summaries[0]?.available ?? 0;
+		} catch (error) {
+			console.error(`Failed to get points for project ${projectId}:`, error);
+			return 0;
+		}
 	}
 
-	async getAllUserPoints(playerId: string): Promise<Map<string, number>> {
+	async getAllUserPoints(walletAddress: string): Promise<Map<string, number>> {
+		console.log(`[ProjectManager] Getting all points for wallet: ${walletAddress}`);
 		const pointsMap = new Map<string, number>();
 
-		for (const [projectId, service] of this.projects.entries()) {
+		for (const projectId of this.projectQuests.keys()) {
 			try {
-				const points = await service.getUserPoints(playerId);
-				pointsMap.set(projectId, points);
+				const summaries = await questApiClient.getPointsSummary(walletAddress, projectId);
+				const available = summaries[0]?.available ?? 0;
+				pointsMap.set(projectId, available);
+				console.log(`[ProjectManager] ${projectId} points: ${available}`);
 			} catch (error) {
 				console.error(`Failed to get points for project ${projectId}:`, error);
 				pointsMap.set(projectId, 0);
@@ -170,11 +202,19 @@ export class ProjectManager {
 		return pointsMap;
 	}
 
-	async getCompletedQuestsForProject(projectId: string, playerId: string): Promise<string[]> {
-		const service = this.projects.get(projectId);
-		if (!service) return [];
+	async redeemPoints(
+		walletAddress: string,
+		projectId: string,
+		amount: number,
+		reason: string
+	): Promise<PointsSummary> {
+		console.log(`[ProjectManager] Redeeming ${amount} points for ${projectId}`);
+		return await questApiClient.redeemPoints(walletAddress, projectId, amount, reason);
+	}
 
-		return await service.getCompletedQuestsFromDb(playerId);
+	clearAllProgress(): void {
+		// Not needed anymore - progress is in database
+		console.log('[ProjectManager] clearAllProgress called (no-op)');
 	}
 }
 

@@ -62,19 +62,23 @@ app.get('/health', (_req: Request, res: Response) => {
 app.get('/api/quests', async (req: Request, res: Response) => {
 	try {
 		const { projectId } = req.query;
+		console.log(`[API] GET /api/quests - projectId: ${projectId}`);
 
 		if (projectId) {
 			// Get quests for specific project
+			console.log(`[API] Loading project service for: ${projectId}`);
 			const service = await loadProjectService(projectId as string);
 			const quests = service.getQuests().map(q => q.getConfig());
+			console.log(`[API] Returning ${quests.length} quests for ${projectId}`);
 			res.json(quests);
 		} else {
 			// Get all quests from all projects
 			// For now, we'll return an error since we need to know which projects to load
+			console.warn('[API] projectId query parameter missing');
 			res.status(400).json({ error: 'projectId query parameter is required' });
 		}
 	} catch (error) {
-		console.error('Error loading quests:', error);
+		console.error('[API] Error loading quests:', error);
 		res.status(500).json({ error: 'Failed to load quests' });
 	}
 });
@@ -86,16 +90,34 @@ app.get('/api/quests/progress/:walletAddress', async (req: Request, res: Respons
 		const { walletAddress } = req.params;
 		const { projectId } = req.query;
 
+		console.log(`[API] GET /api/quests/progress/${walletAddress}?projectId=${projectId}`);
+
 		if (!projectId) {
+			console.warn('[API] projectId query parameter missing');
 			return res.status(400).json({ error: 'projectId query parameter is required' });
 		}
 
-		const service = await loadProjectService(projectId as string);
-		const quests = await service.loadCachedProgress(walletAddress);
+		console.log(`[API] Fetching progress from database for wallet: ${walletAddress}, project: ${projectId}`);
+		const progressData = await questDatabase.getUserQuestProgress(
+			walletAddress,
+			projectId as string
+		);
 
-		res.json(quests);
+		console.log(`[API] Found ${progressData.length} progress records`);
+
+		// Return only progress data, not full quest objects
+		const progressMap = progressData.map(p => ({
+			quest_id: p.quest_id,
+			completed: p.completed,
+			progress: p.progress,
+			points_earned: p.points_earned,
+			completed_at: p.completed_at,
+			last_checked_at: p.last_checked_at
+		}));
+
+		res.json(progressMap);
 	} catch (error) {
-		console.error('Error loading cached progress:', error);
+		console.error('[API] Error loading cached progress:', error);
 		res.status(500).json({ error: 'Failed to load cached progress' });
 	}
 });
@@ -107,16 +129,38 @@ app.post('/api/quests/refresh/:walletAddress', async (req: Request, res: Respons
 		const { walletAddress } = req.params;
 		const { projectId } = req.query;
 
+		console.log(`[API] POST /api/quests/refresh/${walletAddress}?projectId=${projectId}`);
+
 		if (!projectId) {
+			console.warn('[API] projectId query parameter missing');
 			return res.status(400).json({ error: 'projectId query parameter is required' });
 		}
 
+		console.log(`[API] Checking all quests for wallet: ${walletAddress}, project: ${projectId}`);
 		const service = await loadProjectService(projectId as string);
-		const quests = await service.checkAllQuests(walletAddress);
+		await service.checkAllQuests(walletAddress);
 
-		res.json(quests);
+		console.log(`[API] Fetching updated progress from database`);
+		// Return updated progress data from database
+		const progressData = await questDatabase.getUserQuestProgress(
+			walletAddress,
+			projectId as string
+		);
+
+		console.log(`[API] Returning ${progressData.length} progress records`);
+
+		const progressMap = progressData.map(p => ({
+			quest_id: p.quest_id,
+			completed: p.completed,
+			progress: p.progress,
+			points_earned: p.points_earned,
+			completed_at: p.completed_at,
+			last_checked_at: p.last_checked_at
+		}));
+
+		res.json(progressMap);
 	} catch (error) {
-		console.error('Error refreshing quests:', error);
+		console.error('[API] Error refreshing quests:', error);
 		res.status(500).json({ error: 'Failed to refresh quests' });
 	}
 });
