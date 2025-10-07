@@ -19,10 +19,11 @@
 }
 
 .topbar-label {
-  text-transform: uppercase;
   letter-spacing: 0.14em;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.6);
+  align-self: flex-end;
+  margin-bottom: 2px;
 }
 
 .topbar-value {

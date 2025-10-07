@@ -7,7 +7,9 @@
 
 /* Hero Section */
 .quest-hero-section {
-  margin-bottom: 48px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 32px;
 }
 
 .quest-hero-content {
@@ -106,24 +108,56 @@
 }
 
 /* USDT Icon */
-.usdt-icon {
+/* USDT Coin Container */
+.usdt-icon-container {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
+  margin-top: 50px;
 }
 
-.usdt-icon-circle {
+.coin-simple {
   width: 120px;
   height: 120px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
-  border: 3px solid white;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 16px 32px rgba(0, 212, 170, 0.3);
+}
+
+.coin-rotating {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #26A17B 0%, #1E8E6A 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  font-weight: 700;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 12px 24px rgba(38, 161, 123, 0.5);
+  animation: rotateY-simple 6s linear infinite;
+  will-change: transform;
+  overflow: hidden;
+}
+
+.usdt-icon-image {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+}
+
+/* Simple Y-axis rotation */
+@keyframes rotateY-simple {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
 }
 
 .usdt-symbol {
@@ -158,11 +192,13 @@
 
 /* Partner Apps Section */
 .partner-apps-section {
-  margin-bottom: 48px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 32px;
 }
 
 .partner-apps-header {
-  margin-bottom: 32px;
+  margin-bottom: 8px;
 }
 
 .partner-apps-title {
@@ -178,6 +214,7 @@
   gap: 8px;
   color: var(--text-muted);
   font-size: 16px;
+  margin-bottom: 24px;
 }
 
 .tooltip-container {
@@ -258,17 +295,19 @@
   background: rgba(8, 8, 12, 0.7);
   transition: all 0.2s ease;
   position: relative;
+  text-decoration: none;
+  color: inherit;
 }
 
 .partner-app-card:hover {
   transform: translateY(-4px);
-  border-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(93, 91, 255, 0.5);
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2);
 }
 
 .partner-app-logo {
-  width: 48px;
-  height: 48px;
+  width: 64x;
+  height: 64px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.05);
   display: flex;
@@ -278,8 +317,8 @@
 }
 
 .partner-app-logo img {
-  width: 32px;
-  height: 32px;
+  width: 64px;
+  height: 64px;
   object-fit: contain;
 }
 
@@ -291,56 +330,9 @@
   text-align: center;
 }
 
-.partner-app-links {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  width: 100%;
-}
-
-.partner-app-visit {
-  color: #5d5bff;
-  font-size: 12px;
-  font-weight: 500;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-block;
-}
-
-.partner-app-visit:hover {
-  color: #7c7aff;
-  text-decoration: none;
-}
-
-.partner-app-social {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.social-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  text-decoration: none;
-}
-
-.social-icon:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-primary);
-  transform: translateY(-1px);
-}
 
 .quest-screen-header {
-  margin-top: 24px;
+  margin-top: 16px;
   margin-bottom: 8px;
 }
 
@@ -765,17 +757,19 @@
     font-size: 24px;
   }
 
-  .usdt-icon {
-    gap: 8px;
+  /* Simplified coin for mobile */
+  .coin-simple {
+    width: 90px;
+    height: 90px;
   }
 
-  .usdt-icon-circle {
-    width: 80px;
-    height: 80px;
+  .coin-rotating {
+    font-size: 36px;
   }
 
-  .usdt-symbol {
-    font-size: 32px;
+  /* Slower animation on mobile */
+  .coin-rotating {
+    animation-duration: 8s;
   }
 
   .countdown-text {
@@ -797,13 +791,13 @@
   }
 
   .partner-app-logo {
-    width: 40px;
-    height: 40px;
+    width: 56px;
+    height: 56px;
   }
 
   .partner-app-logo img {
-    width: 24px;
-    height: 24px;
+    width: 40px;
+    height: 40px;
   }
 
   .partner-app-title {

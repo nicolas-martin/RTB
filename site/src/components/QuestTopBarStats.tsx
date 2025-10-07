@@ -75,12 +75,8 @@ export default function QuestTopBarStats() {
 	return (
 		<div className="topbar-stats" role="presentation">
 			<div className="topbar-item">
-				<span className="topbar-label">Points</span>
 				<span className="topbar-value">{globalTotals.points.toLocaleString()}</span>
-			</div>
-			<div className="topbar-item">
-				<span className="topbar-label">Completion</span>
-				<span className="topbar-meta">{globalTotals.completed}/{globalTotals.totalQuests}</span>
+				<span className="topbar-label">pts</span>
 			</div>
 			<div className="topbar-wallet-shell" ref={menuRef}>
 				<button
