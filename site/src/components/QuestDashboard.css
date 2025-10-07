@@ -2,6 +2,341 @@
   display: flex;
   flex-direction: column;
   gap: 32px;
+  padding-bottom: 40px;
+}
+
+/* Hero Section */
+.quest-hero-section {
+  margin-bottom: 48px;
+}
+
+.quest-hero-content {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  padding: 32px;
+  border-radius: 24px;
+  background: rgba(8, 8, 12, 0.7);
+  border: 1px solid transparent;
+  box-shadow: 0 20px 46px rgba(6, 6, 12, 0.4);
+}
+
+/* Points Card */
+.points-card {
+  background: linear-gradient(135deg, #5d5bff 0%, #7c7aff 100%);
+  border-radius: 20px;
+  padding: 32px;
+  min-width: 280px;
+  width: 320px;
+  position: relative;
+  box-shadow: 0 16px 32px rgba(93, 91, 255, 0.3);
+}
+
+.points-card-header {
+  margin-bottom: 16px;
+}
+
+.points-brand {
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  letter-spacing: 0.1em;
+}
+
+.points-value {
+	font-size: 48px;
+	font-weight: 700;
+	color: white;
+	margin-bottom: 16px;
+	line-height: 1;
+	transition: transform 0.3s ease;
+}
+
+.points-value.points-animating {
+	transform: scale(1.05);
+	text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.points-footer {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+}
+
+.points-alliance {
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+
+/* Hero Text Section */
+.hero-text-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.hero-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.learn-more-btn {
+  align-self: flex-start;
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.learn-more-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* USDT Icon */
+.usdt-icon {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.usdt-icon-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
+  border: 3px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 16px 32px rgba(0, 212, 170, 0.3);
+}
+
+.usdt-symbol {
+  font-size: 48px;
+  font-weight: 700;
+  color: white;
+}
+
+.countdown-timer {
+  text-align: center;
+}
+
+.countdown-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d5016;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 10px rgba(45, 80, 22, 0.4);
+  animation: pulse-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-glow {
+  0% {
+    text-shadow: 0 0 10px rgba(45, 80, 22, 0.4);
+    color: #2d5016;
+  }
+  100% {
+    text-shadow: 0 0 20px rgba(45, 80, 22, 0.8);
+    color: #1a3009;
+  }
+}
+
+/* Partner Apps Section */
+.partner-apps-section {
+  margin-bottom: 48px;
+}
+
+.partner-apps-header {
+  margin-bottom: 32px;
+}
+
+.partner-apps-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+}
+
+.partner-apps-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 16px;
+}
+
+.tooltip-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tooltip-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  transition: all 0.2s ease;
+}
+
+.tooltip-icon:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tooltip-container:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+}
+
+/* Partner Apps Grid */
+.partner-apps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.partner-app-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(8, 8, 12, 0.7);
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.partner-app-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2);
+}
+
+.partner-app-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.partner-app-logo img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.partner-app-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  text-align: center;
+}
+
+.partner-app-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.partner-app-visit {
+  color: #5d5bff;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.partner-app-visit:hover {
+  color: #7c7aff;
+  text-decoration: none;
+}
+
+.partner-app-social {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.social-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.social-icon:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  transform: translateY(-1px);
 }
 
 .quest-screen-header {
@@ -386,9 +721,93 @@
   }
 }
 
+@media (max-width: 960px) {
+  .quest-hero-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 32px;
+  }
+
+  .hero-text-section {
+    align-items: center;
+  }
+
+  .partner-apps-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
 @media (max-width: 640px) {
   .quest-screen {
     gap: 24px;
+  }
+
+  .quest-hero-section {
+    margin-bottom: 32px;
+  }
+
+  .quest-hero-content {
+    padding: 24px;
+    gap: 24px;
+  }
+
+  .points-card {
+    min-width: 200px;
+    width: 240px;
+    padding: 24px;
+  }
+
+  .points-value {
+    font-size: 36px;
+  }
+
+  .hero-title {
+    font-size: 24px;
+  }
+
+  .usdt-icon {
+    gap: 8px;
+  }
+
+  .usdt-icon-circle {
+    width: 80px;
+    height: 80px;
+  }
+
+  .usdt-symbol {
+    font-size: 32px;
+  }
+
+  .countdown-text {
+    font-size: 12px;
+  }
+
+  .partner-apps-title {
+    font-size: 24px;
+  }
+
+  .partner-apps-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+  }
+
+  .partner-app-card {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .partner-app-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .partner-app-logo img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .partner-app-title {
+    font-size: 14px;
   }
 
   .project-quest-header {

@@ -2,27 +2,37 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import QuestApp from '../../components/QuestApp';
-import { QuestComments } from '../../components/QuestComments';
-import { QUEST_PROJECT_IDS } from '@quest-src/services/projectManager';
-import { getEntry } from 'astro:content';
 
-export function getStaticPaths() {
-  return QUEST_PROJECT_IDS.map((project) => ({ params: { project } }));
+export async function getStaticPaths() {
+  // Define the available quest projects
+  const projects = ['rtb', 'gluex'];
+  
+  return projects.map(project => ({
+    params: { project }
+  }));
 }
 
 const { project } = Astro.params;
-const entry = await getEntry('ecosystem', 'plasma');
-const projectInfo = entry.data.projects.find((item) => item.quest_slug === project);
+const currentPath = Astro.url.pathname;
 
-if (!projectInfo) {
-  return Astro.redirect('/');
+// Get project info from ecosystem data if available
+let projectInfo = null;
+try {
+  const ecosystemData = await Astro.glob('../../content/ecosystem/*.yaml');
+  const plasmaData = ecosystemData.find(data => data.default?.projects);
+  
+  if (plasmaData?.default?.projects) {
+    projectInfo = plasmaData.default.projects.find(p => 
+      p.id?.toLowerCase() === project?.toLowerCase() || 
+      p.name?.toLowerCase() === project?.toLowerCase()
+    );
+  }
+} catch (error) {
+  console.warn('Could not load ecosystem data for project info:', error);
 }
-
-const title = `${projectInfo.name} Quests`;
-const description = projectInfo.description ?? 'Explore quests from this Plasma project.';
 ---
-<BaseLayout title={title} description={description}>
-  <SiteHeader slot="header" currentPath="/" />
-  <QuestApp client:load projectId={project} projectInfo={projectInfo} />
-  <QuestComments client:only="react" projectId={project} />
+
+<BaseLayout title={`${project?.toUpperCase()} Quests`} description={`Track your progress on ${project?.toUpperCase()} quests.`}>
+  <SiteHeader slot="header" currentPath={currentPath} />
+  <QuestApp projectId={project} projectInfo={projectInfo} client:load />
 </BaseLayout>
