@@ -161,117 +161,14 @@ function QuestProjectGrid({
 	);
 }
 
-function ProjectQuestList({
-	project,
-	loading,
-	points,
-}: {
-	project: ProjectWithQuests;
-	loading: boolean;
-	points: number;
-}) {
-	const [activeFilter, setActiveFilter] = useState<string>('all');
-	const quests = project.quests;
-	const completedCount = quests.filter((quest) => quest.completed).length;
-	const totalCount = quests.length;
-
-	const filters = useMemo(() => {
-		const types = new Set<string>();
-		quests.forEach((quest) => types.add(quest.type));
-		return ['all', ...Array.from(types)];
-	}, [quests]);
-
-	const filteredQuests = useMemo(() => {
-		if (activeFilter === 'all') return quests;
-		return quests.filter((quest) => quest.type === activeFilter);
-	}, [quests, activeFilter]);
-
-	return (
-		<div className="project-quest-view">
-			<header className="project-quest-header">
-				<div className="project-quest-info">
-					<h2>{project.project.name}</h2>
-					<p>{project.project.description}</p>
-				</div>
-				<div className="project-quest-meta">
-					<QuestProgressDonut completed={completedCount} total={totalCount} size={140} />
-					<div className="project-quest-stats">
-						<div>
-							<span className="stat-label">Points</span>
-							<span className="stat-value">{formatNumber(points)}</span>
-						</div>
-						<div>
-							<span className="stat-label">Completed</span>
-							<span className="stat-value">
-								{completedCount}/{totalCount}
-							</span>
-						</div>
-					</div>
-				</div>
-			</header>
-
-			<div className="project-quest-filters">
-				{filters.map((filter) => (
-					<button
-						key={filter}
-						type="button"
-						className={['filter-pill', activeFilter === filter ? 'active' : ''].join(' ')}
-						onClick={() => setActiveFilter(filter)}
-					>
-						{filter === 'all' ? 'All quests' : filter}
-					</button>
-				))}
-			</div>
-
-			{loading && <div className="loading-card">Refreshing quests…</div>}
-
-			{!loading && filteredQuests.length === 0 && (
-				<div className="empty-card">No quests match this filter yet.</div>
-			)}
-
-			<div className="quest-grid">
-				{filteredQuests.map((quest) => {
-					const completedClass = quest.completed ? 'completed' : '';
-					const gradient = gradientByType[quest.type] ?? gradientByType.custom;
-					const progress = quest.progress ?? 0;
-					const showProgress = quest.type !== 'conditional';
-
-					return (
-						<div className={['quest-tile', completedClass].join(' ')} key={quest.id} style={{ background: gradient }}>
-							<div className="tile-header">
-								<span className="reward">🪙 {quest.reward}</span>
-								{quest.completed && <span className="quest-check" aria-hidden="true">✓</span>}
-							</div>
-							<h3>{quest.title}</h3>
-							<p>{quest.description}</p>
-							{showProgress && (
-								<div className="progress-track">
-									<div className="progress-fill" style={{ width: `${Math.min(progress, 100)}%` }} />
-								</div>
-							)}
-							<footer>
-								{quest.completed ? (
-									<span className="status complete">Completed</span>
-								) : showProgress ? (
-									<span className="status upcoming">{Math.round(progress)}% complete</span>
-								) : (
-									<span className="status upcoming">Pending validation</span>
-								)}
-							</footer>
-						</div>
-					);
-				})}
-			</div>
-		</div>
-	);
-}
-
 export default function QuestDashboard({ ecosystemProjects }: { ecosystemProjects?: any[] }) {
 	const { projectQuests, userPoints, loading } = useQuestData();
 
-	const isSingleProject = projectQuests.length === 1;
-	const activeProject = isSingleProject ? projectQuests[0] : null;
-	const activePoints = activeProject ? userPoints.get(activeProject.project.id) ?? 0 : 0;
+	// Filter out projects with no quests (partner apps without campaigns)
+	const projectsWithQuests = useMemo(() => {
+		return projectQuests.filter(({ quests }) => quests.length > 0);
+	}, [projectQuests]);
+
 
 	// Calculate total points across all projects
 	const totalPoints = Array.from(userPoints.values()).reduce((sum, points) => sum + points, 0);
@@ -379,14 +276,10 @@ export default function QuestDashboard({ ecosystemProjects }: { ecosystemProject
 			<div className="quest-screen-header">
 				<h1 className="quest-screen-title">
 					Active Campaigns
-					<span className="quest-screen-counter">({projectQuests.length})</span>
+					<span className="quest-screen-counter">({projectsWithQuests.length})</span>
 				</h1>
 			</div>
-			{isSingleProject && activeProject ? (
-				<ProjectQuestList project={activeProject} loading={loading} points={activePoints} />
-			) : (
-				<QuestProjectGrid projects={projectQuests} userPoints={userPoints} loading={loading} ecosystemProjects={ecosystemProjects} />
-			)}
+			<QuestProjectGrid projects={projectsWithQuests} userPoints={userPoints} loading={loading} ecosystemProjects={ecosystemProjects} />
 		</div>
 	);
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useQuestData } from './QuestDataProvider';
 import { questApiClient } from '@quest-src/services/questApiClient';
+import { PARTNER_APP_IDS } from '../lib/quest/constants';
 import './ProjectTransactionHistory.css';
 
 interface NormalizedTransaction {
@@ -11,8 +12,6 @@ interface NormalizedTransaction {
 	projectId?: string;
 	transactionHash?: string;
 }
-
-const AVAILABLE_PROJECTS = ['aave', 'gluex', 'rtb'] as const;
 
 export function ProjectTransactionHistory() {
 	const { account, isConnected } = useQuestData();
@@ -35,7 +34,7 @@ export function ProjectTransactionHistory() {
 					// Fetch from all projects
 					console.log('[ProjectTransactionHistory] Fetching transactions from all projects for:', account);
 					const allTransactions = await Promise.all(
-						AVAILABLE_PROJECTS.map(async (projectId) => {
+						PARTNER_APP_IDS.map(async (projectId) => {
 							try {
 								const txs = await questApiClient.getGraphQLTransactions(account, projectId);
 								// Add projectId to each transaction
@@ -106,8 +105,11 @@ export function ProjectTransactionHistory() {
 					onChange={(e) => setSelectedProject(e.target.value)}
 				>
 					<option value="all">All Projects</option>
-					<option value="aave">Aave</option>
-					<option value="gluex">GlueX</option>
+					{PARTNER_APP_IDS.map(projectId => (
+						<option key={projectId} value={projectId}>
+							{formatProjectName(projectId)}
+						</option>
+					))}
 				</select>
 			</div>
 
@@ -180,6 +182,7 @@ function formatProjectName(projectId?: string): string {
 	const names: Record<string, string> = {
 		'aave': 'Aave',
 		'gluex': 'GlueX',
+		'fluid': 'Fluid',
 		'rtb': 'Ride The Bus'
 	};
 
