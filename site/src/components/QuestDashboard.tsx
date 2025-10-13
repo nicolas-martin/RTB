@@ -290,16 +290,17 @@ export default function QuestDashboard({ ecosystemProjects }: { ecosystemProject
 	// Partner apps data from ecosystem
 	const partnerApps = [
 		{ name: 'Aave', logo: '/icons/aave.svg', website: 'https://aave.com', twitter: 'https://x.com/aave', discord: 'https://discord.gg/aave' },
-		{ name: 'Veda', logo: '/icons/veda.svg', website: 'https://veda.tech', twitter: 'https://x.com/veda_labs', discord: 'https://discord.com/invite/hT4FZZTBdq' },
-		{ name: 'Fluid', logo: '/icons/fluid.svg', website: 'https://fluid.io/swap/9745', twitter: 'https://x.com/0xfluid', discord: 'https://discord.com/invite/C76CeZc' },
-		{ name: 'Euler', logo: '/icons/euler.svg', website: 'https://www.euler.finance', twitter: 'https://x.com/eulerfinance', discord: 'https://discord.com/invite/pTTnr7b4mT' },
-		{ name: 'Balancer', logo: '/icons/balancer.svg', website: 'https://balancer.fi', twitter: 'https://x.com/Balancer', discord: 'https://discord.gg/balancer' },
-		{ name: 'Trevee', logo: '/icons/trevee.svg', website: 'https://trevee.xyz/', twitter: 'https://x.com/Trevee_xyz', discord: 'https://discord.com/invite/5dy4wfWxWU' },
-		{ name: 'Pendle', logo: '/icons/pendle.svg', website: 'https://pendle.finance', twitter: 'https://x.com/pendle_fi', discord: 'https://discord.gg/pendle' },
-		{ name: 'Gearbox', logo: '/icons/gearbox.svg', website: 'https://gearbox.fi', twitter: 'https://x.com/GearboxProtocol', discord: 'https://discord.gg/gearbox' },
-		{ name: 'Term Labs', logo: '/icons/term-labs.svg', website: 'https://app.term.finance/rewards', twitter: 'https://x.com/term_labs', discord: 'https://discord.com/invite/cFVMQNHRsx' },
-		{ name: 'Curve', logo: '/icons/curve.svg', website: 'https://curve.fi', twitter: 'https://x.com/CurveFinance', discord: 'https://discord.com/invite/rgrfS7W' },
-		{ name: 'Oku.Trade', logo: '/icons/oku.svg', website: 'https://oku.trade', twitter: 'https://x.com/okutrade', discord: 'https://discord.com/invite/wak5gvc8dc' }
+		{ name: 'GlueX', logo: '/icons/gluex.svg', website: 'https://gluex.xyz', twitter: 'https://x.com/GluexProtocol', discord: 'https://discord.com/invite/gluex' },
+		// { name: 'Veda', logo: '/icons/veda.svg', website: 'https://veda.tech', twitter: 'https://x.com/veda_labs', discord: 'https://discord.com/invite/hT4FZZTBdq' },
+		// { name: 'Fluid', logo: '/icons/fluid.svg', website: 'https://fluid.io/swap/9745', twitter: 'https://x.com/0xfluid', discord: 'https://discord.com/invite/C76CeZc' },
+		// { name: 'Euler', logo: '/icons/euler.svg', website: 'https://www.euler.finance', twitter: 'https://x.com/eulerfinance', discord: 'https://discord.com/invite/pTTnr7b4mT' },
+		// { name: 'Balancer', logo: '/icons/balancer.svg', website: 'https://balancer.fi', twitter: 'https://x.com/Balancer', discord: 'https://discord.gg/balancer' },
+		// { name: 'Trevee', logo: '/icons/trevee.svg', website: 'https://trevee.xyz/', twitter: 'https://x.com/Trevee_xyz', discord: 'https://discord.com/invite/5dy4wfWxWU' },
+		// { name: 'Pendle', logo: '/icons/pendle.svg', website: 'https://pendle.finance', twitter: 'https://x.com/pendle_fi', discord: 'https://discord.gg/pendle' },
+		// { name: 'Gearbox', logo: '/icons/gearbox.svg', website: 'https://gearbox.fi', twitter: 'https://x.com/GearboxProtocol', discord: 'https://discord.gg/gearbox' },
+		// { name: 'Term Labs', logo: '/icons/term-labs.svg', website: 'https://app.term.finance/rewards', twitter: 'https://x.com/term_labs', discord: 'https://discord.com/invite/cFVMQNHRsx' },
+		// { name: 'Curve', logo: '/icons/curve.svg', website: 'https://curve.fi', twitter: 'https://x.com/CurveFinance', discord: 'https://discord.com/invite/rgrfS7W' },
+		// { name: 'Oku.Trade', logo: '/icons/oku.svg', website: 'https://oku.trade', twitter: 'https://x.com/okutrade', discord: 'https://discord.com/invite/wak5gvc8dc' }
 	];
 
 	return (
@@ -309,13 +310,13 @@ export default function QuestDashboard({ ecosystemProjects }: { ecosystemProject
 				<div className="quest-hero-content">
 					<div className="points-card">
 						<div className="points-card-header">
-							<span className="points-brand">KTEER</span>
+							<span className="points-brand">Tokenback</span>
 						</div>
 						<div className={`points-value ${isAnimating ? 'points-animating' : ''}`}>
 							{displayedPoints.toLocaleString()} pts
 						</div>
 						<div className="points-footer">
-							<span className="points-alliance">TRILLIONS ALLIANCE</span>
+							<span className="points-alliance">StablePoints</span>
 						</div>
 					</div>
 					
