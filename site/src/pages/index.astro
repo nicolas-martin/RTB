@@ -2,10 +2,15 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import QuestApp from '../components/QuestApp';
+import { getEntry } from 'astro:content';
 
 const currentPath = Astro.url.pathname;
+
+// Load ecosystem data for project covers and logos
+const entry = await getEntry('ecosystem', 'plasma');
+const ecosystemProjects = entry?.data?.projects || [];
 ---
 <BaseLayout title="June Quests" description="Track your journey across Plasma ecosystem quests.">
   <SiteHeader slot="header" currentPath={currentPath} />
-  <QuestApp client:load />
+  <QuestApp ecosystemProjects={ecosystemProjects} client:load />
 </BaseLayout>

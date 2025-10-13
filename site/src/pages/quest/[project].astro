@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import QuestApp from '../../components/QuestApp';
+import { getEntry } from 'astro:content';
 
 export async function getStaticPaths() {
   // Define the available quest projects
@@ -15,17 +16,23 @@ export async function getStaticPaths() {
 const { project } = Astro.params;
 const currentPath = Astro.url.pathname;
 
-// Get project info from ecosystem data if available
+// Get project info from ecosystem data using Content Collections
 let projectInfo = null;
 try {
-  const ecosystemData = await Astro.glob('../../content/ecosystem/*.yaml');
-  const plasmaData = ecosystemData.find(data => data.default?.projects);
-  
-  if (plasmaData?.default?.projects) {
-    projectInfo = plasmaData.default.projects.find(p => 
-      p.id?.toLowerCase() === project?.toLowerCase() || 
+  const entry = await getEntry('ecosystem', 'plasma');
+  console.log('[Quest Page] Looking for project:', project);
+  if (entry?.data?.projects) {
+    projectInfo = entry.data.projects.find((p: any) => 
+      p.quest_slug?.toLowerCase() === project?.toLowerCase() || 
       p.name?.toLowerCase() === project?.toLowerCase()
     );
+    console.log('[Quest Page] Found projectInfo:', projectInfo ? {
+      name: projectInfo.name,
+      logo_src: projectInfo.logo_src,
+      cover_image: projectInfo.cover_image,
+      twitter: projectInfo.twitter,
+      discord: projectInfo.discord
+    } : 'NOT FOUND');
   }
 } catch (error) {
   console.warn('Could not load ecosystem data for project info:', error);
@@ -34,5 +41,5 @@ try {
 
 <BaseLayout title={`${project?.toUpperCase()} Quests`} description={`Track your progress on ${project?.toUpperCase()} quests.`}>
   <SiteHeader slot="header" currentPath={currentPath} />
-  <QuestApp projectId={project} projectInfo={projectInfo} client:load />
+  <QuestApp projectId={project} projectInfo={projectInfo || undefined} client:load />
 </BaseLayout>

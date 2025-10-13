@@ -85,10 +85,12 @@ function QuestProjectGrid({
 	projects,
 	userPoints,
 	loading,
+	ecosystemProjects,
 }: {
 	projects: ProjectWithQuests[];
 	userPoints: Map<string, number>;
 	loading: boolean;
+	ecosystemProjects?: any[];
 }) {
 	if (loading && projects.length === 0) {
 		return <div className="loading-card">Loading quests…</div>;
@@ -98,31 +100,59 @@ function QuestProjectGrid({
 		return <div className="empty-card">Quest-enabled apps will appear here soon.</div>;
 	}
 
-		const baseUrl = import.meta.env.BASE_URL ?? '/';
-		const normalizedBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+	const baseUrl = import.meta.env.BASE_URL ?? '/';
+	const normalizedBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
 
-		return (
-			<div className="overview-grid">
-				{projects.map(({ project, quests }) => {
-					const completed = quests.filter((quest) => quest.completed).length;
-					const total = quests.length;
-					const points = userPoints.get(project.id) ?? 0;
-					const projectHref = `${normalizedBase}quest/${project.id}`;
+	// Helper function to find ecosystem project data
+	const getEcosystemData = (projectId: string) => {
+		return ecosystemProjects?.find((p: any) => 
+			p.quest_slug?.toLowerCase() === projectId?.toLowerCase() ||
+			p.name?.toLowerCase() === projectId?.toLowerCase()
+		);
+	};
 
-					return (
-						<a className="overview-card" key={project.id} href={projectHref}>
-						<div className="overview-card-header">
-							<QuestProgressDonut completed={completed} total={total} size={120} />
-							<div className="overview-card-info">
-								<h3>{project.name}</h3>
-								<p>{project.description}</p>
+	return (
+		<div className="campaign-grid">
+			{projects.map(({ project, quests }) => {
+				const completed = quests.filter((quest) => quest.completed).length;
+				const total = quests.length;
+				const points = userPoints.get(project.id) ?? 0;
+				const projectHref = `${normalizedBase}quest/${project.id}`;
+				const ecosystemData = getEcosystemData(project.id);
+				
+				const coverImage = ecosystemData?.cover_image || '';
+				const logoSrc = ecosystemData?.logo_src || '';
+				const description = ecosystemData?.description || project.description || '';
+
+				return (
+					<a className="campaign-card" key={project.id} href={projectHref}>
+						{/* Section 1: Cover Image with Logo */}
+						<div className="campaign-card-cover" style={{
+							backgroundImage: coverImage ? `url(${coverImage})` : 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)'
+						}}>
+							<div className="campaign-card-overlay">
+								{logoSrc && (
+									<div className="campaign-card-logo">
+										<img src={logoSrc} alt={project.name} />
+									</div>
+								)}
 							</div>
 						</div>
-						<div className="overview-card-body">
-							<div>
-								<span className="stat-label">Points</span>
-								<span className="stat-value">{formatNumber(points)}</span>
-							</div>
+
+						{/* Section 2: Title and Description */}
+						<div className="campaign-card-content">
+							<h3 className="campaign-card-title">{project.name}</h3>
+							<p className="campaign-card-description">{description}</p>
+						</div>
+
+						{/* Section 3: Earn Now Button */}
+						<div className="campaign-card-footer">
+							<button className="campaign-card-button">
+								Earn now
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+									<path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+								</svg>
+							</button>
 						</div>
 					</a>
 				);
@@ -236,7 +266,7 @@ function ProjectQuestList({
 	);
 }
 
-export default function QuestDashboard() {
+export default function QuestDashboard({ ecosystemProjects }: { ecosystemProjects?: any[] }) {
 	const { projectQuests, userPoints, loading } = useQuestData();
 
 	const isSingleProject = projectQuests.length === 1;
@@ -354,7 +384,7 @@ export default function QuestDashboard() {
 			{isSingleProject && activeProject ? (
 				<ProjectQuestList project={activeProject} loading={loading} points={activePoints} />
 			) : (
-				<QuestProjectGrid projects={projectQuests} userPoints={userPoints} loading={loading} />
+				<QuestProjectGrid projects={projectQuests} userPoints={userPoints} loading={loading} ecosystemProjects={ecosystemProjects} />
 			)}
 		</div>
 	);

@@ -48,8 +48,17 @@ export default function QuestProjectProfile({ project, ecosystemProject, complet
 	const twitter = displayProject.twitter || project.twitter;
 	const discord = displayProject.discord || project.discord;
 
-	// Debug: log the cover image source
-	console.log('Cover image source:', coverImageSrc);
+	// Debug: log all relevant data
+	console.log('[QuestProjectProfile] Received data:', {
+		hasEcosystemProject: !!ecosystemProject,
+		project,
+		ecosystemProject,
+		logoSrc,
+		coverImageSrc,
+		twitter,
+		discord,
+		website
+	});
 
 	return (
 		<div className="quest-project-profile">

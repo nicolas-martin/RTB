@@ -21,6 +21,7 @@ interface QuestAppProps {
 		logo_src?: string;
 		logo_alt?: string;
 	};
+	ecosystemProjects?: any[];
 }
 
 const isQuestProjectId = (value: string): value is QuestProjectId =>
@@ -94,7 +95,7 @@ function QuestPageContent({ projectId, projectInfo }: { projectId: QuestProjectI
 	);
 }
 
-export default function QuestApp({ projectId, projectInfo }: QuestAppProps) {
+export default function QuestApp({ projectId, projectInfo, ecosystemProjects }: QuestAppProps) {
 	const normalizedProjectId = useMemo<QuestProjectId | undefined>(() => {
 		if (!projectId) return undefined;
 		const lower = projectId.toLowerCase();
@@ -107,7 +108,7 @@ export default function QuestApp({ projectId, projectInfo }: QuestAppProps) {
 				<QuestPageContent projectId={normalizedProjectId} projectInfo={projectInfo} />
 			) : (
 				<div className="quest-page">
-					<QuestDashboard />
+					<QuestDashboard ecosystemProjects={ecosystemProjects} />
 				</div>
 			)}
 		</QuestProvider>
