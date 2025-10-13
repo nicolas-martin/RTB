@@ -1,8 +1,9 @@
 import type { ProjectMetadata, Quest } from '../types/quest';
 import { questApiClient, type PointsSummary } from './questApiClient';
+import { QUEST_PROJECT_IDS, type QuestProjectId } from '../constants';
 
-export const QUEST_PROJECT_IDS = ['rtb', 'gluex'] as const;
-export type QuestProjectId = (typeof QUEST_PROJECT_IDS)[number];
+// Re-export for backwards compatibility
+export { QUEST_PROJECT_IDS, type QuestProjectId };
 
 export class ProjectManager {
 	private projectQuests: Map<string, Quest[]> = new Map();

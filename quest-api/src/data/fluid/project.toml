@@ -1,7 +1,7 @@
 [project]
 id = "fluid"
-name = "fluid"
-description = ""
+name = "Fluid"
+description = "Fluid is a unified DeFi liquidity"
 graphqlEndpoint = "https://api.goldsky.com/api/public/project_cmfy6mw327h2401xm82q555dj/subgraphs/fluid/1.0.0/gn"
 
 [[transaction]]

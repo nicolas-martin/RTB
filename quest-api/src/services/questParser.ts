@@ -17,14 +17,14 @@ export class QuestParser {
 				throw new Error('Invalid TOML structure: missing "project" section');
 			}
 
-			if (!parsed.quest || !Array.isArray(parsed.quest)) {
-				throw new Error('Invalid TOML structure: expected "quest" array');
-			}
-
 			const project = this.validateAndMapProject(parsed.project);
-			const quests = parsed.quest.map((q: any) => this.createQuestInstance(q, project.id));
 
-			// Parse transactions if they exist
+			// Parse quests if they exist (optional)
+			const quests = parsed.quest && Array.isArray(parsed.quest)
+				? parsed.quest.map((q: any) => this.createQuestInstance(q, project.id))
+				: [];
+
+			// Parse transactions if they exist (optional)
 			const transactions = parsed.transaction && Array.isArray(parsed.transaction)
 				? parsed.transaction.map((t: any) => this.validateAndMapTransaction(t))
 				: [];
