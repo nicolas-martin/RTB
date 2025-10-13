@@ -317,14 +317,18 @@ export class ProjectManager {
 		console.log(`[ProjectManager] Getting all points for wallet: ${walletAddress}`);
 		const pointsMap = new Map<string, number>();
 
-		for (const projectId of this.projectQuests.keys()) {
-			try {
-				const summaries = await questApiClient.getPointsSummary(walletAddress, projectId);
-				const available = summaries[0]?.available ?? 0;
-				pointsMap.set(projectId, available);
-				console.log(`[ProjectManager] ${projectId} points: ${available}`);
-			} catch (error) {
-				console.error(`Failed to get points for project ${projectId}:`, error);
+		try {
+			// Get all projects' points in a single API call (no projectId filter)
+			const summaries = await questApiClient.getPointsSummary(walletAddress);
+
+			for (const summary of summaries) {
+				pointsMap.set(summary.project_id, summary.available);
+				console.log(`[ProjectManager] ${summary.project_id} points: ${summary.available}`);
+			}
+		} catch (error) {
+			console.error(`Failed to get all points:`, error);
+			// Fall back to 0 points for all projects
+			for (const projectId of this.projectQuests.keys()) {
 				pointsMap.set(projectId, 0);
 			}
 		}
