@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext } from 'react'
 import type { ReactNode } from 'react'
 import { MetaMaskSDK } from '@metamask/sdk'
+import { TEST_WALLET_ADDRESS } from '../constants'
 
 interface MetaMaskContextType {
 	account: string | null
@@ -21,6 +22,15 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
 	const [error, setError] = useState<string | null>(null)
 
 	useEffect(() => {
+		// Check for test mode via URL parameter or development environment
+		const useTestWallet = true;
+
+		if (useTestWallet) {
+			console.log('[MetaMask] Using test wallet:', TEST_WALLET_ADDRESS);
+			setAccount(TEST_WALLET_ADDRESS);
+			return; // Skip MetaMask initialization in test mode
+		}
+
 		// Initialize SDK only once
 		if (!sdkInstance) {
 			sdkInstance = new MetaMaskSDK({

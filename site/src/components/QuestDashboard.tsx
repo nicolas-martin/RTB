@@ -51,22 +51,22 @@ function useAnimatedPoints(targetPoints: number) {
 
 	useEffect(() => {
 		if (targetPoints === 0) return;
-		
+
 		setIsAnimating(true);
 		const duration = 900; // 2 seconds
 		const startTime = Date.now();
 		const startPoints = 0;
-		
+
 		const animate = () => {
 			const elapsed = Date.now() - startTime;
 			const progress = Math.min(elapsed / duration, 1);
-			
+
 			// Easing function for smooth slowdown near the end
 			const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-			
+
 			const currentPoints = Math.floor(startPoints + (targetPoints - startPoints) * easeOutCubic);
 			setDisplayedPoints(currentPoints);
-			
+
 			if (progress < 1) {
 				requestAnimationFrame(animate);
 			} else {
@@ -74,7 +74,7 @@ function useAnimatedPoints(targetPoints: number) {
 				setIsAnimating(false);
 			}
 		};
-		
+
 		requestAnimationFrame(animate);
 	}, [targetPoints]);
 
@@ -105,7 +105,7 @@ function QuestProjectGrid({
 
 	// Helper function to find ecosystem project data
 	const getEcosystemData = (projectId: string) => {
-		return ecosystemProjects?.find((p: any) => 
+		return ecosystemProjects?.find((p: any) =>
 			p.quest_slug?.toLowerCase() === projectId?.toLowerCase() ||
 			p.name?.toLowerCase() === projectId?.toLowerCase()
 		);
@@ -119,7 +119,7 @@ function QuestProjectGrid({
 				const points = userPoints.get(project.id) ?? 0;
 				const projectHref = `${normalizedBase}quest/${project.id}`;
 				const ecosystemData = getEcosystemData(project.id);
-				
+
 				const coverImage = ecosystemData?.cover_image || '';
 				const logoSrc = ecosystemData?.logo_src || '';
 				const description = ecosystemData?.description || project.description || '';
@@ -150,7 +150,7 @@ function QuestProjectGrid({
 							<button className="campaign-card-button">
 								Earn now
 								<svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-									<path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+									<path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 								</svg>
 							</button>
 						</div>
@@ -283,7 +283,7 @@ export default function QuestDashboard({ ecosystemProjects }: { ecosystemProject
 
 	// Use countdown hook
 	const countdown = useCountdown(targetDate);
-	
+
 	// Use animated points hook
 	const { displayedPoints, isAnimating } = useAnimatedPoints(totalPoints);
 
@@ -292,7 +292,7 @@ export default function QuestDashboard({ ecosystemProjects }: { ecosystemProject
 		{ name: 'Aave', logo: '/icons/aave.svg', website: 'https://aave.com', twitter: 'https://x.com/aave', discord: 'https://discord.gg/aave' },
 		{ name: 'GlueX', logo: '/icons/gluex.svg', website: 'https://gluex.xyz', twitter: 'https://x.com/GluexProtocol', discord: 'https://discord.com/invite/gluex' },
 		// { name: 'Veda', logo: '/icons/veda.svg', website: 'https://veda.tech', twitter: 'https://x.com/veda_labs', discord: 'https://discord.com/invite/hT4FZZTBdq' },
-		// { name: 'Fluid', logo: '/icons/fluid.svg', website: 'https://fluid.io/swap/9745', twitter: 'https://x.com/0xfluid', discord: 'https://discord.com/invite/C76CeZc' },
+		{ name: 'Fluid', logo: '/icons/fluid.svg', website: 'https://fluid.io/swap/9745', twitter: 'https://x.com/0xfluid', discord: 'https://discord.com/invite/C76CeZc' },
 		// { name: 'Euler', logo: '/icons/euler.svg', website: 'https://www.euler.finance', twitter: 'https://x.com/eulerfinance', discord: 'https://discord.com/invite/pTTnr7b4mT' },
 		// { name: 'Balancer', logo: '/icons/balancer.svg', website: 'https://balancer.fi', twitter: 'https://x.com/Balancer', discord: 'https://discord.gg/balancer' },
 		// { name: 'Trevee', logo: '/icons/trevee.svg', website: 'https://trevee.xyz/', twitter: 'https://x.com/Trevee_xyz', discord: 'https://discord.com/invite/5dy4wfWxWU' },
@@ -319,19 +319,19 @@ export default function QuestDashboard({ ecosystemProjects }: { ecosystemProject
 							<span className="points-alliance">StablePoints</span>
 						</div>
 					</div>
-					
+
 					<div className="hero-text-section">
 						<h1 className="hero-title">Keep earning points to unlock a surprise USDTO reward.</h1>
 						<button className="learn-more-btn">Learn more</button>
 					</div>
-					
+
 					<div className="usdt-icon-container">
 						<div className="coin-simple">
 							<div className="coin-rotating">
 								<img src="/icons/usdt0.png" alt="USDT" className="usdt-icon-image" />
 							</div>
 						</div>
-						
+
 						<div className="countdown-timer">
 							<span className="countdown-text">
 								{countdown.days.toString().padStart(2, '0')}:
@@ -356,13 +356,13 @@ export default function QuestDashboard({ ecosystemProjects }: { ecosystemProject
 						</div>
 					</div>
 				</div>
-				
+
 				<div className="partner-apps-grid">
 					{partnerApps.map((app) => (
-						<a 
-							key={app.name} 
-							href={app.website} 
-							target="_blank" 
+						<a
+							key={app.name}
+							href={app.website}
+							target="_blank"
 							rel="noopener noreferrer"
 							className="partner-app-card"
 						>
