@@ -285,8 +285,8 @@ app.get('/api/transactions', async (req: Request, res: Response) => {
 				transaction_hash: tx.transactionHash!,
 				transaction_type: tx.transaction_type,
 				timestamp: new Date(parseInt(tx.timestamp) * 1000).toISOString(),
-				amount: 1,
-				points_earned: tx.points_earned,
+				amount: tx.amount,
+				points_earned: parseFloat(tx.amount) / 10000,
 			}));
 
 		if (transactionsToStore.length > 0) {
