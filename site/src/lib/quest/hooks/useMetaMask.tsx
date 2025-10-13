@@ -23,7 +23,7 @@ export const MetaMaskProvider = ({ children }: { children: ReactNode }) => {
 
 	useEffect(() => {
 		// Check for test mode via URL parameter or development environment
-		const useTestWallet = true;
+		const useTestWallet = false;
 
 		if (useTestWallet) {
 			console.log('[MetaMask] Using test wallet:', TEST_WALLET_ADDRESS);
