@@ -17,6 +17,7 @@ export interface NormalizedTransaction {
 	transaction_type: string;
 	amount: string;
 	points_earned: number;
+	transactionHash?: string;
 }
 
 export interface QuestCondition {

@@ -85,6 +85,22 @@
   font-weight: 600;
 }
 
+.transaction-hash {
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.tx-link {
+  color: #7bffd1;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.tx-link:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
 .transaction-placeholder {
   padding: 48px 24px;
   text-align: center;

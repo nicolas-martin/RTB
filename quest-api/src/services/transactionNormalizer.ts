@@ -29,6 +29,7 @@ export function normalizeTransactions(
 			transaction_type: transactionName,
 			amount: extractAmount(item, transactionName),
 			points_earned: 0, // Constant for now as requested
+			transactionHash: item.transactionHash,
 		};
 	});
 }

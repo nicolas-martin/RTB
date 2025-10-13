@@ -18,6 +18,7 @@ query UserSwapsUSDT0($user: ID!) {
     inputToken
     outputToken
     finalOutputAmount
+    transactionHash
   }
 }
 """

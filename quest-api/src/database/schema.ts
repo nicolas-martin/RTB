@@ -62,3 +62,25 @@ export interface PointsSummary {
 	total_redeemed: number;
 	available: number;
 }
+
+export interface WalletTransaction {
+	id: string;
+	wallet_address: string;
+	project_id: string;
+	transaction_hash: string;
+	transaction_type: string;
+	timestamp: string;
+	amount: string;
+	points_earned: number;
+	created_at: string;
+}
+
+export interface WalletTransactionInsert {
+	wallet_address: string;
+	project_id: string;
+	transaction_hash: string;
+	transaction_type: string;
+	timestamp: string;
+	amount: string;
+	points_earned: number;
+}

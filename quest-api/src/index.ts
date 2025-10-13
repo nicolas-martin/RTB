@@ -276,6 +276,29 @@ app.get('/api/transactions', async (req: Request, res: Response) => {
 			.flat()
 			.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
+		// Store transactions in database (filter out those without transactionHash)
+		const transactionsToStore = flattenedTransactions
+			.filter(tx => tx.transactionHash)
+			.map(tx => ({
+				wallet_address: walletAddress as string,
+				project_id: projectId as string,
+				transaction_hash: tx.transactionHash!,
+				transaction_type: tx.transaction_type,
+				timestamp: tx.timestamp,
+				amount: tx.amount,
+				points_earned: tx.points_earned,
+			}));
+
+		if (transactionsToStore.length > 0) {
+			try {
+				await questDatabase.upsertWalletTransactionsBatch(transactionsToStore);
+				console.log(`[API] Stored ${transactionsToStore.length} transactions in database`);
+			} catch (error) {
+				console.error(`[API] Error storing transactions:`, error);
+				// Continue even if storage fails - we still return the transactions
+			}
+		}
+
 		console.log(`[API] Returning ${flattenedTransactions.length} normalized transactions`);
 		res.json(flattenedTransactions);
 	} catch (error) {

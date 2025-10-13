@@ -17,6 +17,7 @@ query Supply($user: ID!) {
       asset
     }
     timestamp
+    transactionHash
   }
 }
 """
@@ -34,6 +35,7 @@ query Supply($user: ID!) {
       asset
     }
     timestamp
+    transactionHash
   }
 }
 """

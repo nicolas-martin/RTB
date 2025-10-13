@@ -9,6 +9,7 @@ interface NormalizedTransaction {
 	amount: string;
 	points_earned: number;
 	projectId?: string;
+	transactionHash?: string;
 }
 
 const AVAILABLE_PROJECTS = ['aave', 'gluex', 'rtb'] as const;
@@ -131,6 +132,7 @@ export function ProjectTransactionHistory() {
 								<th>Type</th>
 								<th>Amount</th>
 								<th>Points Earned</th>
+								<th>Transaction</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -141,6 +143,20 @@ export function ProjectTransactionHistory() {
 									<td className="transaction-type">{formatTransactionType(tx.transaction_type)}</td>
 									<td className="transaction-amount">{formatAmount(tx.amount)}</td>
 									<td className="points-earned">{tx.points_earned}</td>
+									<td className="transaction-hash">
+										{tx.transactionHash ? (
+											<a
+												href={`https://plasmascan.to/tx/${tx.transactionHash}`}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="tx-link"
+											>
+												{formatTransactionHash(tx.transactionHash)}
+											</a>
+										) : (
+											'—'
+										)}
+									</td>
 								</tr>
 							))}
 						</tbody>
@@ -183,4 +199,10 @@ function formatTransactionType(type: string): string {
 function formatAmount(amount: string): string {
 	const num = parseFloat(amount) / 1e6;
 	return num.toFixed(2);
+}
+
+// Format transaction hash for display (show first 6 and last 4 characters)
+function formatTransactionHash(hash: string): string {
+	if (hash.length <= 10) return hash;
+	return `${hash.slice(0, 6)}...${hash.slice(-4)}`;
 }

@@ -6,6 +6,8 @@ import type {
 	PointsTransaction,
 	PointsTransactionInsert,
 	PointsSummary,
+	WalletTransaction,
+	WalletTransactionInsert,
 } from './schema.js';
 
 export class QuestDatabase {
@@ -136,6 +138,7 @@ export class QuestDatabase {
 
 	/**
 	 * Get points summary for a user
+	 * Aggregates points from both points_transactions and wallet_transactions tables
 	 */
 	async getPointsSummary(
 		walletAddress: string,
@@ -143,25 +146,43 @@ export class QuestDatabase {
 	): Promise<PointsSummary[]> {
 		const supabase = getSupabaseClient();
 
-		let query = supabase
+		// Get points from points_transactions table
+		let pointsQuery = supabase
 			.from('points_transactions')
 			.select('project_id, transaction_type, amount')
 			.eq('wallet_address', walletAddress);
 
 		if (projectId) {
-			query = query.eq('project_id', projectId);
+			pointsQuery = pointsQuery.eq('project_id', projectId);
 		}
 
-		const { data, error } = await query;
+		const { data: pointsData, error: pointsError } = await pointsQuery;
 
-		if (error) {
-			throw new Error(`Failed to get points summary: ${error.message}`);
+		if (pointsError) {
+			throw new Error(`Failed to get points summary: ${pointsError.message}`);
+		}
+
+		// Get points from wallet_transactions table
+		let walletTxQuery = supabase
+			.from('wallet_transactions')
+			.select('project_id, points_earned')
+			.eq('wallet_address', walletAddress);
+
+		if (projectId) {
+			walletTxQuery = walletTxQuery.eq('project_id', projectId);
+		}
+
+		const { data: walletTxData, error: walletTxError } = await walletTxQuery;
+
+		if (walletTxError) {
+			throw new Error(`Failed to get wallet transactions summary: ${walletTxError.message}`);
 		}
 
 		// Aggregate by project_id
 		const summaryMap = new Map<string, PointsSummary>();
 
-		for (const row of data || []) {
+		// Process points_transactions
+		for (const row of pointsData || []) {
 			if (!summaryMap.has(row.project_id)) {
 				summaryMap.set(row.project_id, {
 					wallet_address: walletAddress,
@@ -178,6 +199,26 @@ export class QuestDatabase {
 			} else {
 				summary.total_redeemed += row.amount;
 			}
+		}
+
+		// Process wallet_transactions
+		for (const row of walletTxData || []) {
+			if (!summaryMap.has(row.project_id)) {
+				summaryMap.set(row.project_id, {
+					wallet_address: walletAddress,
+					project_id: row.project_id,
+					total_earned: 0,
+					total_redeemed: 0,
+					available: 0,
+				});
+			}
+
+			const summary = summaryMap.get(row.project_id)!;
+			summary.total_earned += row.points_earned;
+		}
+
+		// Calculate available points
+		for (const summary of summaryMap.values()) {
 			summary.available = summary.total_earned - summary.total_redeemed;
 		}
 
@@ -248,6 +289,84 @@ export class QuestDatabase {
 		}
 
 		return updatedSummary;
+	}
+
+	/**
+	 * Upsert wallet transaction (create or update based on transaction_hash)
+	 * Uses transaction_hash as unique identifier to avoid duplicates
+	 */
+	async upsertWalletTransaction(
+		transaction: WalletTransactionInsert
+	): Promise<WalletTransaction> {
+		const supabase = getSupabaseClient();
+
+		const { data, error } = await supabase
+			.from('wallet_transactions')
+			.upsert(transaction, {
+				onConflict: 'transaction_hash',
+			})
+			.select()
+			.single();
+
+		if (error) {
+			throw new Error(`Failed to upsert wallet transaction: ${error.message}`);
+		}
+
+		return data;
+	}
+
+	/**
+	 * Upsert multiple wallet transactions in batch
+	 */
+	async upsertWalletTransactionsBatch(
+		transactions: WalletTransactionInsert[]
+	): Promise<WalletTransaction[]> {
+		if (transactions.length === 0) {
+			return [];
+		}
+
+		const supabase = getSupabaseClient();
+
+		const { data, error } = await supabase
+			.from('wallet_transactions')
+			.upsert(transactions, {
+				onConflict: 'transaction_hash',
+			})
+			.select();
+
+		if (error) {
+			throw new Error(`Failed to upsert wallet transactions: ${error.message}`);
+		}
+
+		return data || [];
+	}
+
+	/**
+	 * Get wallet transactions for a user
+	 */
+	async getWalletTransactions(
+		walletAddress: string,
+		projectId?: string
+	): Promise<WalletTransaction[]> {
+		const supabase = getSupabaseClient();
+
+		let query = supabase
+			.from('wallet_transactions')
+			.select('*')
+			.eq('wallet_address', walletAddress)
+			.order('timestamp', { ascending: false });
+
+		if (projectId) {
+			query = query.eq('project_id', projectId);
+		}
+
+		const { data, error } = await query;
+
+		if (error) {
+			throw new Error(`Failed to get wallet transactions: ${error.message}`);
+		}
+
+		return data || [];
 	}
 }
 
