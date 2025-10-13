@@ -1,0 +1,105 @@
+[project]
+id = "aave"
+name = "Aave protocol"
+description = "Aave is a decentralized finance (DeFi) protocol"
+graphqlEndpoint = "https://api.goldsky.com/api/public/project_cmfy6mw327h2401xm82q555dj/subgraphs/aave/1.0.0/gn"
+
+[[transaction]]
+name = "supply"
+query = """
+query Supply($user: ID!) {
+  supplies(
+    where: {user: $user, reserve_: {asset: "0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb"}}
+  ) {
+    onBehalfOf
+    amount
+    reserve {
+      asset
+    }
+    timestamp
+  }
+}
+"""
+
+[[transaction]]
+name = "borrows"
+query = """
+query Supply($user: ID!) {
+  borrows(
+    where: {user: $user, reserve_: {asset: "0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb"}}
+  ) {
+    onBehalfOf
+    amount
+    reserve {
+      asset
+    }
+    timestamp
+  }
+}
+"""
+
+[[quest]]
+id = "Supply_USDT"
+title = "Supply USDT"
+description = "Supply USDT"
+reward = 100
+type = "conditional"
+query = """
+query Supply($user: ID!) {
+  user(id: $user) {
+    id
+    totalBorrowed
+    totalRepaid
+    totalSupplied
+  }
+}
+"""
+
+[[quest.conditions]]
+field = "user.totalSupplied"
+operator = ">="
+value = 1000000
+
+[[quest]]
+id = "borrow_usdt0"
+title = "Burrow 1 usdt"
+description = "Burrow 1 ust or more"
+reward = 1000
+type = "conditional"
+query = """
+query Supply($user: ID!) {
+  user(id: $user) {
+    id
+    totalBorrowed
+    totalRepaid
+    totalSupplied
+  }
+}
+"""
+
+[[quest.conditions]]
+field = "user.totalBorrowed"
+operator = ">="
+value = 1000000
+
+[[quest]]
+id = "Supply_30_USDT"
+title = "Supply 30 USDT"
+description = "Supply 30 USDT"
+reward = 10000
+type = "progress"
+query = """
+query Supply($user: ID!) {
+  user(id: $user) {
+    id
+    totalBorrowed
+    totalRepaid
+    totalSupplied
+  }
+}
+"""
+
+[[quest.conditions]]
+field = "user.totalSupplied"
+operator = ">="
+value = 30000000
