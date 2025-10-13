@@ -1,6 +1,27 @@
 import { create } from 'zustand';
 import { projectManager } from '../services/projectManager';
 import type { ProjectWithQuests } from '../types/context';
+import { questApiClient } from '../services/questApiClient';
+import { QUEST_PROJECT_IDS, PARTNER_APP_IDS } from '../constants';
+import type { Quest } from '../types/quest';
+
+// Types for earning history and transaction history
+interface QuestCompletion {
+	quest_id: string;
+	project_id: string;
+	quest_title: string;
+	points_earned: number;
+	completed_at: string;
+}
+
+interface NormalizedTransaction {
+	timestamp: string;
+	transaction_type: string;
+	amount: string;
+	points_earned: number;
+	projectId?: string;
+	transactionHash?: string;
+}
 
 interface QuestProgressState {
 	projectQuests: ProjectWithQuests[];
@@ -8,13 +29,21 @@ interface QuestProgressState {
 	// Global stats (always includes ALL projects for top bar)
 	globalProjectQuests: ProjectWithQuests[];
 	globalUserPoints: Map<string, number>;
+	// Profile page data
+	earningHistory: QuestCompletion[];
+	transactionHistory: NormalizedTransaction[];
+	earningHistoryLoading: boolean;
+	transactionHistoryLoading: boolean;
 	loading: boolean;
 	initialized: boolean;
+	initializing: boolean;  // Track if initialization is in progress
 	lastAccount: string | null;
 	error?: string | null;
 	initialize: (preloadedQuestData?: Record<string, any[]>) => Promise<void>;
-	refreshForAccount: (account: string | null, projectIds?: string[]) => Promise<void>;
+	refreshForAccount: (account: string | null, projectIds?: string[], preloadedQuestData?: Record<string, any[]>) => Promise<void>;
 	manualRefresh: (projectIds?: string[]) => Promise<void>;
+	loadEarningHistory: (account: string) => Promise<void>;
+	loadTransactionHistory: (account: string, projectId?: string) => Promise<void>;
 	reset: () => void;
 }
 
@@ -25,15 +54,25 @@ export const useQuestProgressStore = create<QuestProgressState>((set, get) => ({
 	userPoints: createEmptyPointsMap(),
 	globalProjectQuests: [],
 	globalUserPoints: createEmptyPointsMap(),
+	earningHistory: [],
+	transactionHistory: [],
+	earningHistoryLoading: false,
+	transactionHistoryLoading: false,
 	loading: false,
 	initialized: false,
+	initializing: false,
 	lastAccount: null,
 	error: undefined,
 	initialize: async (preloadedQuestData?: Record<string, any[]>) => {
-		const { initialized } = get();
-		if (initialized) return;
+		const { initialized, initializing } = get();
 
-		set({ loading: true, error: undefined });
+		// Prevent duplicate initialization
+		if (initialized || initializing) {
+			console.log('[QuestProgressStore] Already initialized or initializing, skipping');
+			return;
+		}
+
+		set({ loading: true, initializing: true, error: undefined });
 
 		try {
 			// If we have preloaded data, use it directly
@@ -49,17 +88,38 @@ export const useQuestProgressStore = create<QuestProgressState>((set, get) => ({
 			set({
 				projectQuests: quests,
 				initialized: true,
+				initializing: false,
 				loading: false,
 			});
 		} catch (error) {
 			console.error('[QuestProgressStore] Failed to initialize projects', error);
-			set({ error: error instanceof Error ? error.message : String(error), loading: false });
+			set({
+				error: error instanceof Error ? error.message : String(error),
+				loading: false,
+				initializing: false
+			});
 		}
 	},
-	refreshForAccount: async (account: string | null, projectIds?: string[]) => {
-		const { lastAccount, initialized } = get();
+	refreshForAccount: async (account: string | null, projectIds?: string[], preloadedQuestData?: Record<string, any[]>) => {
+		const { lastAccount, initialized, initializing } = get();
+
+		// Wait for initialization to complete if it's in progress
 		if (!initialized) {
-			await get().initialize();
+			if (initializing) {
+				console.log('[QuestProgressStore] Waiting for initialization to complete...');
+				// Wait for initialization to complete
+				await new Promise<void>((resolve) => {
+					const unsubscribe = useQuestProgressStore.subscribe((state) => {
+						if (state.initialized || !state.initializing) {
+							unsubscribe();
+							resolve();
+						}
+					});
+				});
+			} else {
+				// If not initialized and not initializing, start initialization
+				await get().initialize(preloadedQuestData);
+			}
 		}
 
 		// Avoid redundant refresh if account unchanged and data already loaded
@@ -214,14 +274,106 @@ export const useQuestProgressStore = create<QuestProgressState>((set, get) => ({
 			});
 		}
 	},
+	loadEarningHistory: async (account: string) => {
+		set({ earningHistoryLoading: true });
+
+		try {
+			console.log('[QuestProgressStore] Loading earning history for:', account);
+			const allCompletions: QuestCompletion[] = [];
+
+			// Fetch progress and quest metadata for each project
+			for (const projectId of QUEST_PROJECT_IDS) {
+				try {
+					// Get quest metadata
+					const quests = await questApiClient.getQuests(projectId);
+					const questMap = new Map<string, Quest>(quests.map(q => [q.id, q]));
+
+					// Get progress data
+					const progressData = await questApiClient.getCachedProgress(account, projectId);
+
+					// Filter for completed quests only
+					const completed = progressData
+						.filter(p => p.completed && p.completed_at)
+						.map(p => ({
+							quest_id: p.quest_id,
+							project_id: projectId,
+							quest_title: questMap.get(p.quest_id)?.title || p.quest_id,
+							points_earned: p.points_earned,
+							completed_at: p.completed_at!,
+						}));
+
+					allCompletions.push(...completed);
+				} catch (err) {
+					console.error(`[QuestProgressStore] Failed to fetch earning history for ${projectId}:`, err);
+				}
+			}
+
+			// Sort by completion date (newest first)
+			allCompletions.sort((a, b) =>
+				new Date(b.completed_at).getTime() - new Date(a.completed_at).getTime()
+			);
+
+			console.log('[QuestProgressStore] Found', allCompletions.length, 'completed quests');
+			set({ earningHistory: allCompletions, earningHistoryLoading: false });
+		} catch (err) {
+			console.error('[QuestProgressStore] Error loading earning history:', err);
+			set({ earningHistoryLoading: false });
+		}
+	},
+	loadTransactionHistory: async (account: string, projectId?: string) => {
+		set({ transactionHistoryLoading: true });
+
+		try {
+			if (projectId && projectId !== 'all') {
+				// Fetch from single project
+				console.log('[QuestProgressStore] Loading transactions for:', account, projectId);
+				const txs = await questApiClient.getGraphQLTransactions(account, projectId);
+				// Add projectId to each transaction
+				const withProjectId = txs.map(tx => ({ ...tx, projectId }));
+				set({ transactionHistory: withProjectId, transactionHistoryLoading: false });
+				console.log('[QuestProgressStore] Found', txs.length, 'transactions');
+			} else {
+				// Fetch from all projects
+				console.log('[QuestProgressStore] Loading transactions from all projects for:', account);
+				const allTransactions = await Promise.all(
+					PARTNER_APP_IDS.map(async (pid) => {
+						try {
+							const txs = await questApiClient.getGraphQLTransactions(account, pid);
+							// Add projectId to each transaction
+							return txs.map(tx => ({ ...tx, projectId: pid }));
+						} catch (err) {
+							console.error(`[QuestProgressStore] Error fetching transactions for ${pid}:`, err);
+							return [];
+						}
+					})
+				);
+
+				// Flatten and sort by timestamp
+				const flattened = allTransactions.flat().sort((a, b) =>
+					new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+				);
+
+				set({ transactionHistory: flattened, transactionHistoryLoading: false });
+				console.log('[QuestProgressStore] Found', flattened.length, 'total transactions');
+			}
+		} catch (err) {
+			console.error('[QuestProgressStore] Error loading transaction history:', err);
+			set({ transactionHistory: [], transactionHistoryLoading: false });
+		}
+	},
 	reset: () => {
 		set({
 			projectQuests: [],
 			userPoints: createEmptyPointsMap(),
 			globalProjectQuests: [],
 			globalUserPoints: createEmptyPointsMap(),
+			earningHistory: [],
+			transactionHistory: [],
+			earningHistoryLoading: false,
+			transactionHistoryLoading: false,
 			loading: false,
 			initialized: false,
+			initializing: false,
 			lastAccount: null,
 			error: undefined,
 		});

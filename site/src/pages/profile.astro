@@ -1,10 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
-import QuestProvider from '../components/QuestProvider';
-import ProfileStatsGrid from '../components/ProfileStatsGrid';
-import { ProfileEarningHistory } from '../components/ProfileEarningHistory';
-import { ProfileTransactionHistory } from '../components/ProfileTransactionHistory';
+import ProfilePage from '../components/ProfilePage';
 
 const title = "Profile — June";
 const description = "Your June profile - track your points, earnings, and activity";
@@ -12,21 +9,11 @@ const description = "Your June profile - track your points, earnings, and activi
 <BaseLayout title={title} description={description}>
   <SiteHeader slot="header" currentPath="/profile/" />
 
-  <QuestProvider client:load>
-    <main class="profile-container">
+  <main class="profile-container">
     <div class="content">
-
-      <!-- STATS GRID -->
-      <ProfileStatsGrid client:load />
-
-      <!-- EARNING HISTORY -->
-      <ProfileEarningHistory client:only="react" />
-
-      <!-- PROJECT TRANSACTION HISTORY -->
-      <ProfileTransactionHistory client:only="react" />
+      <ProfilePage client:load />
     </div>
   </main>
-  </QuestProvider>
 </BaseLayout>
 
 <style>

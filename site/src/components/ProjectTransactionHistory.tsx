@@ -1,77 +1,25 @@
 import { useEffect, useState } from 'react';
 import { useQuestData } from './QuestDataProvider';
-import { questApiClient } from '@quest-src/services/questApiClient';
+import { useQuestProgressStore } from '@quest-src/stores/questProgressStore';
 import { PARTNER_APP_IDS } from '../lib/quest/constants';
 import './ProjectTransactionHistory.css';
 
-interface NormalizedTransaction {
-	timestamp: string;
-	transaction_type: string;
-	amount: string;
-	points_earned: number;
-	projectId?: string;
-	transactionHash?: string;
-}
-
 export function ProjectTransactionHistory() {
 	const { account, isConnected } = useQuestData();
-	const [transactions, setTransactions] = useState<NormalizedTransaction[]>([]);
-	const [loading, setLoading] = useState(true);
+	const transactionHistory = useQuestProgressStore((state) => state.transactionHistory);
+	const loading = useQuestProgressStore((state) => state.transactionHistoryLoading);
+	const loadTransactionHistory = useQuestProgressStore((state) => state.loadTransactionHistory);
 	const [selectedProject, setSelectedProject] = useState<string>('all');
 
 	// Fetch transaction data for the selected project(s)
 	useEffect(() => {
-		async function fetchTransactions() {
-			if (!isConnected || !account) {
-				setTransactions([]);
-				setLoading(false);
-				return;
-			}
-
-			setLoading(true);
-			try {
-				if (selectedProject === 'all') {
-					// Fetch from all projects
-					console.log('[ProjectTransactionHistory] Fetching transactions from all projects for:', account);
-					const allTransactions = await Promise.all(
-						PARTNER_APP_IDS.map(async (projectId) => {
-							try {
-								const txs = await questApiClient.getGraphQLTransactions(account, projectId);
-								// Add projectId to each transaction
-								return txs.map(tx => ({ ...tx, projectId }));
-							} catch (err) {
-								console.error(`[ProjectTransactionHistory] Error fetching ${projectId}:`, err);
-								return [];
-							}
-						})
-					);
-
-					// Flatten and sort by timestamp
-					const flattened = allTransactions.flat().sort((a, b) =>
-						new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-					);
-
-					setTransactions(flattened);
-					console.log('[ProjectTransactionHistory] Found', flattened.length, 'total transactions');
-				} else {
-					// Fetch from single project
-					console.log('[ProjectTransactionHistory] Fetching transactions for:', account, selectedProject);
-					const txs = await questApiClient.getGraphQLTransactions(account, selectedProject);
-					// Add projectId to each transaction
-					const withProjectId = txs.map(tx => ({ ...tx, projectId: selectedProject }));
-					setTransactions(withProjectId);
-					console.log('[ProjectTransactionHistory] Found', txs.length, 'transactions');
-				}
-			} catch (err) {
-				console.error('[ProjectTransactionHistory] Error fetching transactions:', err);
-				setTransactions([]);
-			} finally {
-				setLoading(false);
-			}
+		if (!isConnected || !account) {
+			return;
 		}
 
-		fetchTransactions();
-	}, [account, isConnected, selectedProject]);
+		// Load transaction history when account is connected or project selection changes
+		loadTransactionHistory(account, selectedProject);
+	}, [account, isConnected, selectedProject, loadTransactionHistory]);
 
 	if (!isConnected || !account) {
 		return (
@@ -113,7 +61,7 @@ export function ProjectTransactionHistory() {
 				</select>
 			</div>
 
-			{transactions.length === 0 ? (
+			{transactionHistory.length === 0 ? (
 				<div className="history-empty">
 					<div className="transaction-placeholder">
 						<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -138,7 +86,7 @@ export function ProjectTransactionHistory() {
 							</tr>
 						</thead>
 						<tbody>
-							{transactions.map((tx, idx) => (
+							{transactionHistory.map((tx, idx) => (
 								<tr key={idx}>
 									<td>{formatTimestamp(tx.timestamp)}</td>
 									<td className="project-name">{formatProjectName(tx.projectId)}</td>

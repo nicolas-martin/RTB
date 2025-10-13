@@ -37,7 +37,6 @@ export function QuestDataProvider({ children, projectIds, preloadedQuestData }: 
 	const storeUserPoints = useQuestProgressStore((state) => state.userPoints);
 	const storeLoading = useQuestProgressStore((state) => state.loading);
 	const storeError = useQuestProgressStore((state) => state.error);
-	const initialize = useQuestProgressStore((state) => state.initialize);
 	const refreshForAccount = useQuestProgressStore((state) => state.refreshForAccount);
 
 	const [projectQuests, setProjectQuests] = useState<ProjectWithQuests[]>([]);
@@ -79,15 +78,14 @@ export function QuestDataProvider({ children, projectIds, preloadedQuestData }: 
 		disconnectWallet,
 	} = useMetaMask();
 
-	// Initial load of available projects
+	// Combined initialization and refresh - handles both preloaded data and wallet changes
 	useEffect(() => {
-		initialize(preloadedQuestData);
-	}, [initialize, preloadedQuestData]);
-
-	// Refresh quest status and points when wallet state changes
-	useEffect(() => {
-		refreshForAccount(isConnected && account ? account : null, projectIds);
-	}, [isConnected, account, projectIds, refreshForAccount]);
+		refreshForAccount(
+			isConnected && account ? account : null,
+			projectIds,
+			preloadedQuestData
+		);
+	}, [isConnected, account, projectIds, preloadedQuestData, refreshForAccount]);
 
 	useEffect(() => {
 		setProjectQuests(filterProjects(storeProjectQuests));
