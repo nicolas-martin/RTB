@@ -67,6 +67,10 @@ export class QuestParser {
 			name: projectData.name,
 			description: projectData.description,
 			graphqlEndpoint: projectData.graphqlEndpoint,
+			logo: projectData.logo || undefined,
+			website: projectData.website || undefined,
+			twitter: projectData.twitter || undefined,
+			discord: projectData.discord || undefined,
 		};
 	}
 

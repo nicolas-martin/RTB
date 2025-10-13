@@ -3,6 +3,10 @@ id = "rtb"
 name = "Ride The Bus"
 description = "Card game on Plasma testnet"
 graphqlEndpoint = "https://api.goldsky.com/api/public/project_cmfy6mw327h2401xm82q555dj/subgraphs/rtb/2.0.3/gn"
+logo = "/icons/rtb.svg"
+website = ""
+twitter = ""
+discord = ""
 
 [[quest]]
 id = "win_1_game"

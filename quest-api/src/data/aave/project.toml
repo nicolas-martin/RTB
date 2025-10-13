@@ -1,8 +1,12 @@
 [project]
 id = "aave"
-name = "Aave protocol"
+name = "Aave"
 description = "Aave is a decentralized finance (DeFi) protocol"
 graphqlEndpoint = "https://api.goldsky.com/api/public/project_cmfy6mw327h2401xm82q555dj/subgraphs/aave/1.0.0/gn"
+logo = "/icons/aave.svg"
+website = "https://aave.com"
+twitter = "https://x.com/aave"
+discord = "https://discord.gg/aave"
 
 [[transaction]]
 name = "supply"

@@ -58,6 +58,37 @@ app.get('/health', (_req: Request, res: Response) => {
 	res.json({ status: 'ok' });
 });
 
+// GET /api/projects - Get all projects with metadata
+app.get('/api/projects', async (_req: Request, res: Response) => {
+	try {
+		console.log('[API] GET /api/projects - Fetching all project metadata');
+
+		// Known project IDs
+		const projectIds = ['rtb', 'aave', 'gluex', 'fluid'];
+		const projects: any[] = [];
+
+		for (const projectId of projectIds) {
+			try {
+				const service = await loadProjectService(projectId);
+				const project = service.getProject();
+				if (project) {
+					projects.push(project);
+					console.log(`[API] Loaded metadata for ${projectId}`);
+				}
+			} catch (error) {
+				console.warn(`[API] Failed to load project ${projectId}:`, error);
+				// Continue loading other projects
+			}
+		}
+
+		console.log(`[API] Returning metadata for ${projects.length} projects`);
+		res.json(projects);
+	} catch (error) {
+		console.error('[API] Error loading projects:', error);
+		res.status(500).json({ error: 'Failed to load projects' });
+	}
+});
+
 // 1. GET /api/quests - Get all quests metadata (no progress)
 // 2. GET /api/quests?projectId={id} - Get quests for specific project
 app.get('/api/quests', async (req: Request, res: Response) => {
@@ -232,6 +263,209 @@ app.get('/api/points/transactions/:walletAddress', async (req: Request, res: Res
 	} catch (error) {
 		console.error('Error getting transactions:', error);
 		res.status(500).json({ error: 'Failed to get transactions' });
+	}
+});
+
+// BATCH ENDPOINTS - For optimized frontend loading
+
+// GET /api/batch/quests?projectIds=rtb,aave,gluex,fluid - Get quests and project metadata for multiple projects
+app.get('/api/batch/quests', async (req: Request, res: Response) => {
+	try {
+		const { projectIds } = req.query;
+		console.log(`[API] GET /api/batch/quests - projectIds: ${projectIds}`);
+
+		if (!projectIds) {
+			return res.status(400).json({ error: 'projectIds query parameter is required' });
+		}
+
+		const ids = (projectIds as string).split(',');
+		const results: Record<string, { project: any; quests: any[] }> = {};
+
+		// Load quests and project metadata for each project in parallel
+		await Promise.all(
+			ids.map(async (projectId) => {
+				try {
+					const service = await loadProjectService(projectId);
+					const project = service.getProject();
+					const quests = service.getQuests().map(q => q.getConfig());
+					results[projectId] = {
+						project: project || { id: projectId, name: projectId },
+						quests
+					};
+					console.log(`[API] Loaded ${quests.length} quests and metadata for ${projectId}`);
+				} catch (error) {
+					console.error(`[API] Failed to load data for ${projectId}:`, error);
+					results[projectId] = {
+						project: { id: projectId, name: projectId },
+						quests: []
+					};
+				}
+			})
+		);
+
+		console.log(`[API] Returning batch quests and metadata for ${ids.length} projects`);
+		res.json(results);
+	} catch (error) {
+		console.error('[API] Error in batch quests:', error);
+		res.status(500).json({ error: 'Failed to load batch quests' });
+	}
+});
+
+// GET /api/batch/progress/:walletAddress?projectIds=rtb,aave,gluex,fluid - Get cached progress for multiple projects
+app.get('/api/batch/progress/:walletAddress', async (req: Request, res: Response) => {
+	try {
+		const { walletAddress } = req.params;
+		const { projectIds } = req.query;
+
+		console.log(`[API] GET /api/batch/progress/${walletAddress} - projectIds: ${projectIds}`);
+
+		if (!projectIds) {
+			return res.status(400).json({ error: 'projectIds query parameter is required' });
+		}
+
+		const ids = (projectIds as string).split(',');
+		const results: Record<string, any[]> = {};
+
+		// Get progress for each project in parallel
+		await Promise.all(
+			ids.map(async (projectId) => {
+				try {
+					const progressData = await questDatabase.getUserQuestProgress(
+						walletAddress,
+						projectId
+					);
+
+					results[projectId] = progressData.map(p => ({
+						quest_id: p.quest_id,
+						completed: p.completed,
+						progress: p.progress,
+						points_earned: p.points_earned,
+						completed_at: p.completed_at,
+						last_checked_at: p.last_checked_at
+					}));
+
+					console.log(`[API] Found ${progressData.length} progress records for ${projectId}`);
+				} catch (error) {
+					console.error(`[API] Failed to get progress for ${projectId}:`, error);
+					results[projectId] = [];
+				}
+			})
+		);
+
+		console.log(`[API] Returning batch progress for ${ids.length} projects`);
+		res.json(results);
+	} catch (error) {
+		console.error('[API] Error in batch progress:', error);
+		res.status(500).json({ error: 'Failed to load batch progress' });
+	}
+});
+
+// POST /api/batch/refresh/:walletAddress?projectIds=rtb,aave,gluex,fluid - Refresh multiple projects
+app.post('/api/batch/refresh/:walletAddress', async (req: Request, res: Response) => {
+	try {
+		const { walletAddress } = req.params;
+		const { projectIds } = req.query;
+
+		console.log(`[API] POST /api/batch/refresh/${walletAddress} - projectIds: ${projectIds}`);
+
+		if (!projectIds) {
+			return res.status(400).json({ error: 'projectIds query parameter is required' });
+		}
+
+		const ids = (projectIds as string).split(',');
+		const results: Record<string, any[]> = {};
+
+		// Refresh each project in parallel
+		await Promise.all(
+			ids.map(async (projectId) => {
+				try {
+					const service = await loadProjectService(projectId);
+					await service.checkAllQuests(walletAddress);
+
+					const progressData = await questDatabase.getUserQuestProgress(
+						walletAddress,
+						projectId
+					);
+
+					results[projectId] = progressData.map(p => ({
+						quest_id: p.quest_id,
+						completed: p.completed,
+						progress: p.progress,
+						points_earned: p.points_earned,
+						completed_at: p.completed_at,
+						last_checked_at: p.last_checked_at
+					}));
+
+					console.log(`[API] Refreshed ${progressData.length} quests for ${projectId}`);
+				} catch (error) {
+					console.error(`[API] Failed to refresh ${projectId}:`, error);
+					results[projectId] = [];
+				}
+			})
+		);
+
+		console.log(`[API] Returning batch refresh for ${ids.length} projects`);
+		res.json(results);
+	} catch (error) {
+		console.error('[API] Error in batch refresh:', error);
+		res.status(500).json({ error: 'Failed to refresh batch' });
+	}
+});
+
+// GET /api/batch/points/:walletAddress?projectIds=rtb,aave,gluex,fluid - Get points for multiple projects
+app.get('/api/batch/points/:walletAddress', async (req: Request, res: Response) => {
+	try {
+		const { walletAddress } = req.params;
+		const { projectIds } = req.query;
+
+		console.log(`[API] GET /api/batch/points/${walletAddress} - projectIds: ${projectIds}`);
+
+		// If no projectIds specified, get all
+		if (!projectIds) {
+			const summaries = await questDatabase.getPointsSummary(walletAddress);
+			const results: Record<string, any> = {};
+
+			for (const summary of summaries) {
+				results[summary.project_id] = summary;
+			}
+
+			return res.json(results);
+		}
+
+		const ids = (projectIds as string).split(',');
+		const results: Record<string, any> = {};
+
+		// Get points for each project
+		await Promise.all(
+			ids.map(async (projectId) => {
+				try {
+					const summaries = await questDatabase.getPointsSummary(walletAddress, projectId);
+					results[projectId] = summaries[0] || {
+						wallet_address: walletAddress,
+						project_id: projectId,
+						total_earned: 0,
+						total_redeemed: 0,
+						available: 0
+					};
+					console.log(`[API] Got points for ${projectId}: ${results[projectId].available}`);
+				} catch (error) {
+					console.error(`[API] Failed to get points for ${projectId}:`, error);
+					results[projectId] = {
+						wallet_address: walletAddress,
+						project_id: projectId,
+						total_earned: 0,
+						total_redeemed: 0,
+						available: 0
+					};
+				}
+			})
+		);
+
+		console.log(`[API] Returning batch points for ${ids.length} projects`);
+		res.json(results);
+	} catch (error) {
+		console.error('[API] Error in batch points:', error);
+		res.status(500).json({ error: 'Failed to load batch points' });
 	}
 });
 

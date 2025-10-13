@@ -163,12 +163,45 @@ function QuestProjectGrid({
 
 export default function QuestDashboard({ ecosystemProjects }: { ecosystemProjects?: any[] }) {
 	const { projectQuests, userPoints, loading } = useQuestData();
+	const [partnerApps, setPartnerApps] = useState<any[]>([]);
 
 	// Filter out projects with no quests (partner apps without campaigns)
 	const projectsWithQuests = useMemo(() => {
 		return projectQuests.filter(({ quests }) => quests.length > 0);
 	}, [projectQuests]);
 
+	// Fetch partner apps from backend
+	useEffect(() => {
+		const fetchProjects = async () => {
+			try {
+				const API_BASE_URL = import.meta.env.PUBLIC_QUEST_API_URL || 'http://localhost:3001';
+				const response = await fetch(`${API_BASE_URL}/api/projects`);
+				if (response.ok) {
+					const projects = await response.json();
+					// Filter to only include projects that have website metadata (partner apps)
+					const apps = projects
+						.filter((p: any) => p.id !== 'rtb' && p.website) // Exclude RTB as it's not a partner
+						.map((p: any) => ({
+							name: p.name,
+							logo: p.logo || `/icons/${p.id}.svg`,
+							website: p.website,
+							twitter: p.twitter,
+							discord: p.discord
+						}));
+					setPartnerApps(apps);
+				}
+			} catch (error) {
+				console.error('Failed to fetch projects:', error);
+				// Fallback to default partner apps if fetch fails
+				setPartnerApps([
+					{ name: 'Aave', logo: '/icons/aave.svg', website: 'https://aave.com', twitter: 'https://x.com/aave', discord: 'https://discord.gg/aave' },
+					{ name: 'GlueX', logo: '/icons/gluex.svg', website: 'https://gluex.xyz', twitter: 'https://x.com/GluexProtocol', discord: 'https://discord.com/invite/gluex' },
+					{ name: 'Fluid', logo: '/icons/fluid.svg', website: 'https://fluid.io/swap/9745', twitter: 'https://x.com/0xfluid', discord: 'https://discord.com/invite/C76CeZc' },
+				]);
+			}
+		};
+		fetchProjects();
+	}, []);
 
 	// Calculate total points across all projects
 	const totalPoints = Array.from(userPoints.values()).reduce((sum, points) => sum + points, 0);
@@ -183,22 +216,6 @@ export default function QuestDashboard({ ecosystemProjects }: { ecosystemProject
 
 	// Use animated points hook
 	const { displayedPoints, isAnimating } = useAnimatedPoints(totalPoints);
-
-	// Partner apps data from ecosystem
-	const partnerApps = [
-		{ name: 'Aave', logo: '/icons/aave.svg', website: 'https://aave.com', twitter: 'https://x.com/aave', discord: 'https://discord.gg/aave' },
-		{ name: 'GlueX', logo: '/icons/gluex.svg', website: 'https://gluex.xyz', twitter: 'https://x.com/GluexProtocol', discord: 'https://discord.com/invite/gluex' },
-		// { name: 'Veda', logo: '/icons/veda.svg', website: 'https://veda.tech', twitter: 'https://x.com/veda_labs', discord: 'https://discord.com/invite/hT4FZZTBdq' },
-		{ name: 'Fluid', logo: '/icons/fluid.svg', website: 'https://fluid.io/swap/9745', twitter: 'https://x.com/0xfluid', discord: 'https://discord.com/invite/C76CeZc' },
-		// { name: 'Euler', logo: '/icons/euler.svg', website: 'https://www.euler.finance', twitter: 'https://x.com/eulerfinance', discord: 'https://discord.com/invite/pTTnr7b4mT' },
-		// { name: 'Balancer', logo: '/icons/balancer.svg', website: 'https://balancer.fi', twitter: 'https://x.com/Balancer', discord: 'https://discord.gg/balancer' },
-		// { name: 'Trevee', logo: '/icons/trevee.svg', website: 'https://trevee.xyz/', twitter: 'https://x.com/Trevee_xyz', discord: 'https://discord.com/invite/5dy4wfWxWU' },
-		// { name: 'Pendle', logo: '/icons/pendle.svg', website: 'https://pendle.finance', twitter: 'https://x.com/pendle_fi', discord: 'https://discord.gg/pendle' },
-		// { name: 'Gearbox', logo: '/icons/gearbox.svg', website: 'https://gearbox.fi', twitter: 'https://x.com/GearboxProtocol', discord: 'https://discord.gg/gearbox' },
-		// { name: 'Term Labs', logo: '/icons/term-labs.svg', website: 'https://app.term.finance/rewards', twitter: 'https://x.com/term_labs', discord: 'https://discord.com/invite/cFVMQNHRsx' },
-		// { name: 'Curve', logo: '/icons/curve.svg', website: 'https://curve.fi', twitter: 'https://x.com/CurveFinance', discord: 'https://discord.com/invite/rgrfS7W' },
-		// { name: 'Oku.Trade', logo: '/icons/oku.svg', website: 'https://oku.trade', twitter: 'https://x.com/okutrade', discord: 'https://discord.com/invite/wak5gvc8dc' }
-	];
 
 	return (
 		<div className="quest-screen">

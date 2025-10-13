@@ -6,13 +6,40 @@ import { getEntry } from 'astro:content';
 import { QUEST_PROJECT_IDS } from '../../lib/quest/constants';
 
 export async function getStaticPaths() {
-  // Use quest project IDs from constants
+  // Fetch all quest metadata at build time
+  const allQuestData: Record<string, any[]> = {};
+  const API_BASE_URL = import.meta.env.PUBLIC_QUEST_API_URL || 'http://localhost:3001';
+
+  try {
+    // Use batch endpoint to fetch all quests at once
+    const response = await fetch(
+      `${API_BASE_URL}/api/batch/quests?projectIds=${QUEST_PROJECT_IDS.join(',')}`
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      Object.assign(allQuestData, data);
+      console.log('[Build] Fetched quest metadata for all projects');
+    } else {
+      console.error('[Build] Failed to fetch quest metadata:', response.statusText);
+    }
+  } catch (error) {
+    console.error('[Build] Error fetching quest metadata:', error);
+    // Fall back to empty data if fetch fails during build
+  }
+
+  // Generate static paths with quest metadata as props
   return QUEST_PROJECT_IDS.map(project => ({
-    params: { project }
+    params: { project },
+    props: {
+      questMetadata: allQuestData[project] || [],
+      allQuestMetadata: allQuestData // For potential dashboard use
+    }
   }));
 }
 
 const { project } = Astro.params;
+const { questMetadata, allQuestMetadata } = Astro.props;
 const currentPath = Astro.url.pathname;
 
 // Get project info from ecosystem data using Content Collections
@@ -21,8 +48,8 @@ try {
   const entry = await getEntry('ecosystem', 'plasma');
   console.log('[Quest Page] Looking for project:', project);
   if (entry?.data?.projects) {
-    projectInfo = entry.data.projects.find((p: any) => 
-      p.quest_slug?.toLowerCase() === project?.toLowerCase() || 
+    projectInfo = entry.data.projects.find((p: any) =>
+      p.quest_slug?.toLowerCase() === project?.toLowerCase() ||
       p.name?.toLowerCase() === project?.toLowerCase()
     );
     console.log('[Quest Page] Found projectInfo:', projectInfo ? {
@@ -40,5 +67,11 @@ try {
 
 <BaseLayout title={`${project?.toUpperCase()} Quests`} description={`Track your progress on ${project?.toUpperCase()} quests.`}>
   <SiteHeader slot="header" currentPath={currentPath} />
-  <QuestApp projectId={project} projectInfo={projectInfo || undefined} client:load />
+  <QuestApp
+    projectId={project}
+    projectInfo={projectInfo || undefined}
+    questMetadata={questMetadata}
+    allQuestMetadata={allQuestMetadata}
+    client:load
+  />
 </BaseLayout>

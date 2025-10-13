@@ -12,7 +12,7 @@ interface QuestProgressState {
 	initialized: boolean;
 	lastAccount: string | null;
 	error?: string | null;
-	initialize: () => Promise<void>;
+	initialize: (preloadedQuestData?: Record<string, any[]>) => Promise<void>;
 	refreshForAccount: (account: string | null, projectIds?: string[]) => Promise<void>;
 	manualRefresh: (projectIds?: string[]) => Promise<void>;
 	reset: () => void;
@@ -29,14 +29,22 @@ export const useQuestProgressStore = create<QuestProgressState>((set, get) => ({
 	initialized: false,
 	lastAccount: null,
 	error: undefined,
-	initialize: async () => {
+	initialize: async (preloadedQuestData?: Record<string, any[]>) => {
 		const { initialized } = get();
 		if (initialized) return;
 
 		set({ loading: true, error: undefined });
 
 		try {
-			await projectManager.loadAllProjects();
+			// If we have preloaded data, use it directly
+			if (preloadedQuestData) {
+				console.log('[QuestProgressStore] Using preloaded quest data from SSG');
+				await projectManager.loadFromPreloadedData(preloadedQuestData);
+			} else {
+				console.log('[QuestProgressStore] Loading quest data from API');
+				await projectManager.loadAllProjects();
+			}
+
 			const quests = projectManager.getAllQuests();
 			set({
 				projectQuests: quests,
@@ -65,18 +73,42 @@ export const useQuestProgressStore = create<QuestProgressState>((set, get) => ({
 			if (account) {
 				console.log(`[QuestProgressStore] Loading cached progress first${projectIds ? ` for: ${projectIds.join(', ')}` : ''}...`);
 
-				// Always load global stats (for top bar)
-				const globalCached = await projectManager.loadCachedProgressForAllProjects(account);
-				const globalPoints = await projectManager.getAllUserPoints(account);
+				// For project-specific views, only load that project's data
+				let globalCached, globalPoints, cached, points;
 
-				// Load project-specific or all projects
-				const cached = projectIds
-					? await projectManager.loadCachedProgressForProjects(account, projectIds)
-					: globalCached;
+				if (projectIds && projectIds.length > 0) {
+					// Project-specific view: only load the specified projects
+					console.log(`[QuestProgressStore] Loading only ${projectIds.length} project(s)`);
+					cached = await projectManager.loadCachedProgressForProjects(account, projectIds);
+					points = await projectManager.getPointsForProjects(account, projectIds);
 
-				const points = projectIds
-					? await projectManager.getPointsForProjects(account, projectIds)
-					: globalPoints;
+					// For global stats: reuse existing if available, otherwise load async
+					const currentGlobal = get().globalProjectQuests;
+					if (currentGlobal && currentGlobal.length > 0) {
+						// Reuse existing global stats
+						globalCached = currentGlobal;
+						globalPoints = get().globalUserPoints;
+						console.log(`[QuestProgressStore] Reusing existing global stats`);
+					} else {
+						// Load global stats async (won't block the UI)
+						globalCached = [];
+						globalPoints = new Map();
+						// Schedule async load for global stats
+						projectManager.loadCachedProgressForAllProjects(account).then(data => {
+							set({ globalProjectQuests: data });
+						});
+						projectManager.getAllUserPoints(account).then(data => {
+							set({ globalUserPoints: new Map(data) });
+						});
+					}
+				} else {
+					// Dashboard view: load all projects
+					console.log(`[QuestProgressStore] Loading all projects for dashboard`);
+					globalCached = await projectManager.loadCachedProgressForAllProjects(account);
+					globalPoints = await projectManager.getAllUserPoints(account);
+					cached = globalCached;
+					points = globalPoints;
+				}
 
 				set({
 					projectQuests: cached,
@@ -87,29 +119,49 @@ export const useQuestProgressStore = create<QuestProgressState>((set, get) => ({
 					loading: false,
 				});
 
-				// Then automatically refresh from GraphQL for uncompleted quests (slower but accurate)
-				console.log(`[QuestProgressStore] Triggering automatic GraphQL refresh${projectIds ? ` for: ${projectIds.join(', ')}` : ''}...`);
+				// Only refresh incomplete quests from GraphQL (selective refresh for better performance)
+				const hasIncompleteQuests = cached.some(p =>
+					p.quests.some(q => !q.completed)
+				);
 
-				// Always refresh global stats
-				const globalUpdated = await projectManager.checkAllProjectsProgress(account);
-				const globalUpdatedPoints = await projectManager.getAllUserPoints(account);
+				if (hasIncompleteQuests) {
+					console.log(`[QuestProgressStore] Found incomplete quests, refreshing from GraphQL${projectIds ? ` for: ${projectIds.join(', ')}` : ''}...`);
 
-				// Refresh project-specific or all projects
-				const updated = projectIds
-					? await projectManager.checkProjectsProgress(account, projectIds)
-					: globalUpdated;
+					// Determine which projects need refresh
+					const projectsToRefresh = cached
+						.filter(p => p.quests.some(q => !q.completed))
+						.map(p => p.project.id);
 
-				const updatedPoints = projectIds
-					? await projectManager.getPointsForProjects(account, projectIds)
-					: globalUpdatedPoints;
+					if (projectsToRefresh.length > 0) {
+						// Only refresh projects with incomplete quests
+						const updated = await projectManager.checkProjectsProgress(account, projectsToRefresh);
+						const updatedPoints = await projectManager.getPointsForProjects(account, projectsToRefresh);
 
-				set({
-					projectQuests: updated,
-					userPoints: new Map(updatedPoints),
-					globalProjectQuests: globalUpdated,
-					globalUserPoints: new Map(globalUpdatedPoints),
-				});
-				console.log('[QuestProgressStore] Automatic refresh complete');
+						// Merge updated data with cached data for other projects
+						const mergedProjects = [...cached];
+						for (const updatedProject of updated) {
+							const index = mergedProjects.findIndex(p => p.project.id === updatedProject.project.id);
+							if (index >= 0) {
+								mergedProjects[index] = updatedProject;
+							}
+						}
+
+						// Update points for refreshed projects
+						const mergedPoints = new Map(points);
+						updatedPoints.forEach((value, key) => mergedPoints.set(key, value));
+
+						set({
+							projectQuests: mergedProjects,
+							userPoints: mergedPoints,
+							// Global stats remain the same if we're only updating specific projects
+							globalProjectQuests: projectIds ? get().globalProjectQuests : mergedProjects,
+							globalUserPoints: projectIds ? get().globalUserPoints : mergedPoints,
+						});
+						console.log(`[QuestProgressStore] Selective refresh complete for ${projectsToRefresh.length} projects`);
+					}
+				} else {
+					console.log('[QuestProgressStore] All quests completed, skipping GraphQL refresh');
+				}
 			} else {
 				projectManager.clearAllProgress();
 				set({

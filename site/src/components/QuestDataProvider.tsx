@@ -29,9 +29,10 @@ const QuestDataContext = createContext<QuestDataContextValue | null>(null);
 interface QuestDataProviderProps {
 	children: ReactNode;
 	projectIds?: QuestProjectId[];
+	preloadedQuestData?: Record<string, any[]>;
 }
 
-export function QuestDataProvider({ children, projectIds }: QuestDataProviderProps) {
+export function QuestDataProvider({ children, projectIds, preloadedQuestData }: QuestDataProviderProps) {
 	const storeProjectQuests = useQuestProgressStore((state) => state.projectQuests);
 	const storeUserPoints = useQuestProgressStore((state) => state.userPoints);
 	const storeLoading = useQuestProgressStore((state) => state.loading);
@@ -80,8 +81,8 @@ export function QuestDataProvider({ children, projectIds }: QuestDataProviderPro
 
 	// Initial load of available projects
 	useEffect(() => {
-		initialize();
-	}, [initialize]);
+		initialize(preloadedQuestData);
+	}, [initialize, preloadedQuestData]);
 
 	// Refresh quest status and points when wallet state changes
 	useEffect(() => {

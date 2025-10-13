@@ -5,6 +5,10 @@ export interface ProjectMetadata {
 	name: string;
 	description: string;
 	graphqlEndpoint: string;
+	logo?: string;
+	website?: string;
+	twitter?: string;
+	discord?: string;
 }
 
 export interface TransactionConfig {

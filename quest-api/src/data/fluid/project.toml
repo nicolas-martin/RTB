@@ -3,6 +3,10 @@ id = "fluid"
 name = "Fluid"
 description = "Fluid is a unified DeFi liquidity"
 graphqlEndpoint = "https://api.goldsky.com/api/public/project_cmfy6mw327h2401xm82q555dj/subgraphs/fluid/1.0.0/gn"
+logo = "/icons/fluid.svg"
+website = "https://fluid.io/swap/9745"
+twitter = "https://x.com/0xfluid"
+discord = "https://discord.com/invite/C76CeZc"
 
 [[transaction]]
 name = "deposits"

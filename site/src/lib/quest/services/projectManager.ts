@@ -24,14 +24,35 @@ export class ProjectManager {
 		}
 	}
 
+	async loadFromPreloadedData(preloadedData: Record<string, any[]>): Promise<void> {
+		console.log(`[ProjectManager] Loading from preloaded SSG data`);
+
+		for (const [projectId, quests] of Object.entries(preloadedData)) {
+			console.log(`[ProjectManager] Loaded ${quests.length} quests for ${projectId} from SSG`);
+			this.projectQuests.set(projectId, quests);
+		}
+	}
+
 	async loadAllProjects(): Promise<void> {
 		console.log(`[ProjectManager] Loading all projects: ${this.availableProjects.join(', ')}`);
-		for (const projectId of this.availableProjects) {
-			try {
-				await this.loadProject(projectId);
-			} catch (error) {
-				console.warn(`Failed to load project ${projectId}:`, error);
-				// Continue loading other projects even if one fails
+
+		// Use batch endpoint for better performance
+		try {
+			const batchData = await questApiClient.getBatchQuests(this.availableProjects);
+
+			for (const [projectId, data] of Object.entries(batchData)) {
+				console.log(`[ProjectManager] Loaded ${data.quests.length} quests for ${projectId} from batch`);
+				this.projectQuests.set(projectId, data.quests);
+			}
+		} catch (error) {
+			console.error('[ProjectManager] Batch load failed, falling back to individual loads:', error);
+			// Fall back to individual loading if batch fails
+			for (const projectId of this.availableProjects) {
+				try {
+					await this.loadProject(projectId);
+				} catch (error) {
+					console.warn(`Failed to load project ${projectId}:`, error);
+				}
 			}
 		}
 	}
@@ -131,13 +152,17 @@ export class ProjectManager {
 	): Promise<{ project: ProjectMetadata; quests: Quest[] }[]> {
 		console.log(`[ProjectManager] Loading cached progress for wallet: ${walletAddress}`);
 		const results: { project: ProjectMetadata; quests: Quest[] }[] = [];
+		const projectIds = Array.from(this.projectQuests.keys());
 
-		for (const [projectId, questMetadata] of this.projectQuests.entries()) {
-			try {
-				console.log(`[ProjectManager] Fetching cached progress for ${projectId}`);
-				const progressData = await questApiClient.getCachedProgress(walletAddress, projectId);
+		try {
+			// Use batch endpoint for better performance
+			const batchProgress = await questApiClient.getBatchCachedProgress(walletAddress, projectIds);
+
+			for (const [projectId, progressData] of Object.entries(batchProgress)) {
+				const questMetadata = this.projectQuests.get(projectId);
+				if (!questMetadata) continue;
+
 				console.log(`[ProjectManager] Got ${progressData.length} progress records for ${projectId}`);
-
 				const progressMap = new Map(progressData.map(p => [p.quest_id, p]));
 
 				// Merge quest metadata with progress data
@@ -152,12 +177,32 @@ export class ProjectManager {
 
 				const project = this.getProject(projectId)!;
 				results.push({ project, quests });
-			} catch (error) {
-				console.error(`[ProjectManager] Failed to load cached progress for ${projectId}:`, error);
-				// Fall back to quests without progress
-				const project = this.getProject(projectId)!;
-				const quests = questMetadata.map(q => ({ ...q, completed: false }));
-				results.push({ project, quests });
+			}
+		} catch (error) {
+			console.error('[ProjectManager] Batch progress load failed, falling back to individual loads:', error);
+			// Fall back to individual loading if batch fails
+			for (const [projectId, questMetadata] of this.projectQuests.entries()) {
+				try {
+					const progressData = await questApiClient.getCachedProgress(walletAddress, projectId);
+					const progressMap = new Map(progressData.map(p => [p.quest_id, p]));
+
+					const quests = questMetadata.map(quest => {
+						const progress = progressMap.get(quest.id);
+						return {
+							...quest,
+							completed: progress?.completed ?? false,
+							progress: progress?.progress ?? undefined
+						};
+					});
+
+					const project = this.getProject(projectId)!;
+					results.push({ project, quests });
+				} catch (error) {
+					console.error(`[ProjectManager] Failed to load cached progress for ${projectId}:`, error);
+					const project = this.getProject(projectId)!;
+					const quests = questMetadata.map(q => ({ ...q, completed: false }));
+					results.push({ project, quests });
+				}
 			}
 		}
 
@@ -233,13 +278,17 @@ export class ProjectManager {
 	async checkAllProjectsProgress(walletAddress: string): Promise<{ project: ProjectMetadata; quests: Quest[] }[]> {
 		console.log(`[ProjectManager] Refreshing progress from GraphQL for wallet: ${walletAddress}`);
 		const results: { project: ProjectMetadata; quests: Quest[] }[] = [];
+		const projectIds = Array.from(this.projectQuests.keys());
 
-		for (const [projectId, questMetadata] of this.projectQuests.entries()) {
-			try {
-				console.log(`[ProjectManager] Refreshing progress for ${projectId}`);
-				const progressData = await questApiClient.refreshProgress(walletAddress, projectId);
+		try {
+			// Use batch endpoint for better performance
+			const batchProgress = await questApiClient.batchRefreshProgress(walletAddress, projectIds);
+
+			for (const [projectId, progressData] of Object.entries(batchProgress)) {
+				const questMetadata = this.projectQuests.get(projectId);
+				if (!questMetadata) continue;
+
 				console.log(`[ProjectManager] Got refreshed ${progressData.length} progress records for ${projectId}`);
-
 				const progressMap = new Map(progressData.map(p => [p.quest_id, p]));
 
 				// Merge quest metadata with progress data
@@ -254,11 +303,13 @@ export class ProjectManager {
 
 				const project = this.getProject(projectId)!;
 				results.push({ project, quests });
-			} catch (error) {
-				console.error(`[ProjectManager] Failed to refresh progress for ${projectId}:`, error);
-				// Try to fall back to cached data
+			}
+		} catch (error) {
+			console.error('[ProjectManager] Batch refresh failed, falling back to individual refreshes:', error);
+			// Fall back to individual refreshing if batch fails
+			for (const [projectId, questMetadata] of this.projectQuests.entries()) {
 				try {
-					const progressData = await questApiClient.getCachedProgress(walletAddress, projectId);
+					const progressData = await questApiClient.refreshProgress(walletAddress, projectId);
 					const progressMap = new Map(progressData.map(p => [p.quest_id, p]));
 
 					const quests = questMetadata.map(quest => {
@@ -272,11 +323,30 @@ export class ProjectManager {
 
 					const project = this.getProject(projectId)!;
 					results.push({ project, quests });
-				} catch {
-					// Last resort: quests without progress
-					const project = this.getProject(projectId)!;
-					const quests = questMetadata.map(q => ({ ...q, completed: false }));
-					results.push({ project, quests });
+				} catch (error) {
+					console.error(`[ProjectManager] Failed to refresh progress for ${projectId}:`, error);
+					// Try cached data as fallback
+					try {
+						const progressData = await questApiClient.getCachedProgress(walletAddress, projectId);
+						const progressMap = new Map(progressData.map(p => [p.quest_id, p]));
+
+						const quests = questMetadata.map(quest => {
+							const progress = progressMap.get(quest.id);
+							return {
+								...quest,
+								completed: progress?.completed ?? false,
+								progress: progress?.progress ?? undefined
+							};
+						});
+
+						const project = this.getProject(projectId)!;
+						results.push({ project, quests });
+					} catch {
+						// Last resort: quests without progress
+						const project = this.getProject(projectId)!;
+						const quests = questMetadata.map(q => ({ ...q, completed: false }));
+						results.push({ project, quests });
+					}
 				}
 			}
 		}
@@ -319,12 +389,12 @@ export class ProjectManager {
 		const pointsMap = new Map<string, number>();
 
 		try {
-			// Get all projects' points in a single API call (no projectId filter)
-			const summaries = await questApiClient.getPointsSummary(walletAddress);
+			// Use batch endpoint for all points (no projectIds filter means get all)
+			const batchPoints = await questApiClient.getBatchPointsSummary(walletAddress);
 
-			for (const summary of summaries) {
-				pointsMap.set(summary.project_id, summary.available);
-				console.log(`[ProjectManager] ${summary.project_id} points: ${summary.available}`);
+			for (const [projectId, summary] of Object.entries(batchPoints)) {
+				pointsMap.set(projectId, summary.available);
+				console.log(`[ProjectManager] ${projectId} points: ${summary.available}`);
 			}
 		} catch (error) {
 			console.error(`Failed to get all points:`, error);

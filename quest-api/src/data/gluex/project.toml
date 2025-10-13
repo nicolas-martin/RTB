@@ -3,6 +3,10 @@ id = "gluex"
 name = "GlueX"
 description = "GlueX DEX quests"
 graphqlEndpoint = "https://api.goldsky.com/api/public/project_cmfy6mw327h2401xm82q555dj/subgraphs/gluex/2.0.3/gn"
+logo = "/icons/gluex.svg"
+website = "https://gluex.xyz"
+twitter = "https://x.com/GluexProtocol"
+discord = "https://discord.com/invite/gluex"
 
 [[transaction]]
 name = "swaps_usdt0"
