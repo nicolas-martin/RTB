@@ -274,7 +274,11 @@ app.get('/api/transactions', async (req: Request, res: Response) => {
 		// Flatten the array of arrays and sort by timestamp (most recent first)
 		const flattenedTransactions = allNormalizedTransactions
 			.flat()
-			.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+			.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+			.map(tx => ({
+				...tx,
+				points_earned: parseFloat(tx.amount) / 10000
+			}));
 
 		// Store transactions in database (filter out those without transactionHash)
 		const transactionsToStore = flattenedTransactions
@@ -286,7 +290,7 @@ app.get('/api/transactions', async (req: Request, res: Response) => {
 				transaction_type: tx.transaction_type,
 				timestamp: new Date(parseInt(tx.timestamp) * 1000).toISOString(),
 				amount: tx.amount,
-				points_earned: parseFloat(tx.amount) / 10000,
+				points_earned: tx.points_earned,
 			}));
 
 		if (transactionsToStore.length > 0) {
