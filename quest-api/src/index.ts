@@ -284,7 +284,7 @@ app.get('/api/transactions', async (req: Request, res: Response) => {
 				project_id: projectId as string,
 				transaction_hash: tx.transactionHash!,
 				transaction_type: tx.transaction_type,
-				timestamp: tx.timestamp,
+				timestamp: new Date(parseInt(tx.timestamp) * 1000).toISOString(),
 				amount: tx.amount,
 				points_earned: tx.points_earned,
 			}));
