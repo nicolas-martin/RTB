@@ -1,0 +1,18 @@
+[project]
+id = "fluid"
+name = "fluid"
+description = ""
+graphqlEndpoint = "https://api.goldsky.com/api/public/project_cmfy6mw327h2401xm82q555dj/subgraphs/fluid/1.0.0/gn"
+
+[[transaction]]
+name = "deposits"
+query = """
+query deposits($user: ID!) {
+  deposits(where: {owner: $user}) {
+    shares
+    assets
+    timestamp
+    transactionHash
+  }
+}
+"""

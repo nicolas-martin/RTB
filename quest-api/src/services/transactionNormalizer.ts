@@ -43,6 +43,11 @@ function extractAmount(item: any, transactionType: string): string {
 		return item.amount;
 	}
 
+	// For Fluid-style transactions (deposits)
+	if (item.assets) {
+		return item.assets;
+	}
+
 	// For GlueX-style swap transactions
 	if (item.inputAmount) {
 		return item.inputAmount;
