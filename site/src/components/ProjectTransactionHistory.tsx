@@ -8,15 +8,18 @@ interface NormalizedTransaction {
 	transaction_type: string;
 	amount: string;
 	points_earned: number;
+	projectId?: string;
 }
+
+const AVAILABLE_PROJECTS = ['aave', 'gluex', 'rtb'] as const;
 
 export function ProjectTransactionHistory() {
 	const { account, isConnected } = useQuestData();
 	const [transactions, setTransactions] = useState<NormalizedTransaction[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [selectedProject, setSelectedProject] = useState<string>('aave');
+	const [selectedProject, setSelectedProject] = useState<string>('all');
 
-	// Fetch transaction data for the selected project
+	// Fetch transaction data for the selected project(s)
 	useEffect(() => {
 		async function fetchTransactions() {
 			if (!isConnected || !account) {
@@ -27,10 +30,38 @@ export function ProjectTransactionHistory() {
 
 			setLoading(true);
 			try {
-				console.log('[ProjectTransactionHistory] Fetching transactions for:', account, selectedProject);
-				const txs = await questApiClient.getGraphQLTransactions(account, selectedProject);
-				setTransactions(txs);
-				console.log('[ProjectTransactionHistory] Found', txs.length, 'transactions');
+				if (selectedProject === 'all') {
+					// Fetch from all projects
+					console.log('[ProjectTransactionHistory] Fetching transactions from all projects for:', account);
+					const allTransactions = await Promise.all(
+						AVAILABLE_PROJECTS.map(async (projectId) => {
+							try {
+								const txs = await questApiClient.getGraphQLTransactions(account, projectId);
+								// Add projectId to each transaction
+								return txs.map(tx => ({ ...tx, projectId }));
+							} catch (err) {
+								console.error(`[ProjectTransactionHistory] Error fetching ${projectId}:`, err);
+								return [];
+							}
+						})
+					);
+
+					// Flatten and sort by timestamp
+					const flattened = allTransactions.flat().sort((a, b) =>
+						new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+					);
+
+					setTransactions(flattened);
+					console.log('[ProjectTransactionHistory] Found', flattened.length, 'total transactions');
+				} else {
+					// Fetch from single project
+					console.log('[ProjectTransactionHistory] Fetching transactions for:', account, selectedProject);
+					const txs = await questApiClient.getGraphQLTransactions(account, selectedProject);
+					// Add projectId to each transaction
+					const withProjectId = txs.map(tx => ({ ...tx, projectId: selectedProject }));
+					setTransactions(withProjectId);
+					console.log('[ProjectTransactionHistory] Found', txs.length, 'transactions');
+				}
 			} catch (err) {
 				console.error('[ProjectTransactionHistory] Error fetching transactions:', err);
 				setTransactions([]);
@@ -73,9 +104,9 @@ export function ProjectTransactionHistory() {
 					value={selectedProject}
 					onChange={(e) => setSelectedProject(e.target.value)}
 				>
+					<option value="all">All Projects</option>
 					<option value="aave">Aave</option>
 					<option value="gluex">GlueX</option>
-					<option value="rtb">Ride The Bus</option>
 				</select>
 			</div>
 
@@ -96,6 +127,7 @@ export function ProjectTransactionHistory() {
 						<thead>
 							<tr>
 								<th>Timestamp</th>
+								<th>Project</th>
 								<th>Type</th>
 								<th>Amount</th>
 								<th>Points Earned</th>
@@ -105,6 +137,7 @@ export function ProjectTransactionHistory() {
 							{transactions.map((tx, idx) => (
 								<tr key={idx}>
 									<td>{formatTimestamp(tx.timestamp)}</td>
+									<td className="project-name">{formatProjectName(tx.projectId)}</td>
 									<td className="transaction-type">{formatTransactionType(tx.transaction_type)}</td>
 									<td className="transaction-amount">{formatAmount(tx.amount)}</td>
 									<td className="points-earned">{tx.points_earned}</td>
@@ -122,6 +155,19 @@ export function ProjectTransactionHistory() {
 function formatTimestamp(timestamp: string): string {
 	const date = new Date(parseInt(timestamp) * 1000);
 	return date.toLocaleString();
+}
+
+// Format project name for display
+function formatProjectName(projectId?: string): string {
+	if (!projectId) return '—';
+
+	const names: Record<string, string> = {
+		'aave': 'Aave',
+		'gluex': 'GlueX',
+		'rtb': 'Ride The Bus'
+	};
+
+	return names[projectId] || projectId.toUpperCase();
 }
 
 // Format transaction type for display
