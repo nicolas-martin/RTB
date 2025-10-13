@@ -7,6 +7,18 @@ export interface ProjectMetadata {
 	graphqlEndpoint: string;
 }
 
+export interface TransactionConfig {
+	name: string;
+	query: string;
+}
+
+export interface NormalizedTransaction {
+	timestamp: string;
+	transaction_type: string;
+	amount: string;
+	points_earned: number;
+}
+
 export interface QuestCondition {
 	field: string;
 	itemConditionField?: string;
@@ -49,4 +61,5 @@ export interface QuestProgress {
 export interface ProjectWithQuests {
 	project: ProjectMetadata;
 	quests: QuestConfig[];
+	transactions?: TransactionConfig[];
 }

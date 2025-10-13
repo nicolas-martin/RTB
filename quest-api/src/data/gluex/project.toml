@@ -4,6 +4,24 @@ name = "GlueX"
 description = "GlueX DEX quests"
 graphqlEndpoint = "https://api.goldsky.com/api/public/project_cmfy6mw327h2401xm82q555dj/subgraphs/gluex/2.0.3/gn"
 
+[[transaction]]
+name = "swaps_usdt0"
+query = """
+query UserSwapsUSDT0($user: ID!) {
+  swaps(
+    where: {user_: {id: $user}, inputToken: "0xb8ce59fc3717ada4c02eadf9682a9e934f625ebb"}
+    orderBy: timestamp
+    orderDirection: desc
+  ) {
+    timestamp
+    inputAmount
+    inputToken
+    outputToken
+    finalOutputAmount
+  }
+}
+"""
+
 [[quest]]
 id = "swap_1_usdt0_to_xpl"
 title = "Swap 1 USDT0 to XPL"

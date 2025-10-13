@@ -118,7 +118,7 @@ export class QuestApiClient {
 	}
 
 	/**
-	 * Get transaction history
+	 * Get transaction history (points earned/redeemed)
 	 */
 	async getTransactions(
 		walletAddress: string,
@@ -131,6 +131,22 @@ export class QuestApiClient {
 		const response = await fetch(url);
 		if (!response.ok) {
 			throw new Error(`Failed to fetch transactions: ${response.statusText}`);
+		}
+		return response.json();
+	}
+
+	/**
+	 * Get GraphQL transactions for a wallet (supplies, borrows, etc.)
+	 */
+	async getGraphQLTransactions(
+		walletAddress: string,
+		projectId: string
+	): Promise<any[]> {
+		const url = `${API_BASE_URL}/api/transactions?projectId=${projectId}&walletAddress=${walletAddress}`;
+
+		const response = await fetch(url);
+		if (!response.ok) {
+			throw new Error(`Failed to fetch GraphQL transactions: ${response.statusText}`);
 		}
 		return response.json();
 	}

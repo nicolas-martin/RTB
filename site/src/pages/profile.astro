@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import QuestProvider from '../components/QuestProvider';
 import { ProfileEarningHistory } from '../components/ProfileEarningHistory';
+import { ProjectTransactionHistory } from '../components/ProjectTransactionHistory';
 
 const title = "Profile — June";
 const description = "Your June profile - track your points, earnings, and activity";
@@ -66,6 +67,9 @@ const description = "Your June profile - track your points, earnings, and activi
 
       <!-- EARNING HISTORY -->
       <ProfileEarningHistory client:only="react" />
+
+      <!-- PROJECT TRANSACTION HISTORY -->
+      <ProjectTransactionHistory client:only="react" />
     </div>
   </main>
   </QuestProvider>

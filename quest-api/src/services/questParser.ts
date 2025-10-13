@@ -1,10 +1,11 @@
 import * as toml from 'toml';
-import { QuestConfig, ProjectMetadata, QuestType } from '../types/quest.js';
+import { QuestConfig, ProjectMetadata, QuestType, TransactionConfig } from '../types/quest.js';
 import { BaseQuest, ConditionalQuest, ProgressQuest, CustomQuest } from '../models/index.js';
 
 export interface ProjectWithQuests {
 	project: ProjectMetadata;
 	quests: BaseQuest[];
+	transactions: TransactionConfig[];
 }
 
 export class QuestParser {
@@ -23,7 +24,12 @@ export class QuestParser {
 			const project = this.validateAndMapProject(parsed.project);
 			const quests = parsed.quest.map((q: any) => this.createQuestInstance(q, project.id));
 
-			return { project, quests };
+			// Parse transactions if they exist
+			const transactions = parsed.transaction && Array.isArray(parsed.transaction)
+				? parsed.transaction.map((t: any) => this.validateAndMapTransaction(t))
+				: [];
+
+			return { project, quests, transactions };
 		} catch (error) {
 			console.error('Failed to parse project:', error);
 			throw new Error(
@@ -61,6 +67,20 @@ export class QuestParser {
 			name: projectData.name,
 			description: projectData.description,
 			graphqlEndpoint: projectData.graphqlEndpoint,
+		};
+	}
+
+	private validateAndMapTransaction(transactionData: any): TransactionConfig {
+		const required = ['name', 'query'];
+		for (const field of required) {
+			if (!transactionData[field]) {
+				throw new Error(`Missing required transaction field: ${field}`);
+			}
+		}
+
+		return {
+			name: transactionData.name,
+			query: transactionData.query.trim(),
 		};
 	}
 

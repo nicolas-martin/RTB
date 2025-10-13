@@ -7,6 +7,7 @@ import { config } from 'dotenv';
 import { QuestService } from './services/questService.js';
 import { initializeSupabase } from './database/supabaseClient.js';
 import { questDatabase } from './database/questDatabase.js';
+import { normalizeTransactions } from './services/transactionNormalizer.js';
 
 // Load environment variables
 config();
@@ -231,6 +232,55 @@ app.get('/api/points/transactions/:walletAddress', async (req: Request, res: Res
 	} catch (error) {
 		console.error('Error getting transactions:', error);
 		res.status(500).json({ error: 'Failed to get transactions' });
+	}
+});
+
+// 10. GET /api/transactions?projectId={id}&walletAddress={address} - Execute and get all transactions for a wallet
+app.get('/api/transactions', async (req: Request, res: Response) => {
+	try {
+		const { projectId, walletAddress } = req.query;
+		console.log(`[API] GET /api/transactions - projectId: ${projectId}, walletAddress: ${walletAddress}`);
+
+		if (!projectId) {
+			console.warn('[API] projectId query parameter missing');
+			return res.status(400).json({ error: 'projectId query parameter is required' });
+		}
+
+		if (!walletAddress) {
+			console.warn('[API] walletAddress query parameter missing');
+			return res.status(400).json({ error: 'walletAddress query parameter is required' });
+		}
+
+		console.log(`[API] Loading project service for: ${projectId}`);
+		const service = await loadProjectService(projectId as string);
+		const transactionConfigs = service.getTransactions();
+
+		console.log(`[API] Executing ${transactionConfigs.length} transactions for wallet: ${walletAddress}`);
+
+		// Execute all transactions and normalize results
+		const allNormalizedTransactions = await Promise.all(
+			transactionConfigs.map(async (config) => {
+				try {
+					const data = await service.executeTransaction(config.name, walletAddress as string);
+					// Normalize the transaction data
+					return normalizeTransactions(config.name, data);
+				} catch (error) {
+					console.error(`[API] Error executing transaction ${config.name}:`, error);
+					return [];
+				}
+			})
+		);
+
+		// Flatten the array of arrays and sort by timestamp (most recent first)
+		const flattenedTransactions = allNormalizedTransactions
+			.flat()
+			.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+		console.log(`[API] Returning ${flattenedTransactions.length} normalized transactions`);
+		res.json(flattenedTransactions);
+	} catch (error) {
+		console.error('[API] Error loading transactions:', error);
+		res.status(500).json({ error: 'Failed to load transactions' });
 	}
 });
 

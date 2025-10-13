@@ -1,4 +1,4 @@
-import { Quest, QuestProgress, ProjectMetadata } from '../types/quest.js';
+import { Quest, QuestProgress, ProjectMetadata, TransactionConfig } from '../types/quest.js';
 import { questParser } from './questParser.js';
 import { GraphQLService } from './graphqlClient.js';
 import { BaseQuest } from '../models/index.js';
@@ -8,6 +8,7 @@ import { questDatabase } from '../database/questDatabase.js';
 export class QuestService {
 	private project: ProjectMetadata | null = null;
 	private quests: BaseQuest[] = [];
+	private transactions: TransactionConfig[] = [];
 	private questProgress: Map<string, QuestProgress> = new Map();
 	private graphqlService: GraphQLService;
 
@@ -17,10 +18,11 @@ export class QuestService {
 
 	async loadProject(tomlContent: string): Promise<void> {
 		try {
-			const { project, quests } =
+			const { project, quests, transactions } =
 				await questParser.parseProjectFromFile(tomlContent);
 			this.project = project;
 			this.quests = quests;
+			this.transactions = transactions;
 			this.graphqlService.updateEndpoint(project.graphqlEndpoint);
 		} catch (error) {
 			console.error('Failed to load project:', error);
@@ -51,21 +53,14 @@ export class QuestService {
 
 		try {
 			// Build query variables
-			console.log(`[QuestService] Building query variables for ${questId}`);
 			const variables = await this.buildQueryVariables(quest.getQuery(), walletAddress, quest.getConfig());
-			console.log(`[QuestService] Variables:`, JSON.stringify(variables));
 
-			console.log(`[QuestService] Executing GraphQL query for ${questId}`);
 			const queryResult = await this.graphqlService.executeQuery(
 				quest.getQuery(),
 				variables
 			);
 
-			console.log(`[QuestService] GraphQL result for ${questId}:`, JSON.stringify(queryResult, null, 2));
-
-			console.log(`[QuestService] Validating quest ${questId}`);
 			const validation = await quest.validate(queryResult);
-			console.log(`[QuestService] Validation result for ${questId}:`, JSON.stringify(validation));
 
 			const progress: QuestProgress = {
 				questId,
@@ -136,8 +131,6 @@ export class QuestService {
 			existingProgress.filter(p => p.completed).map(p => p.quest_id)
 		);
 
-		console.log(`[QuestService] Found ${completedQuestIds.size} already completed quests, checking ${this.quests.length - completedQuestIds.size} uncompleted quests`);
-
 		const results: Quest[] = [];
 
 		for (const quest of this.quests) {
@@ -167,6 +160,37 @@ export class QuestService {
 
 	getQuests(): BaseQuest[] {
 		return this.quests;
+	}
+
+	getTransactions(): TransactionConfig[] {
+		return this.transactions;
+	}
+
+	async executeTransaction(transactionName: string, walletAddress: string): Promise<any> {
+		if (!this.project) {
+			throw new Error('Project not loaded');
+		}
+
+		const transaction = this.transactions.find((t) => t.name === transactionName);
+		if (!transaction) {
+			throw new Error(`Transaction not found: ${transactionName}`);
+		}
+
+		try {
+			// Build query variables
+			const variables = await this.buildQueryVariables(transaction.query, walletAddress, {});
+
+			// Execute the GraphQL query
+			const result = await this.graphqlService.executeQuery(
+				transaction.query,
+				variables
+			);
+
+			return result;
+		} catch (error) {
+			console.error(`Failed to execute transaction ${transactionName}:`, error);
+			throw error;
+		}
 	}
 
 	getQuestsWithProgress(): Quest[] {

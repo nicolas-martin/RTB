@@ -11,14 +11,6 @@ export class ConditionalQuest extends BaseQuest {
 
 		const completed = this.evaluateCondition(condition, conditionValue);
 
-		console.log(`[ConditionalQuest] ${this.config.id}`, {
-			questId: this.config.id,
-			condition,
-			conditionValue,
-			queryResult,
-			completed
-		});
-
 		return {
 			completed: completed,
 		};

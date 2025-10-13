@@ -49,16 +49,6 @@ export class CustomQuest extends BaseQuest {
 			completed = false;
 		}
 
-		console.log(`[CustomQuest] ${this.config.id}`, {
-			questId: this.config.id,
-			validatorPath: `../data/${this.projectName}/validators/${this.config.id}`,
-			queryResult,
-			typeParams: this.typeParams,
-			result,
-			completed,
-			progress
-		});
-
 		return { completed, progress };
 	}
 

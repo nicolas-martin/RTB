@@ -1,0 +1,140 @@
+import { useEffect, useState } from 'react';
+import { useQuestData } from './QuestDataProvider';
+import { questApiClient } from '@quest-src/services/questApiClient';
+import './ProjectTransactionHistory.css';
+
+interface NormalizedTransaction {
+	timestamp: string;
+	transaction_type: string;
+	amount: string;
+	points_earned: number;
+}
+
+export function ProjectTransactionHistory() {
+	const { account, isConnected } = useQuestData();
+	const [transactions, setTransactions] = useState<NormalizedTransaction[]>([]);
+	const [loading, setLoading] = useState(true);
+	const [selectedProject, setSelectedProject] = useState<string>('aave');
+
+	// Fetch transaction data for the selected project
+	useEffect(() => {
+		async function fetchTransactions() {
+			if (!isConnected || !account) {
+				setTransactions([]);
+				setLoading(false);
+				return;
+			}
+
+			setLoading(true);
+			try {
+				console.log('[ProjectTransactionHistory] Fetching transactions for:', account, selectedProject);
+				const txs = await questApiClient.getGraphQLTransactions(account, selectedProject);
+				setTransactions(txs);
+				console.log('[ProjectTransactionHistory] Found', txs.length, 'transactions');
+			} catch (err) {
+				console.error('[ProjectTransactionHistory] Error fetching transactions:', err);
+				setTransactions([]);
+			} finally {
+				setLoading(false);
+			}
+		}
+
+		fetchTransactions();
+	}, [account, isConnected, selectedProject]);
+
+	if (!isConnected || !account) {
+		return (
+			<div className="project-transaction-history">
+				<h2 className="history-title">Project Transaction History</h2>
+				<div className="history-empty">
+					<p>Connect your wallet to view your transaction history</p>
+				</div>
+			</div>
+		);
+	}
+
+	if (loading) {
+		return (
+			<div className="project-transaction-history">
+				<h2 className="history-title">Project Transaction History</h2>
+				<div className="history-loading">
+					<p>Loading...</p>
+				</div>
+			</div>
+		);
+	}
+
+	return (
+		<div className="project-transaction-history">
+			<div className="history-header">
+				<h2 className="history-title">Project Transaction History</h2>
+				<select
+					className="project-selector"
+					value={selectedProject}
+					onChange={(e) => setSelectedProject(e.target.value)}
+				>
+					<option value="aave">Aave</option>
+					<option value="gluex">GlueX</option>
+					<option value="rtb">Ride The Bus</option>
+				</select>
+			</div>
+
+			{transactions.length === 0 ? (
+				<div className="history-empty">
+					<div className="transaction-placeholder">
+						<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+							<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+							<path d="M9 12h6m-6 4h6" />
+						</svg>
+						<p className="placeholder-text">No recent transactions</p>
+						<p className="placeholder-subtext">Your activity will appear here</p>
+					</div>
+				</div>
+			) : (
+				<div className="transaction-table-container">
+					<table className="transaction-table">
+						<thead>
+							<tr>
+								<th>Timestamp</th>
+								<th>Type</th>
+								<th>Amount</th>
+								<th>Points Earned</th>
+							</tr>
+						</thead>
+						<tbody>
+							{transactions.map((tx, idx) => (
+								<tr key={idx}>
+									<td>{formatTimestamp(tx.timestamp)}</td>
+									<td className="transaction-type">{formatTransactionType(tx.transaction_type)}</td>
+									<td className="transaction-amount">{formatAmount(tx.amount)}</td>
+									<td className="points-earned">{tx.points_earned}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			)}
+		</div>
+	);
+}
+
+// Format timestamp to readable date
+function formatTimestamp(timestamp: string): string {
+	const date = new Date(parseInt(timestamp) * 1000);
+	return date.toLocaleString();
+}
+
+// Format transaction type for display
+function formatTransactionType(type: string): string {
+	return type
+		.replace(/_/g, ' ')
+		.split(' ')
+		.map(word => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(' ');
+}
+
+// Format amount (assuming 6 decimals)
+function formatAmount(amount: string): string {
+	const num = parseFloat(amount) / 1e6;
+	return num.toFixed(2);
+}
